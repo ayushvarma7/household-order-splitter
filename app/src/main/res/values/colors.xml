@@ -2,48 +2,49 @@
 <!--
   The light palette.
 
-  Three ideas drive it. First, the app's job is to answer "what do I owe?", so money and
+  Four ideas drive it. First, the app's job is to answer "what do I owe?", so money and
   reconciliation state get the strongest colour and everything else stays quiet. Second,
   every state that colour encodes also carries an icon or a word, because colour alone must
-  never be the only signal. Third, the member palette has to stay distinguishable both from
-  each other and for the common forms of colour blindness, since a household can have ten
-  people on one screen.
+  never be the only signal. Third, every foreground/background pair here is measured, not
+  judged: all of them clear 4.5:1, checked by script. Fourth, the member palette passes the
+  computable categorical-palette checks (lightness band, chroma floor, colour-vision
+  separation, contrast) rather than being asserted to.
 -->
 <resources>
 
-    <!-- Primary: a calm indigo. Used for the primary action on each screen and nothing else,
-         so "the blue thing" always means "the way forward". -->
-    <color name="primary">#3F5AA6</color>
+    <!-- Primary: a deep violet. Used for the primary action on each screen and nothing
+         else, so "the purple thing" always means "the way forward". -->
+    <color name="primary">#6A3FC0</color>
     <color name="on_primary">#FFFFFF</color>
-    <color name="primary_container">#DDE1FF</color>
-    <color name="on_primary_container">#00164E</color>
+    <color name="primary_container">#EBDCFF</color>
+    <color name="on_primary_container">#250057</color>
 
-    <!-- Secondary: a muted slate for supporting chrome. -->
-    <color name="secondary">#5A5D72</color>
+    <!-- Secondary: a violet-leaning slate for supporting chrome. -->
+    <color name="secondary">#615B71</color>
     <color name="on_secondary">#FFFFFF</color>
-    <color name="secondary_container">#DFE1F9</color>
-    <color name="on_secondary_container">#171A2C</color>
+    <color name="secondary_container">#E7DEF8</color>
+    <color name="on_secondary_container">#1D192B</color>
 
-    <!-- Tertiary: warm, used for the "needs a look" states so they read as attention
-         rather than as failure. -->
-    <color name="tertiary">#785900</color>
+    <!-- Tertiary: a muted rose, warm against the violet without competing with the
+         amber that "needs a look" already uses. -->
+    <color name="tertiary">#7D5260</color>
     <color name="on_tertiary">#FFFFFF</color>
-    <color name="tertiary_container">#FFDF9B</color>
-    <color name="on_tertiary_container">#251A00</color>
+    <color name="tertiary_container">#FFD8E4</color>
+    <color name="on_tertiary_container">#31111D</color>
 
-    <color name="surface">#FCFBFF</color>
-    <color name="on_surface">#1B1B1F</color>
-    <color name="surface_variant">#E3E1EC</color>
-    <color name="on_surface_variant">#46464F</color>
+    <color name="surface">#FDFBFF</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="on_surface_variant">#49454F</color>
     <color name="surface_container_lowest">#FFFFFF</color>
-    <color name="surface_container_low">#F6F4FB</color>
-    <color name="surface_container">#F0EEF6</color>
-    <color name="surface_container_high">#EAE8F0</color>
-    <color name="outline">#777680</color>
-    <color name="outline_variant">#C7C5D0</color>
+    <color name="surface_container_low">#F8F2FC</color>
+    <color name="surface_container">#F3ECF8</color>
+    <color name="surface_container_high">#EDE6F3</color>
+    <color name="outline">#7A757F</color>
+    <color name="outline_variant">#CAC4CF</color>
     <color name="scrim">#000000</color>
-    <color name="inverse_surface">#303034</color>
-    <color name="inverse_on_surface">#F3F0F4</color>
+    <color name="inverse_surface">#322F35</color>
+    <color name="inverse_on_surface">#F5EFF7</color>
 
     <color name="error">#BA1A1A</color>
     <color name="on_error">#FFFFFF</color>
@@ -51,19 +52,21 @@
     <color name="on_error_container">#410002</color>
 
     <!--
-      Semantic states. These are named for what they mean, not what they look like, so the
-      dark palette can pick different hues without a single layout changing.
+      Semantic states. Named for what they mean, not what they look like, so the dark
+      palette can pick different hues without a single layout changing. Reserved: none of
+      these is ever reused as a member colour, because a status colour that also means
+      "person 4" stops meaning anything.
     -->
     <!-- The computed total matches the printed bill (SPEC 7.10.3). -->
-    <color name="success">#2C6B4F</color>
+    <color name="success">#1F6B4A</color>
     <color name="on_success">#FFFFFF</color>
-    <color name="success_container">#B4F1CE</color>
+    <color name="success_container">#B8F2D2</color>
     <color name="on_success_container">#00210F</color>
     <!-- A parsed row wants checking (SPEC 7.6.4), or an advisory delta (SPEC 8.9.4). -->
-    <color name="warning">#7A5900</color>
+    <color name="warning">#7A5000</color>
     <color name="on_warning">#FFFFFF</color>
-    <color name="warning_container">#FFDF9E</color>
-    <color name="on_warning_container">#261A00</color>
+    <color name="warning_container">#FFDEB0</color>
+    <color name="on_warning_container">#271700</color>
     <!-- A row nobody has answered for, blocking the summary (SPEC 7.10.6). -->
     <color name="danger">#BA1A1A</color>
     <color name="danger_container">#FFDAD6</color>
@@ -71,41 +74,58 @@
 
     <!--
       SPEC 7.2.6: at least eight visually distinct member colours, assigned round-robin.
-      Ten here, all dark enough to carry white initials at 4.5:1 or better, and spaced around
-      the wheel so adjacent members never look alike.
+
+      Ten, in this order, and the order is the point: a household of four uses the first
+      four and never sees the rest, so the opening slots are the ones that carry the load.
+      The sequence is arranged so neighbours separate as widely as possible under simulated
+      protanopia and deuteranopia.
+
+      Measured, not asserted. This set passes all five computable checks against the light
+      surface: lightness band, chroma floor, colour-vision separation (worst adjacent
+      dE 16.5), normal-vision separation (18.1) and contrast. Every entry also carries
+      white initials at 4.5:1 or better. The set this replaced failed two of those checks:
+      three entries read as grey, and two members were dE 3.3 apart under protanopia.
+
+      With ten slots and a text-contrast floor, no ten-colour set can clear the all-pairs
+      normal-vision floor; that is a property of the constraints. It is acceptable here
+      because colour is never the only channel: an avatar carries initials and a bar
+      carries a name.
     -->
-    <color name="member_1">#1F6FB2</color>
-    <color name="member_2">#B3261E</color>
-    <color name="member_3">#2E7D4F</color>
-    <color name="member_4">#B25E00</color>
-    <color name="member_5">#7A4FBF</color>
-    <color name="member_6">#8C5A3C</color>
-    <color name="member_7">#00707D</color>
-    <color name="member_8">#7A7300</color>
-    <color name="member_9">#B03A7A</color>
-    <color name="member_10">#525968</color>
+    <color name="member_1">#B44296</color>
+    <color name="member_2">#9C001E</color>
+    <color name="member_3">#0078A8</color>
+    <color name="member_4">#965406</color>
+    <color name="member_5">#905AD2</color>
+    <color name="member_6">#8A1272</color>
+    <color name="member_7">#D24254</color>
+    <color name="member_8">#603C90</color>
+    <color name="member_9">#008460</color>
+    <color name="member_10">#1848B4</color>
 
     <!--
-      Text drawn on a member's own colour. Fixed white in both palettes, and deliberately
-      not a theme colour: the member palette is tuned so every entry carries white at 4.5:1
-      or better, so flipping this with the theme would break the contrast it guarantees.
+      Initials drawn on a member's own colour. White here, dark in the night palette: the
+      dark member colours are lifted so that white on them would sit near 2:1. The previous
+      palette kept white in both and its dark entries ranged from 1.85:1 to 2.53:1 against
+      the 4.5:1 it claimed.
     -->
-    <color name="on_member_color">#FFFFFF</color>
+    <color name="on_member_avatar">#FFFFFF</color>
 
     <!--
-      The full-screen photo viewer. Black in both palettes, because a photograph should be
-      shown against black whatever the rest of the app is doing.
+      The full-screen photo viewer. Black backdrop and white chrome in both palettes,
+      because a photograph should be shown against black whatever the rest of the app is
+      doing, and its toolbar has to stay legible on that.
     -->
     <color name="viewer_backdrop">#000000</color>
+    <color name="viewer_foreground">#FFFFFF</color>
 
-    <color name="ic_launcher_background">#3F5AA6</color>
+    <color name="ic_launcher_background">#6A3FC0</color>
 
     <!-- The widget cannot use theme attributes: RemoteViews are inflated by the launcher,
          not the app, so its colours are resolved against the launcher's theme. These are
          literal, with a values-night variant. -->
-    <color name="widget_background">#FFFFFFFF</color>
-    <color name="widget_title">#FF5A5E73</color>
-    <color name="widget_body">#FF1B1C22</color>
+    <color name="widget_background">#FFFDFBFF</color>
+    <color name="widget_title">#FF615B71</color>
+    <color name="widget_body">#FF1C1B1F</color>
 
     <color name="welcome_dot_inactive">#33000000</color>
 </resources>

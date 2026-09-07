@@ -50,7 +50,8 @@
             android:layout_height="@dimen/touch_target_min"
             android:layout_gravity="top|end"
             android:contentDescription="@string/action_remove_screenshot"
-            android:src="@drawable/ic_close" />
+            android:src="@drawable/ic_close"
+            app:tint="@color/viewer_foreground" />
 
         <ImageView
             android:id="@+id/dragHandle"
@@ -59,6 +60,7 @@
             android:layout_gravity="bottom|center_horizontal"
             android:contentDescription="@string/drag_to_reorder"
             android:padding="@dimen/space_m"
-            android:src="@drawable/ic_drag" />
+            android:src="@drawable/ic_drag"
+            app:tint="@color/viewer_foreground" />
     </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

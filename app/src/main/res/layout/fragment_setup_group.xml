@@ -55,7 +55,8 @@
                         android:layout_height="28dp"
                         android:layout_gravity="center"
                         android:contentDescription="@null"
-                        android:src="@drawable/ic_group" />
+                        android:src="@drawable/ic_group"
+                        app:tint="?attr/colorOnPrimary" />
                 </FrameLayout>
 
                 <TextView

@@ -169,7 +169,7 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
                 TextView avatar = new TextView(binding.getRoot().getContext());
                 avatar.setText(member.initials());
                 avatar.setTextColor(androidx.core.content.ContextCompat.getColor(
-                        binding.getRoot().getContext(), R.color.on_member_color));
+                        binding.getRoot().getContext(), R.color.on_member_avatar));
                 avatar.setTextSize(10f);
                 avatar.setGravity(android.view.Gravity.CENTER);
                 avatar.setBackgroundResource(R.drawable.bg_avatar_circle);

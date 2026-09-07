@@ -1,10 +1,11 @@
-<!-- Introduction page 2. -->
+<!-- An introduction illustration. Drawn on a plain surface, so it carries the primary at
+     a low alpha; the small interface icons are untinted and take their colour at the usage. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="96dp"
-    android:height="96dp"
+    android:width="112dp"
+    android:height="112dp"
     android:viewportWidth="24"
     android:viewportHeight="24"
-    android:alpha="0.35"
+    android:alpha="0.30"
     android:tint="?attr/colorPrimary">
     <path
         android:fillColor="@android:color/white"

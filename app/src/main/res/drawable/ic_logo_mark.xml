@@ -17,9 +17,9 @@
 
     <!-- Two ruled lines on the left half: this is a list of things, not a card. -->
     <path
-        android:fillColor="#3F5AA6"
+        android:fillColor="#6A3FC0"
         android:pathData="M14,12 h5 v2 h-5 z M14,17 h5 v2 h-5 z" />
     <path
-        android:fillColor="#3F5AA6"
+        android:fillColor="#6A3FC0"
         android:pathData="M29,12 h5 v2 h-5 z M29,17 h5 v2 h-5 z" />
 </vector>

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The dark palette. Same semantic names, different hues, so no layout and no Java changes.
+  The dark palette. Same semantic names, its own steps, so no layout and no Java changes.
+
+  Chosen rather than flipped. The member colours in particular are searched against the
+  dark surface on their own, because lifting the light ones by hue collapses distinct
+  entries into near-duplicates: two magentas that read apart at L 0.45 are the same colour
+  at L 0.63.
 
   SPEC 11.8 makes the point for screenshots and it holds for the app too: nothing may depend
   on an absolute colour value. Containers become dark and their "on" colours become light,
@@ -8,74 +13,81 @@
 -->
 <resources>
 
-    <color name="primary">#B8C3FF</color>
-    <color name="on_primary">#092B7A</color>
-    <color name="primary_container">#264192</color>
-    <color name="on_primary_container">#DDE1FF</color>
+    <color name="primary">#D3BBFF</color>
+    <color name="on_primary">#3B1E75</color>
+    <color name="primary_container">#52368F</color>
+    <color name="on_primary_container">#EBDCFF</color>
 
-    <color name="secondary">#C3C5DD</color>
-    <color name="on_secondary">#2C2F42</color>
-    <color name="secondary_container">#424659</color>
-    <color name="on_secondary_container">#DFE1F9</color>
+    <color name="secondary">#CBC2DB</color>
+    <color name="on_secondary">#332D41</color>
+    <color name="secondary_container">#4A4458</color>
+    <color name="on_secondary_container">#E7DEF8</color>
 
-    <color name="tertiary">#EDC148</color>
-    <color name="on_tertiary">#3E2E00</color>
-    <color name="tertiary_container">#5B4300</color>
-    <color name="on_tertiary_container">#FFDF9B</color>
+    <color name="tertiary">#EFB8C8</color>
+    <color name="on_tertiary">#4A2532</color>
+    <color name="tertiary_container">#633B48</color>
+    <color name="on_tertiary_container">#FFD8E4</color>
 
-    <color name="surface">#131316</color>
-    <color name="on_surface">#E5E1E6</color>
-    <color name="surface_variant">#46464F</color>
-    <color name="on_surface_variant">#C7C5D0</color>
-    <color name="surface_container_lowest">#0E0E11</color>
-    <color name="surface_container_low">#1B1B1F</color>
-    <color name="surface_container">#1F1F23</color>
-    <color name="surface_container_high">#2A2A2E</color>
-    <color name="outline">#918F9A</color>
-    <color name="outline_variant">#46464F</color>
+    <color name="surface">#141218</color>
+    <color name="on_surface">#E6E0E9</color>
+    <color name="surface_variant">#49454F</color>
+    <color name="on_surface_variant">#CAC4CF</color>
+    <color name="surface_container_lowest">#0F0D13</color>
+    <color name="surface_container_low">#1D1A22</color>
+    <color name="surface_container">#211E26</color>
+    <color name="surface_container_high">#2B2830</color>
+    <color name="outline">#948F99</color>
+    <color name="outline_variant">#49454F</color>
     <color name="scrim">#000000</color>
-    <color name="inverse_surface">#E5E1E6</color>
-    <color name="inverse_on_surface">#303034</color>
+    <color name="inverse_surface">#E6E0E9</color>
+    <color name="inverse_on_surface">#322F35</color>
 
     <color name="error">#FFB4AB</color>
     <color name="on_error">#690005</color>
     <color name="error_container">#93000A</color>
     <color name="on_error_container">#FFDAD6</color>
 
-    <color name="success">#8FD5AC</color>
-    <color name="on_success">#00391D</color>
-    <color name="success_container">#0C5233</color>
-    <color name="on_success_container">#B4F1CE</color>
-    <color name="warning">#EDC148</color>
-    <color name="on_warning">#402D00</color>
-    <color name="warning_container">#5C4200</color>
-    <color name="on_warning_container">#FFDF9E</color>
+    <color name="success">#8FD9B2</color>
+    <color name="on_success">#00391F</color>
+    <color name="success_container">#0B5235</color>
+    <color name="on_success_container">#B8F2D2</color>
+    <color name="warning">#F3C05A</color>
+    <color name="on_warning">#412A00</color>
+    <color name="warning_container">#5D3F00</color>
+    <color name="on_warning_container">#FFDEB0</color>
     <color name="danger">#FFB4AB</color>
     <color name="danger_container">#93000A</color>
     <color name="on_danger_container">#FFDAD6</color>
 
-    <!-- Same in both palettes; see the light file for why. -->
-    <color name="on_member_color">#FFFFFF</color>
-    <color name="viewer_backdrop">#000000</color>
+    <!--
+      Searched against #141218 on its own terms, and passing all five categorical checks:
+      lightness band, chroma floor, colour-vision separation (worst adjacent dE 13.7),
+      normal-vision separation (16.1) and contrast. Every entry carries the dark ink below
+      at 4.50:1 or better.
+    -->
+    <color name="member_1">#F05A66</color>
+    <color name="member_2">#309CEA</color>
+    <color name="member_3">#E46096</color>
+    <color name="member_4">#487EF6</color>
+    <color name="member_5">#3C9C66</color>
+    <color name="member_6">#308AC0</color>
+    <color name="member_7">#4E961E</color>
+    <color name="member_8">#00A2B4</color>
+    <color name="member_9">#E4600C</color>
+    <color name="member_10">#00968A</color>
 
-    <!-- Lifted so white initials still clear 4.5:1 against a dark surface. -->
-    <color name="member_1">#6FB0E8</color>
-    <color name="member_2">#F2837B</color>
-    <color name="member_3">#71C79A</color>
-    <color name="member_4">#EDA45C</color>
-    <color name="member_5">#B79BEF</color>
-    <color name="member_6">#D3A088</color>
-    <color name="member_7">#5FC7D3</color>
-    <color name="member_8">#C9C25A</color>
-    <color name="member_9">#EE8BBE</color>
-    <color name="member_10">#A8AFC0</color>
+    <!-- Dark ink, because the lifted member colours are too light to carry white. -->
+    <color name="on_member_avatar">#1C1B1F</color>
+
+    <!-- Same in both palettes; see the light file for why. -->
+    <color name="viewer_backdrop">#000000</color>
+    <color name="viewer_foreground">#FFFFFF</color>
 
     <!-- The widget cannot use theme attributes: RemoteViews are inflated by the launcher,
-         not the app, so its colours are resolved against the launcher's theme. These are
-         literal, with a values-night variant. -->
-    <color name="widget_background">#FF23242B</color>
-    <color name="widget_title">#FFB6BAC9</color>
-    <color name="widget_body">#FFF2F2F6</color>
+         not the app, so its colours are resolved against the launcher's theme. -->
+    <color name="widget_background">#FF211E26</color>
+    <color name="widget_title">#FFCBC2DB</color>
+    <color name="widget_body">#FFE6E0E9</color>
 
     <color name="welcome_dot_inactive">#33FFFFFF</color>
 </resources>

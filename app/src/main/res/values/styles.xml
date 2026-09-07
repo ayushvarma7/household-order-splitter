@@ -136,7 +136,7 @@
         <item name="android:layout_height">@dimen/avatar_size</item>
         <item name="android:background">@drawable/bg_avatar_circle</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/on_member_color</item>
+        <item name="android:textColor">@color/on_member_avatar</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/avatar_text</item>
     </style>

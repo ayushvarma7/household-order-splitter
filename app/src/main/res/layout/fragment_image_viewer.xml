@@ -27,6 +27,6 @@
         android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:navigationIconTint="@color/on_member_color"
-        app:titleTextColor="@color/on_member_color" />
+        app:navigationIconTint="@color/viewer_foreground"
+        app:titleTextColor="@color/viewer_foreground" />
 </androidx.constraintlayout.widget.ConstraintLayout>

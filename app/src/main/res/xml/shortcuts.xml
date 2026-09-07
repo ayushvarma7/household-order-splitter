@@ -8,7 +8,7 @@
 
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_add"
+        android:icon="@drawable/ic_shortcut_new_order"
         android:shortcutId="new_order"
         android:shortcutLongLabel="@string/shortcut_new_order_long"
         android:shortcutShortLabel="@string/shortcut_new_order_short">
@@ -25,7 +25,7 @@
 
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_analytics"
+        android:icon="@drawable/ic_shortcut_balances"
         android:shortcutId="balances"
         android:shortcutLongLabel="@string/shortcut_balances_long"
         android:shortcutShortLabel="@string/shortcut_balances_short">
