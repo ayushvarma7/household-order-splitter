@@ -95,6 +95,39 @@ public class AssignmentMemoryService {
         });
     }
 
+    /**
+     * Suggestions for a whole list at once.
+     *
+     * <p>The one-at-a-time lookup is right for the assignment loop, which shows one item at
+     * a time. Applying a shop's worth of remembered answers in one action needs them all,
+     * and doing that as one pass over the history rather than one lookup per item matters:
+     * the brand-prefix inference of SPEC 9.1 reads the household's whole history, so per
+     * item it would re-read it once per row.
+     *
+     * @return a suggestion per index of {@code names}, with nulls where nothing is known
+     */
+    public void suggestForAll(long householdId, List<String> names,
+                              Callback<List<Suggestion>> callback) {
+        executors.diskIO().execute(() -> {
+            List<String> history = new ArrayList<>();
+            for (AssignmentMemory memory : dao.getAllSync(householdId)) {
+                history.add(memory.normalizedName);
+            }
+            Set<String> brands = NameNormalizer.inferBrandPrefixes(history,
+                    BRAND_MIN_DISTINCT_USES);
+
+            List<Suggestion> suggestions = new ArrayList<>(names.size());
+            for (String name : names) {
+                String normalised = NameNormalizer.normalize(name, brands);
+                AssignmentMemory memory = normalised.isEmpty()
+                        ? null : dao.findSync(householdId, normalised);
+                suggestions.add(memory == null
+                        ? null : new Suggestion(memory.scope, parseIds(memory.memberIdsCsv)));
+            }
+            post(callback, suggestions);
+        });
+    }
+
     /** SPEC 9.5: "Clear suggestion history". */
     public void clear(long householdId, Callback<Void> callback) {
         executors.diskIO().execute(() -> {

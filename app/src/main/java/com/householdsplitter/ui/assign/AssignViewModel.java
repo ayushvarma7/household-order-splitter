@@ -15,6 +15,7 @@ import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.suggest.AssignmentMemoryService;
+import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.util.Callback;
 
 import java.util.ArrayList;
@@ -349,6 +350,71 @@ public class AssignViewModel extends ViewModel {
         index.setValue(position);
         repository.updateProgress(orderId, DraftStep.ASSIGN, position);
         loadSelectionForCurrent();
+    }
+
+    /**
+     * Applies every remembered answer to the rows still unanswered, in one action.
+     *
+     * <p>SPEC 7.9.12 forbids a suggestion advancing the screen by itself, and this does not
+     * breach that: the user asked for the suggestions to be applied, which is a decision
+     * rather than an assumption, and every row it touches stays editable afterwards. For a
+     * weekly shop of largely the same things this is the difference between answering
+     * eighteen questions and answering four.
+     *
+     * @param onDone how many rows a remembered answer was found for
+     */
+    public void acceptAllSuggestions(Callback<Integer> onDone) {
+        List<LineItemWithAssignments> all = items();
+        List<Long> ids = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (LineItemWithAssignments row : all) {
+            if (row.item.scope.isUnanswered()) {
+                ids.add(row.item.id);
+                names.add(row.item.name);
+            }
+        }
+        if (ids.isEmpty()) {
+            onDone.onResult(0);
+            return;
+        }
+        memory.suggestForAll(householdId, names, suggestions -> {
+            List<Scope> scopes = new ArrayList<>();
+            List<List<Long>> members = new ArrayList<>();
+            for (AssignmentMemoryService.Suggestion suggestion : suggestions) {
+                if (suggestion == null) {
+                    scopes.add(null);
+                    members.add(null);
+                    continue;
+                }
+                if (suggestion.scope == Scope.COMMON) {
+                    scopes.add(Scope.COMMON);
+                    members.add(new ArrayList<>());
+                    continue;
+                }
+                // Only members who are actually in on this order can be assigned to it
+                // (SPEC 7.8.5), so a remembered answer naming someone who is not is dropped.
+                List<Long> eligible = new ArrayList<>();
+                for (Long memberId : suggestion.memberIds) {
+                    if (isParticipant(memberId)) {
+                        eligible.add(memberId);
+                    }
+                }
+                if (eligible.isEmpty()) {
+                    scopes.add(null);
+                    members.add(null);
+                } else {
+                    scopes.add(eligible.size() == participants().size()
+                            ? Scope.COMMON
+                            : (eligible.size() == 1 ? Scope.PERSONAL : Scope.SUBSET));
+                    members.add(eligible.size() == participants().size()
+                            ? new ArrayList<>() : eligible);
+                }
+            }
+            repository.applyRememberedAnswers(ids, scopes, members, result -> {
+                loadSelectionForCurrent();
+                onDone.onResult(result.isOk() ? result.value() : 0);
+            });
+        });
     }
 
     /** SPEC 7.9.10: after a confirmation naming the count. */

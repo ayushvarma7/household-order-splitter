@@ -68,6 +68,30 @@ public class AssignFragment extends BaseFragment {
                 showJumpSheet();
                 return true;
             }
+            if (item.getItemId() == R.id.action_accept_all) {
+                model.acceptAllSuggestions(applied -> {
+                    if (binding == null) {
+                        return;
+                    }
+                    if (applied == null || applied == 0) {
+                        com.google.android.material.snackbar.Snackbar.make(binding.getRoot(),
+                                R.string.assign_no_suggestions,
+                                com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
+                        return;
+                    }
+                    com.google.android.material.snackbar.Snackbar.make(binding.getRoot(),
+                            getResources().getQuantityString(
+                                    R.plurals.assign_suggestions_applied, applied, applied),
+                            com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
+                });
+                return true;
+            }
+            if (item.getItemId() == R.id.action_bulk) {
+                Bundle args = new Bundle();
+                args.putLong(ParsingArgs.ARG_ORDER_ID, orderId);
+                NavHostFragment.findNavController(this).navigate(R.id.bulkAssignFragment, args);
+                return true;
+            }
             return false;
         });
 

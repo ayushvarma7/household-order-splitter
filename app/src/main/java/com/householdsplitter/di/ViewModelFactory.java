@@ -16,6 +16,7 @@ import com.householdsplitter.ui.participants.ParticipantsViewModel;
 import com.householdsplitter.ui.review.ReviewItemsViewModel;
 import com.householdsplitter.ui.details.OrderDetailsViewModel;
 import com.householdsplitter.ui.assign.AssignViewModel;
+import com.householdsplitter.ui.assign.BulkAssignViewModel;
 import com.householdsplitter.ui.summary.SummaryViewModel;
 import com.householdsplitter.ui.analytics.AnalyticsViewModel;
 import com.householdsplitter.ui.setup.SetupGroupViewModel;
@@ -84,6 +85,9 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         if (modelClass == AssignViewModel.class) {
             return (T) new AssignViewModel(locator.orderRepository(),
                     locator.assignmentMemory(), orderId, locator.currentHouseholdId());
+        }
+        if (modelClass == BulkAssignViewModel.class) {
+            return (T) new BulkAssignViewModel(locator.orderRepository(), orderId);
         }
         if (modelClass == SummaryViewModel.class) {
             return (T) new SummaryViewModel(locator.orderRepository(),

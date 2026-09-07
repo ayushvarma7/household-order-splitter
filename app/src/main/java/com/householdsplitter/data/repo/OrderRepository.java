@@ -225,6 +225,84 @@ public class OrderRepository {
         });
     }
 
+    /**
+     * One answer applied to many rows at once.
+     *
+     * <p>The assignment loop of SPEC 7.9 is one item at a time, which is right for deciding.
+     * It is the wrong shape for a decision already made: "these six are all mine" should be
+     * one action, not six. SPEC 5.9 still holds, so a COMMON row has its assignment rows
+     * cleared rather than being given a set of them.
+     *
+     * @return how many rows changed
+     */
+    public void assignMany(List<Long> lineItemIds, Scope scope, List<Long> memberIds,
+                           List<Integer> shares, Callback<Result<Integer>> callback) {
+        executors.diskIO().execute(() -> {
+            int changed = 0;
+            for (Long lineItemId : lineItemIds) {
+                if (lineItemId == null) {
+                    continue;
+                }
+                assignmentDao.deleteForItem(lineItemId);
+                if (scope == Scope.SUBSET || scope == Scope.PERSONAL) {
+                    List<ItemAssignment> assignments = new ArrayList<>();
+                    for (int i = 0; i < memberIds.size(); i++) {
+                        int share = shares == null || i >= shares.size() ? 1 : shares.get(i);
+                        assignments.add(new ItemAssignment(lineItemId, memberIds.get(i), share));
+                    }
+                    if (!assignments.isEmpty()) {
+                        assignmentDao.insertAll(assignments);
+                    }
+                }
+                lineItemDao.updateScope(lineItemId, scope);
+                changed++;
+            }
+            post(callback, Result.ok(changed));
+        });
+    }
+
+    /**
+     * Applies one remembered answer per row, in a single pass.
+     *
+     * <p>SPEC 7.9.12 forbids a suggestion advancing the screen by itself, and this does not:
+     * the user asked for every suggestion to be applied, which is a decision rather than an
+     * assumption, and every row it touches stays editable afterwards.
+     *
+     * @param answers item id to the scope and members to apply; entries may be null
+     * @return how many rows a suggestion was found for
+     */
+    public void applyRememberedAnswers(List<Long> lineItemIds, List<Scope> scopes,
+                                       List<List<Long>> memberIds,
+                                       Callback<Result<Integer>> callback) {
+        executors.diskIO().execute(() -> {
+            int applied = 0;
+            for (int i = 0; i < lineItemIds.size(); i++) {
+                Scope scope = scopes.get(i);
+                if (scope == null || scope == Scope.UNASSIGNED) {
+                    continue;
+                }
+                Long itemId = lineItemIds.get(i);
+                List<Long> members = memberIds.get(i);
+                if ((scope == Scope.SUBSET || scope == Scope.PERSONAL)
+                        && (members == null || members.isEmpty())) {
+                    // A remembered answer with nobody in it cannot be applied.
+                    continue;
+                }
+                assignmentDao.deleteForItem(itemId);
+                if (scope == Scope.SUBSET || scope == Scope.PERSONAL) {
+                    List<ItemAssignment> assignments = new ArrayList<>();
+                    for (Long memberId : members) {
+                        assignments.add(new ItemAssignment(itemId, memberId, 1));
+                    }
+                    assignmentDao.insertAll(assignments);
+                }
+                lineItemDao.updateScope(itemId, scope);
+                applied++;
+            }
+            post(callback, Result.ok(applied));
+        });
+    }
+
     /** SPEC 7.9.10: "Assign all remaining as common", from the current position onward. */
     public void assignRemainingAsCommon(long orderId, int fromPosition,
                                         Callback<Result<Integer>> callback) {

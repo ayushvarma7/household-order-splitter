@@ -274,4 +274,28 @@
     <string name="settle_undo_payment">Undo this payment</string>
     <string name="settle_payment_recorded">Payment recorded</string>
     <string name="settle_payment_removed">Payment removed</string>
+
+    <!-- Bulk assignment -->
+    <string name="bulk_title">Assign several</string>
+    <string name="bulk_open">Assign several at once</string>
+    <string name="bulk_select_unanswered">Select unanswered</string>
+    <string name="bulk_select_all">Select all</string>
+    <string name="bulk_everyone">Everyone</string>
+    <string name="bulk_just_one">Just one person</string>
+    <string name="bulk_exclude">Exclude the selection</string>
+    <string name="assign_accept_all">Accept all suggestions</string>
+    <string name="assign_no_suggestions">Nothing remembered for the rows still to answer</string>
+    <plurals name="bulk_selected">
+        <item quantity="zero">Nothing selected</item>
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="bulk_applied">
+        <item quantity="one">%d row updated</item>
+        <item quantity="other">%d rows updated</item>
+    </plurals>
+    <plurals name="assign_suggestions_applied">
+        <item quantity="one">Applied %d remembered answer</item>
+        <item quantity="other">Applied %d remembered answers</item>
+    </plurals>
 </resources>

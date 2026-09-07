@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPEC 7.9.10 and 7.9.11 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/action_accept_all" android:title="@string/assign_accept_all" />
+    <item android:id="@+id/action_bulk" android:title="@string/bulk_open" />
     <item android:id="@+id/action_jump_to" android:title="@string/assign_jump_title" />
     <item android:id="@+id/action_all_common" android:title="@string/assign_all_common_title" />
 </menu>

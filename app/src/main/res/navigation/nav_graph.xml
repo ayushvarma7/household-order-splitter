@@ -85,4 +85,10 @@
         android:label="@string/analytics_title"
         tools:layout="@layout/fragment_analytics" />
 
+    <fragment
+        android:id="@+id/bulkAssignFragment"
+        android:name="com.householdsplitter.ui.assign.BulkAssignFragment"
+        android:label="@string/bulk_title"
+        tools:layout="@layout/fragment_bulk_assign" />
+
 </navigation>
