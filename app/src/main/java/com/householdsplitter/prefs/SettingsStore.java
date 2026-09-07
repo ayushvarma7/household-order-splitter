@@ -15,6 +15,8 @@ public class SettingsStore {
     private static final String KEY_ALLOCATION = "allocation_mode";
     private static final String KEY_PARSER = "parser_cloud";
     private static final String KEY_CURRENCY = "currency_symbol";
+    private static final String KEY_WORKBOOK_URI = "workbook_uri";
+    private static final String KEY_WORKBOOK_AUTO = "workbook_auto";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -55,6 +57,28 @@ public class SettingsStore {
 
     public void currencySymbol(String symbol) {
         preferences.edit().putString(KEY_CURRENCY, symbol).apply();
+    }
+
+    /**
+     * Where the Excel workbook lives, as a document URI the user picked once. Null until
+     * they choose a file. The app rewrites that one file whenever the orders change, which
+     * is how each order ends up as its own sheet without the user exporting anything.
+     */
+    public String workbookUri() {
+        return preferences.getString(KEY_WORKBOOK_URI, null);
+    }
+
+    public void workbookUri(String uri) {
+        preferences.edit().putString(KEY_WORKBOOK_URI, uri).apply();
+    }
+
+    /** Keep the workbook up to date on its own whenever an order changes. */
+    public boolean workbookAutoUpdate() {
+        return preferences.getBoolean(KEY_WORKBOOK_AUTO, true);
+    }
+
+    public void workbookAutoUpdate(boolean value) {
+        preferences.edit().putBoolean(KEY_WORKBOOK_AUTO, value).apply();
     }
 
     public Locale locale() {

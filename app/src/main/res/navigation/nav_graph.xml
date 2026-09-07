@@ -79,4 +79,10 @@
         android:name="com.householdsplitter.ui.summary.ImageViewerFragment"
         tools:layout="@layout/fragment_image_viewer" />
 
+    <fragment
+        android:id="@+id/analyticsFragment"
+        android:name="com.householdsplitter.ui.analytics.AnalyticsFragment"
+        android:label="@string/analytics_title"
+        tools:layout="@layout/fragment_analytics" />
+
 </navigation>

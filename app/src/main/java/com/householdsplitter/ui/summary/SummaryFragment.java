@@ -231,7 +231,7 @@ public class SummaryFragment extends BaseFragment {
                 result.equalFallbackUsed() ? View.VISIBLE : View.GONE);
 
         if (!readOnly) {
-            model.markAssigned();
+            model.markAssignedIfStillDraft();
         }
     }
 
@@ -388,7 +388,23 @@ public class SummaryFragment extends BaseFragment {
                     .show();
         } else {
             model.markSettled();
+            refreshWorkbook();
         }
+    }
+
+    /**
+     * Once an order is settled its numbers are final, so this is the moment the workbook
+     * gains its sheet. Quiet by design: a household that never chose a workbook file should
+     * not be told about one every time they settle up.
+     */
+    private void refreshWorkbook() {
+        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+                household -> {
+                    if (household != null) {
+                        locator().workbookService()
+                                .refreshQuietly(household.id, household.name);
+                    }
+                });
     }
 
     private void navigate(int destination) {

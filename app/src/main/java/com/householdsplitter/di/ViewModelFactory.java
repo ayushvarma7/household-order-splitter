@@ -17,6 +17,7 @@ import com.householdsplitter.ui.review.ReviewItemsViewModel;
 import com.householdsplitter.ui.details.OrderDetailsViewModel;
 import com.householdsplitter.ui.assign.AssignViewModel;
 import com.householdsplitter.ui.summary.SummaryViewModel;
+import com.householdsplitter.ui.analytics.AnalyticsViewModel;
 import com.householdsplitter.ui.setup.SetupGroupViewModel;
 import com.householdsplitter.ui.setup.SetupMembersViewModel;
 
@@ -50,6 +51,10 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         }
         if (modelClass == HomeViewModel.class) {
             return (T) new HomeViewModel(locator.householdRepository(), locator.orderRepository());
+        }
+        if (modelClass == AnalyticsViewModel.class) {
+            return (T) new AnalyticsViewModel(locator.workbookService(),
+                    locator.currentHouseholdId());
         }
         if (modelClass == ImportViewModel.class) {
             return (T) new ImportViewModel(handle);

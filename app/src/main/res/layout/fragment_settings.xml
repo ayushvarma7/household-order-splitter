@@ -191,6 +191,67 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+
+                <!-- The Excel workbook: one sheet per order, kept up to date on its own. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_workbook"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:text="@string/settings_workbook_body"
+                            android:textAppearance="@style/Text.BodyMuted" />
+
+                        <TextView
+                            android:id="@+id/workbookStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:textAppearance="@style/Text.Caption" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/workbookAuto"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:minHeight="@dimen/touch_target_min"
+                            android:text="@string/settings_workbook_auto"
+                            android:textAppearance="@style/Text.Body" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/workbookChooseButton"
+                            style="@style/Widget.Splitter.Button.Tonal"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_workbook_choose" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/workbookUpdateButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_workbook_update" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- SPEC 7.14.4, 7.11.3, 9.5 -->
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Widget.Splitter.Card"

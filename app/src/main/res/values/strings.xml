@@ -221,4 +221,37 @@
     <string name="summary_row_items">All items</string>
     <string name="summary_row_computed">Computed total</string>
     <string name="summary_row_stated">Printed on the bill</string>
+
+    <!-- S15, spending analytics -->
+    <string name="analytics_title">Spending</string>
+    <string name="menu_analytics">Spending</string>
+    <string name="analytics_empty_title">Nothing to show yet</string>
+    <string name="analytics_empty_body">Finish assigning an order and its figures will appear here.</string>
+    <string name="analytics_total_label">Spent in total</string>
+    <string name="analytics_average">Average order</string>
+    <string name="analytics_largest">Largest order</string>
+    <string name="analytics_split_label">Shared against personal</string>
+    <string name="analytics_shared">Shared by everyone</string>
+    <string name="analytics_personal">Someone\'s own items</string>
+    <string name="analytics_by_person">By person</string>
+    <string name="analytics_by_month">By month</string>
+    <string name="analytics_frequent">Bought again and again</string>
+    <string name="analytics_share">%1$d.%2$d%%</string>
+    <string name="analytics_member_description">%1$s owes %2$s in total, %3$d percent of everything spent</string>
+    <string name="analytics_month_description">%1$s: %2$s across %3$d orders</string>
+    <string name="analytics_split_description">%1$s shared, %2$s on personal items</string>
+    <plurals name="analytics_orders">
+        <item quantity="one">across %d order</item>
+        <item quantity="other">across %d orders</item>
+    </plurals>
+
+    <!-- Excel workbook -->
+    <string name="settings_workbook">Excel workbook</string>
+    <string name="settings_workbook_body">Keep a spreadsheet with one sheet per order, plus an overview of every order and what each person owed. The app rewrites it whenever an order changes.</string>
+    <string name="settings_workbook_choose">Choose where to keep it</string>
+    <string name="settings_workbook_update">Update it now</string>
+    <string name="settings_workbook_auto">Keep it up to date automatically</string>
+    <string name="settings_workbook_none">No workbook chosen yet</string>
+    <string name="settings_workbook_set">Saving to the file you chose</string>
+    <string name="workbook_written">Workbook updated: %1$d sheets for %2$d orders</string>
 </resources>

@@ -8,6 +8,7 @@ import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.parse.ReceiptParser;
+import com.householdsplitter.export.WorkbookService;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.util.AppExecutors;
 
@@ -37,6 +38,7 @@ public class ServiceLocator {
     private HouseholdRepository householdRepository;
     private OrderRepository orderRepository;
     private AssignmentMemoryService assignmentMemory;
+    private WorkbookService workbookService;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -92,6 +94,14 @@ public class ServiceLocator {
                     executors);
         }
         return orderRepository;
+    }
+
+    public synchronized WorkbookService workbookService() {
+        if (workbookService == null) {
+            workbookService = new WorkbookService(orderRepository(), settings, executors,
+                    applicationContext.getContentResolver());
+        }
+        return workbookService;
     }
 
     public synchronized AssignmentMemoryService assignmentMemory() {

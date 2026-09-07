@@ -114,6 +114,10 @@ public class HomeFragment extends BaseFragment {
         binding.toolbar.inflateMenu(R.menu.menu_home);
         binding.toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
+            if (id == R.id.action_analytics) {
+                NavHostFragment.findNavController(this).navigate(R.id.analyticsFragment);
+                return true;
+            }
             if (id == R.id.action_members) {
                 Bundle args = new Bundle();
                 args.putBoolean(SetupMembersFragment.ARG_MANAGE_MODE, true);

@@ -21,6 +21,7 @@ import com.householdsplitter.backup.BackupService;
 import com.householdsplitter.core.calc.AllocationMode;
 import com.householdsplitter.databinding.FragmentSettingsBinding;
 import com.householdsplitter.export.ExportService;
+import com.householdsplitter.export.WorkbookService;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.ui.common.BaseFragment;
@@ -33,6 +34,8 @@ public class SettingsFragment extends BaseFragment {
     private SettingsStore settings;
     private BackupService backup;
     private ExportService exportService;
+    private WorkbookService workbookService;
+    private ActivityResultLauncher<String> createWorkbook;
 
     private ActivityResultLauncher<String> createBackup;
     private ActivityResultLauncher<String[]> openBackup;
@@ -46,6 +49,24 @@ public class SettingsFragment extends BaseFragment {
                 new ActivityResultContracts.CreateDocument("application/json"), this::doExport);
         openBackup = registerForActivityResult(
                 new ActivityResultContracts.OpenDocument(), this::askMergeOrReplace);
+        createWorkbook = registerForActivityResult(
+                new ActivityResultContracts.CreateDocument(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+                uri -> {
+                    if (uri == null) {
+                        return;
+                    }
+                    // Hold on to the grant, so the app can keep rewriting this same file
+                    // later without asking again.
+                    try {
+                        requireContext().getContentResolver().takePersistableUriPermission(uri,
+                                android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                        | android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch (SecurityException notPersistable) {
+                        // Some providers do not offer one. It still works for this session.
+                    }
+                    writeWorkbook(uri);
+                });
         createCsv = registerForActivityResult(
                 new ActivityResultContracts.CreateDocument("text/csv"), uri -> {
                     if (uri != null && pendingCsv != null) {
@@ -75,6 +96,7 @@ public class SettingsFragment extends BaseFragment {
                 requireContext().getContentResolver());
         exportService = new ExportService(locator().orderRepository(), settings,
                 locator().executors(), requireContext().getContentResolver());
+        workbookService = locator().workbookService();
 
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
@@ -108,6 +130,17 @@ public class SettingsFragment extends BaseFragment {
                 toast(R.string.settings_saved);
             }
         });
+
+        // The Excel workbook.
+        binding.workbookAuto.setChecked(settings.workbookAutoUpdate());
+        binding.workbookAuto.setOnCheckedChangeListener((button, checked) ->
+                settings.workbookAutoUpdate(checked));
+        binding.workbookStatus.setText(workbookService.hasDestination()
+                ? R.string.settings_workbook_set : R.string.settings_workbook_none);
+        binding.workbookUpdateButton.setEnabled(workbookService.hasDestination());
+        binding.workbookChooseButton.setOnClickListener(v ->
+                createWorkbook.launch("household-orders.xlsx"));
+        binding.workbookUpdateButton.setOnClickListener(v -> writeWorkbook(null));
 
         // SPEC 7.14.4
         binding.backupButton.setOnClickListener(v -> createBackup.launch("order-splitter-backup.json"));
@@ -144,6 +177,41 @@ public class SettingsFragment extends BaseFragment {
                             toast(R.string.export_failed);
                         }
                     });
+                });
+    }
+
+    /** @param target a newly chosen file, or null to rewrite the one already saved */
+    private void writeWorkbook(Uri target) {
+        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+                household -> {
+                    if (household == null) {
+                        return;
+                    }
+                    com.householdsplitter.util.Callback<
+                            com.householdsplitter.util.Result<WorkbookService.Written>> done =
+                            result -> {
+                                if (binding == null) {
+                                    return;
+                                }
+                                if (result.isOk()) {
+                                    binding.workbookStatus.setText(R.string.settings_workbook_set);
+                                    binding.workbookUpdateButton.setEnabled(true);
+                                    Snackbar.make(binding.getRoot(), getString(
+                                                    R.string.workbook_written,
+                                                    result.value().sheetCount,
+                                                    result.value().orderCount),
+                                            Snackbar.LENGTH_LONG).show();
+                                } else {
+                                    Snackbar.make(binding.getRoot(),
+                                            String.valueOf(result.error()),
+                                            Snackbar.LENGTH_LONG).show();
+                                }
+                            };
+                    if (target == null) {
+                        workbookService.refresh(household.id, household.name, done);
+                    } else {
+                        workbookService.writeTo(household.id, household.name, target, done);
+                    }
                 });
     }
 

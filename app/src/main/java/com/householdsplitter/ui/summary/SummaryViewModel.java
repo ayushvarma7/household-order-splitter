@@ -92,8 +92,19 @@ public class SummaryViewModel extends ViewModel {
         repository.setStatus(orderId, OrderStatus.DRAFT);
     }
 
-    public void markAssigned() {
-        repository.setStatus(orderId, OrderStatus.ASSIGNED);
+    /**
+     * Promotes a draft to assigned once its totals compute.
+     *
+     * <p>Only ever from DRAFT. This runs on every recalculation, and the summary
+     * recalculates whenever anything about the order changes, so promoting
+     * unconditionally would quietly undo "Mark as settled" the moment the screen redrew:
+     * the order would slide back to assigned and the workbook would record it as unsettled.
+     */
+    public void markAssignedIfStillDraft() {
+        OrderBundle current = bundle.getValue();
+        if (current != null && current.order.status == OrderStatus.DRAFT) {
+            repository.setStatus(orderId, OrderStatus.ASSIGNED);
+        }
     }
 
     /** Guards against UnassignedItemsException leaking as a raw message. */
