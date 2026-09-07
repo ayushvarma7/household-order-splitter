@@ -92,11 +92,44 @@ public class MainActivity extends AppCompatActivity {
                 // it here, and land on the import screen with the images already loaded.
                 ArrayList<String> shared = sharedImageUris(getIntent());
                 if (!shared.isEmpty() && hasHousehold) {
-                    Bundle args = new Bundle();
-                    args.putStringArrayList(ImportFragment.ARG_SHARED_URIS, shared);
-                    controller.navigate(R.id.importFragment, args);
+                    offerToAddToDraft(locator, controller, shared);
                 }
             });
+        });
+    }
+
+    /**
+     * SPEC 8.1.3: when there is already a draft, ask whether these screenshots belong to it.
+     *
+     * <p>Worth asking rather than guessing either way. Sharing a second batch into an order
+     * half captured is the common case, and silently starting a new order would leave two
+     * halves of one shop as two orders. Silently appending would be worse when the user
+     * really has started shopping again.
+     */
+    private void offerToAddToDraft(ServiceLocator locator, NavController controller,
+                                   ArrayList<String> shared) {
+        locator.orderRepository().latestDraft(locator.currentHouseholdId(), draft -> {
+            if (isFinishing()) {
+                return;
+            }
+            Bundle args = new Bundle();
+            args.putStringArrayList(ImportFragment.ARG_SHARED_URIS, shared);
+            if (draft == null) {
+                controller.navigate(R.id.importFragment, args);
+                return;
+            }
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle(R.string.share_draft_title)
+                    .setMessage(getString(R.string.share_draft_message, draft.label))
+                    .setPositiveButton(R.string.share_draft_add, (dialog, which) -> {
+                        args.putLong(com.householdsplitter.ui.parsing.ParsingArgs.ARG_ORDER_ID,
+                                draft.id);
+                        controller.navigate(R.id.importFragment, args);
+                    })
+                    .setNegativeButton(R.string.share_draft_new,
+                            (dialog, which) -> controller.navigate(R.id.importFragment, args))
+                    .setCancelable(false)
+                    .show();
         });
     }
 

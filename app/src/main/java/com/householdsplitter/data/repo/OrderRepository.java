@@ -32,6 +32,8 @@ import com.householdsplitter.util.Callback;
 import com.householdsplitter.util.Result;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.List;
 
 /** Orders, their rows, their participants and their assignments. */
@@ -104,6 +106,7 @@ public class OrderRepository {
             order.statedSubtotalCents = parsed.adjustments().statedSubtotalCents();
             order.statedTotalCents = parsed.adjustments().statedTotalCents();
             order.parsedFieldsCsv = joinFields(parsed.parsedFields());
+            order.deliveredUnitCount = parsed.deliveredUnitCount();
 
             long orderId;
             try {
@@ -136,6 +139,99 @@ public class OrderRepository {
         });
     }
 
+    /**
+     * Adds a further parse to an order that already exists. SPEC 8.1.3.
+     *
+     * <p>This is what makes "you may have missed a screenshot" actionable rather than
+     * merely true. Two things it has to get right. New rows are de-duplicated against the
+     * rows already stored, because a user adding a screenshot will overlap what they
+     * already captured and SPEC 8.7.3's dedupe only ever sees one parse at a time. And an
+     * order-level figure is only filled in where it is still absent: the user may have
+     * corrected the subtotal by hand on S7, and a later screenshot must not quietly
+     * overwrite that.
+     *
+     * @return how many rows were added
+     */
+    public void appendParse(long orderId, ParsedOrder parsed, List<String> imageUris,
+                            Callback<Result<Integer>> callback) {
+        executors.diskIO().execute(() -> {
+            Order order = orderDao.getByIdSync(orderId);
+            if (order == null) {
+                post(callback, Result.failure("That order no longer exists"));
+                return;
+            }
+
+            Set<String> existing = new LinkedHashSet<>();
+            for (LineItemWithAssignments row : lineItemDao.getForOrderSync(orderId)) {
+                existing.add(dedupeKey(row.item.name, row.item.lineTotalCents));
+            }
+
+            int position = lineItemDao.maxPositionSync(orderId) + 1;
+            List<LineItem> fresh = new ArrayList<>();
+            for (ParsedItem parsedItem : parsed.items()) {
+                if (!existing.add(dedupeKey(parsedItem.name(), parsedItem.lineTotalCents()))) {
+                    continue;
+                }
+                fresh.add(toLineItem(orderId, parsedItem, position++));
+            }
+            if (!fresh.isEmpty()) {
+                lineItemDao.insertAll(fresh);
+            }
+            saveImages(orderId, imageUris);
+
+            // Only fill what is still missing. A user's correction outranks a later parse.
+            boolean changed = false;
+            if (order.statedSubtotalCents == 0L && parsed.adjustments().statedSubtotalCents() != 0L) {
+                order.statedSubtotalCents = parsed.adjustments().statedSubtotalCents();
+                changed = true;
+            }
+            if (order.statedTotalCents == 0L && parsed.adjustments().statedTotalCents() != 0L) {
+                order.statedTotalCents = parsed.adjustments().statedTotalCents();
+                changed = true;
+            }
+            if (order.taxCents == 0L && parsed.adjustments().taxCents() != 0L) {
+                order.taxCents = parsed.adjustments().taxCents();
+                changed = true;
+            }
+            if (order.deliveryFeeCents == 0L && parsed.adjustments().deliveryFeeCents() != 0L) {
+                order.deliveryFeeCents = parsed.adjustments().deliveryFeeCents();
+                changed = true;
+            }
+            if (order.tipCents == 0L && parsed.adjustments().tipCents() != 0L) {
+                order.tipCents = parsed.adjustments().tipCents();
+                changed = true;
+            }
+            if (order.otherFeeCents == 0L && parsed.adjustments().otherFeeCents() != 0L) {
+                order.otherFeeCents = parsed.adjustments().otherFeeCents();
+                changed = true;
+            }
+            if (order.externalOrderNo == null && parsed.externalOrderNo() != null) {
+                order.externalOrderNo = parsed.externalOrderNo();
+                changed = true;
+            }
+            if (order.deliveredUnitCount <= 0 && parsed.deliveredUnitCount() > 0) {
+                order.deliveredUnitCount = parsed.deliveredUnitCount();
+                changed = true;
+            }
+            if (changed) {
+                try {
+                    orderDao.update(order);
+                } catch (RuntimeException duplicateOrderNo) {
+                    // The order number collided with another order. Keeping the rows we
+                    // just added matters more than recording the number.
+                    order.externalOrderNo = null;
+                    orderDao.update(order);
+                }
+            }
+            post(callback, Result.ok(fresh.size()));
+        });
+    }
+
+    private static String dedupeKey(String name, long cents) {
+        return (name == null ? "" : name.trim().toLowerCase().replaceAll("\\s+", " "))
+                + "|" + cents;
+    }
+
     /** SPEC 7.5.4: "Enter manually" creates an empty order and jumps straight to S6. */
     public void createEmpty(long householdId, Callback<Result<Long>> callback) {
         createFromParse(householdId, ParsedOrder.empty(), new ArrayList<>(), callback);
@@ -145,6 +241,37 @@ public class OrderRepository {
         executors.diskIO().execute(() -> {
             saveImages(orderId, imageUris);
             post(callback, Result.ok(null));
+        });
+    }
+
+    /**
+     * Adds a row for money the rows do not account for.
+     *
+     * <p>When the items come to 11.68 and the bill says 53.52, telling the user they are
+     * off by 41.84 and leaving them to find it is the least useful moment to stop helping.
+     * Usually the cause is a screenshot they did not take, and the honest options are to go
+     * and take it or to book the difference as one row and move on. This is the second.
+     *
+     * <p>The row is UNASSIGNED, not COMMON: it is real money somebody has to answer for,
+     * and quietly charging it to everybody would be a guess dressed up as a total.
+     */
+    public void addDifferenceItem(long orderId, long cents, String name,
+                                  Callback<Result<Long>> callback) {
+        executors.diskIO().execute(() -> {
+            if (cents == 0L) {
+                post(callback, Result.failure("Nothing to add"));
+                return;
+            }
+            LineItem item = new LineItem();
+            item.orderId = orderId;
+            item.name = name;
+            item.rawOcrText = "";
+            item.lineTotalCents = cents;
+            item.scope = Scope.UNASSIGNED;
+            item.needsReview = true;
+            item.reviewReasonsCsv = ReviewReason.MANUALLY_ADDED.name();
+            item.position = lineItemDao.maxPositionSync(orderId) + 1;
+            post(callback, Result.ok(lineItemDao.insert(item)));
         });
     }
 

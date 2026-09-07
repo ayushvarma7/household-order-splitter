@@ -298,4 +298,24 @@
         <item quantity="one">Applied %d remembered answer</item>
         <item quantity="other">Applied %d remembered answers</item>
     </plurals>
+
+    <!-- Reconciliation help -->
+    <string name="reconcile_add_difference">Add the difference as a row</string>
+    <string name="reconcile_add_screenshots">Add more screenshots</string>
+    <string name="reconcile_difference_name">Unaccounted from the bill</string>
+    <string name="reconcile_unit_hint">The bill mentions %1$d units and you have %2$d rows. Quantities are summed, so that is not necessarily wrong, but it can mean a screenshot is missing.</string>
+    <string name="reconcile_difference_added">Added a row for %1$s. Say who it is for.</string>
+
+    <string name="import_add_to_order">Add to this order</string>
+    <plurals name="import_rows_added">
+        <item quantity="zero">Nothing new in those screenshots</item>
+        <item quantity="one">Added %d row</item>
+        <item quantity="other">Added %d rows</item>
+    </plurals>
+
+    <!-- SPEC 8.1.3 -->
+    <string name="share_draft_title">Add to the order you started?</string>
+    <string name="share_draft_message">You have an unfinished order called \"%1$s\". These screenshots can join it, or start a new order.</string>
+    <string name="share_draft_add">Add to it</string>
+    <string name="share_draft_new">Start a new order</string>
 </resources>

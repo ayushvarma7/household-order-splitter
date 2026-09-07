@@ -32,13 +32,58 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintWidth_max="@dimen/content_max_width">
 
-        <!-- SPEC 8.9.4: prominent, and advisory only. It never blocks. -->
-        <TextView
-            android:id="@+id/reconciliationBanner"
+        <!--
+          SPEC 8.9.4: prominent, and advisory only. It never blocks.
+
+          It also offers a way out, because telling someone they are 41.84 short and then
+          stopping is the least useful moment to stop helping.
+        -->
+        <LinearLayout
+            android:id="@+id/reconciliationPanel"
             style="@style/Widget.Splitter.Banner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawablePadding="@dimen/space_s" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/reconciliationBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/space_s"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+
+            <TextView
+                android:id="@+id/unitHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/reconciliationActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_s"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addDifferenceButton"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-8dp"
+                    android:text="@string/reconcile_add_difference" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addScreenshotsButton"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reconcile_add_screenshots" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/itemCount"

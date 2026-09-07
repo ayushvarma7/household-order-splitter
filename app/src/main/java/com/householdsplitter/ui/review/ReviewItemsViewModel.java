@@ -110,6 +110,44 @@ public class ReviewItemsViewModel extends ViewModel {
         }
     }
 
+    /**
+     * How many units the bill mentioned, or -1.
+     *
+     * <p>A hint only (SPEC 8.5.4). Useful for saying "the order mentions 33 units and you
+     * have 5 rows", which points at a missing screenshot.
+     */
+    public int deliveredUnitCount() {
+        OrderBundle value = bundle.getValue();
+        return value == null ? -1 : value.order.deliveredUnitCount;
+    }
+
+    public int itemCount() {
+        OrderBundle value = bundle.getValue();
+        return value == null ? 0 : value.items.size();
+    }
+
+    /** The money the rows do not account for, as a positive shortfall or negative excess. */
+    public long unaccountedCents() {
+        OrderBundle value = bundle.getValue();
+        if (value == null) {
+            return 0L;
+        }
+        long items = 0L;
+        for (LineItemWithAssignments row : value.items) {
+            if (row.item.scope.isChargeable() || row.item.scope.isUnanswered()) {
+                items += row.item.lineTotalCents;
+            }
+        }
+        long stated = value.order.statedSubtotalCents;
+        return stated == 0L ? 0L : stated - items;
+    }
+
+    /** Books the shortfall as one row rather than leaving the user to hunt for it. */
+    public void addDifferenceAsItem(String name, com.householdsplitter.util.Callback<Long> onDone) {
+        repository.addDifferenceItem(orderId, unaccountedCents(), name,
+                result -> onDone.onResult(result.isOk() ? result.value() : null));
+    }
+
     /** SPEC 7.6.7: a blank row, opened straight into the edit sheet. */
     public LineItem newBlankItem() {
         LineItem item = new LineItem();

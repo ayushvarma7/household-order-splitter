@@ -82,6 +82,10 @@ public class ImportFragment extends BaseFragment {
 
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
+        if (getArguments() != null
+                && getArguments().getLong(ParsingArgs.ARG_ORDER_ID, 0L) != 0L) {
+            binding.toolbar.setTitle(R.string.import_add_to_order);
+        }
 
         adapter = new ImagePreviewAdapter(new ImagePreviewAdapter.Listener() {
             @Override
@@ -143,6 +147,13 @@ public class ImportFragment extends BaseFragment {
         binding.continueButton.setOnClickListener(v -> {
             Bundle args = new Bundle();
             args.putStringArrayList(ParsingArgs.ARG_URIS, new ArrayList<>(model.current()));
+            // Carried through when the user came here to add to an order that already
+            // exists, rather than to start a new one (SPEC 8.1.3).
+            long existingOrderId = getArguments() == null
+                    ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID, 0L);
+            if (existingOrderId != 0L) {
+                args.putLong(ParsingArgs.ARG_ORDER_ID, existingOrderId);
+            }
             NavHostFragment.findNavController(this).navigate(R.id.parsingFragment, args);
         });
 

@@ -44,16 +44,24 @@ public class ParsingViewModel extends ViewModel {
     private final MutableLiveData<Order> duplicateWarning = new MutableLiveData<>();
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
+    private final long existingOrderId;
     private boolean started;
     private ParsedOrder pending;
     private List<String> pendingUris;
 
+    /**
+     * @param existingOrderId the order to append to, or 0 to create a new one. Appending is
+     *                        what makes "you may have missed a screenshot" actionable
+     *                        (SPEC 8.1.3).
+     */
     public ParsingViewModel(OrderRepository orderRepository, HouseholdRepository householdRepository,
-                            ReceiptParser parser, AppExecutors executors, long householdId) {
+                            ReceiptParser parser, AppExecutors executors, long householdId,
+                            long existingOrderId) {
         this.orderRepository = orderRepository;
         this.parser = parser;
         this.executors = executors;
         this.householdId = householdId;
+        this.existingOrderId = existingOrderId;
     }
 
     public LiveData<Progress> progress() {
@@ -114,6 +122,12 @@ public class ParsingViewModel extends ViewModel {
     }
 
     private void checkDuplicateThenSave(ParsedOrder parsed, List<String> uris) {
+        // Appending to a known order is not a duplicate import: the user asked for these
+        // screenshots to join that order, so the same order number is expected.
+        if (existingOrderId != 0L) {
+            save(parsed, uris);
+            return;
+        }
         orderRepository.findExistingByOrderNo(parsed.externalOrderNo(), existing -> {
             if (existing != null) {
                 duplicateWarning.setValue(existing);
@@ -131,6 +145,17 @@ public class ParsingViewModel extends ViewModel {
     }
 
     private void save(ParsedOrder parsed, List<String> uris) {
+        if (existingOrderId != 0L) {
+            orderRepository.appendParse(existingOrderId, parsed, uris,
+                    (Result<Integer> result) -> {
+                        if (result.isOk()) {
+                            orderCreated.setValue(existingOrderId);
+                        } else {
+                            failure.setValue(result.error());
+                        }
+                    });
+            return;
+        }
         orderRepository.createFromParse(householdId, parsed, uris, (Result<Long> result) -> {
             if (result.isOk()) {
                 orderCreated.setValue(result.value());

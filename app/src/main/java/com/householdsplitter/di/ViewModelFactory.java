@@ -66,7 +66,9 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
                     locator.householdRepository(),
                     locator.receiptParser(),
                     locator.executors(),
-                    locator.currentHouseholdId());
+                    locator.currentHouseholdId(),
+                    handle.contains(ParsingArgs.ARG_ORDER_ID)
+                            ? handle.<Long>get(ParsingArgs.ARG_ORDER_ID) : 0L);
         }
         // Every screen below works on one order, whose id arrives as a nav argument.
         long orderId = handle.contains(ParsingArgs.ARG_ORDER_ID)

@@ -104,14 +104,18 @@ public class ReviewItemsFragment extends BaseFragment {
     }
 
     private void renderBanner(Reconciliation reconciliation, CurrencyFormat money) {
-        if (reconciliation == null) {
-            binding.reconciliationBanner.setVisibility(View.GONE);
+        if (binding == null) {
             return;
         }
-        binding.reconciliationBanner.setVisibility(View.VISIBLE);
+        if (reconciliation == null) {
+            binding.reconciliationPanel.setVisibility(View.GONE);
+            return;
+        }
+        binding.reconciliationPanel.setVisibility(View.VISIBLE);
 
         final StateColors.State state;
         final int icon;
+        boolean offerHelp = false;
         if (reconciliation.statedSubtotalCents() == 0L && reconciliation.statedTotalCents() == 0L) {
             binding.reconciliationBanner.setText(R.string.reconcile_no_totals);
             state = StateColors.State.NEUTRAL;
@@ -129,12 +133,50 @@ public class ReviewItemsFragment extends BaseFragment {
             // Advisory, never a gate (SPEC 8.9.4), so it is a warning rather than an error.
             state = StateColors.State.WARNING;
             icon = R.drawable.ic_alert_circle;
+            offerHelp = true;
         }
-        StateColors.applyContainer(binding.reconciliationBanner, binding.reconciliationBanner, state);
+
+        int onContainer = StateColors.onContainer(requireContext(), state);
+        binding.reconciliationPanel.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(
+                        StateColors.container(requireContext(), state)));
+        binding.reconciliationBanner.setTextColor(onContainer);
+        binding.unitHint.setTextColor(onContainer);
+        binding.addDifferenceButton.setTextColor(onContainer);
+        binding.addScreenshotsButton.setTextColor(onContainer);
         binding.reconciliationBanner.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
         androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(
-                binding.reconciliationBanner, android.content.res.ColorStateList.valueOf(
-                        StateColors.onContainer(requireContext(), state)));
+                binding.reconciliationBanner,
+                android.content.res.ColorStateList.valueOf(onContainer));
+
+        // SPEC 8.5.4: a unit count, offered as a possible explanation and nothing else.
+        int units = model.deliveredUnitCount();
+        int rows = model.itemCount();
+        boolean showHint = offerHelp && units > 0 && units > rows;
+        binding.unitHint.setVisibility(showHint ? View.VISIBLE : View.GONE);
+        if (showHint) {
+            binding.unitHint.setText(getString(R.string.reconcile_unit_hint, units, rows));
+        }
+
+        binding.reconciliationActions.setVisibility(offerHelp ? View.VISIBLE : View.GONE);
+        if (offerHelp) {
+            long unaccounted = model.unaccountedCents();
+            binding.addDifferenceButton.setEnabled(unaccounted != 0L);
+            binding.addDifferenceButton.setOnClickListener(v -> model.addDifferenceAsItem(
+                    getString(R.string.reconcile_difference_name), added -> {
+                        if (added != null && binding != null) {
+                            Snackbar.make(binding.getRoot(),
+                                    getString(R.string.reconcile_difference_added,
+                                            money.format(unaccounted)),
+                                    Snackbar.LENGTH_LONG).show();
+                        }
+                    }));
+            binding.addScreenshotsButton.setOnClickListener(v -> {
+                Bundle args = new Bundle();
+                args.putLong(ParsingArgs.ARG_ORDER_ID, orderId);
+                NavHostFragment.findNavController(this).navigate(R.id.importFragment, args);
+            });
+        }
     }
 
     private void openEditSheet(LineItem item) {
