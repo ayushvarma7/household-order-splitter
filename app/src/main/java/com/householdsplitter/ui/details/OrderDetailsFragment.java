@@ -46,6 +46,12 @@ public class OrderDetailsFragment extends BaseFragment {
     private Order current;
     private long itemsSubtotalCents;
     private long orderDateMillis;
+    /**
+     * True once the fields hold the parsed values. Writing them programmatically fires the
+     * same watchers a user's typing does, and treating that as an edit would clear every
+     * marker before the screen had even been looked at.
+     */
+    private boolean bound;
 
     @Nullable
     @Override
@@ -68,9 +74,21 @@ public class OrderDetailsFragment extends BaseFragment {
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
 
-        for (EditText field : moneyFields()) {
-            CurrencyInput.attach(field);
-            CurrencyInput.onChange(field, this::refreshReconciliation);
+        // SPEC 7.7.2: a field parsed from a screenshot shows a marker, and loses it the
+        // moment the user edits it. The marker is a claim about where the number came from,
+        // so it has to stop being made as soon as that stops being true.
+        EditText[] fields = moneyFields();
+        OrderField[] markers = moneyFieldMarkers();
+        for (int i = 0; i < fields.length; i++) {
+            final OrderField field = markers[i];
+            CurrencyInput.attach(fields[i]);
+            CurrencyInput.onChange(fields[i], () -> {
+                if (bound && field != null) {
+                    model.markEdited(field);
+                    refreshMarkers();
+                }
+                refreshReconciliation();
+            });
         }
         // The prefix shows whichever symbol the user chose in Settings (SPEC 7.14.3),
         // rather than a symbol baked into the layout.
@@ -107,6 +125,7 @@ public class OrderDetailsFragment extends BaseFragment {
     }
 
     private void bind(OrderBundle bundle) {
+        bound = false;
         current = bundle.order;
         orderDateMillis = current.orderDate;
 
@@ -127,9 +146,8 @@ public class OrderDetailsFragment extends BaseFragment {
         binding.addAdjustmentLink.setVisibility(anyAdjustment ? View.GONE : View.VISIBLE);
 
         // SPEC 7.7.2
-        binding.subtotalLayout.setHelperText(marker(OrderField.SUBTOTAL));
-        binding.taxLayout.setHelperText(marker(OrderField.TAX));
-        binding.statedTotalLayout.setHelperText(marker(OrderField.TOTAL));
+        refreshMarkers();
+        bound = true;
     }
 
     private String marker(OrderField field) {
@@ -214,6 +232,21 @@ public class OrderDetailsFragment extends BaseFragment {
         current.statedTotalCents = CurrencyInput.readCents(binding.statedTotalInput, 0L);
         current.draftStep = com.householdsplitter.data.entity.DraftStep.PARTICIPANTS;
         model.save(current);
+    }
+
+    /** Parallel to {@link #moneyFields()}: which marker each field owns, or null. */
+    private OrderField[] moneyFieldMarkers() {
+        return new OrderField[]{
+                OrderField.SUBTOTAL, OrderField.TAX, OrderField.TOTAL,
+                OrderField.DELIVERY_FEE, OrderField.TIP, OrderField.OTHER_FEE,
+                OrderField.DISCOUNT};
+    }
+
+    /** Re-reads every marker, so one that has just been invalidated disappears. */
+    private void refreshMarkers() {
+        binding.subtotalLayout.setHelperText(marker(OrderField.SUBTOTAL));
+        binding.taxLayout.setHelperText(marker(OrderField.TAX));
+        binding.statedTotalLayout.setHelperText(marker(OrderField.TOTAL));
     }
 
     private com.google.android.material.textfield.TextInputLayout[] moneyLayouts() {
