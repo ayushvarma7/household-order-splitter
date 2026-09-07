@@ -70,8 +70,18 @@ public class LineItem {
     public LineItem() {
     }
 
-    /** SPEC 7.6.9: Continue is blocked while a row has no name or no price. */
+    /**
+     * SPEC 7.6.9: Continue is blocked while a row has no name or no price.
+     *
+     * <p>A row the parser could not name carries a placeholder rather than an empty string,
+     * because losing the charge entirely would leave the totals short with nothing to point
+     * at. The placeholder is not a name, so it blocks here too: an unidentified charge is
+     * worse to split than an unpriced one.
+     */
     public boolean isReadyForSplitting() {
-        return !name.trim().isEmpty() && lineTotalCents != 0L;
+        String trimmed = name.trim();
+        return !trimmed.isEmpty()
+                && !trimmed.equals(com.householdsplitter.core.parse.model.ParsedItem.NAME_NOT_READ)
+                && lineTotalCents != 0L;
     }
 }

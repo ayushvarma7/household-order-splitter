@@ -51,6 +51,16 @@ public final class ParseTuning {
     public final int maxImageDimensionPx;
     /** Vertical overlap needed before two elements are treated as one band, in permille. */
     public final int bandOverlapPermille;
+    /**
+     * How close to the top or bottom of a screenshot a row has to be before a missing name
+     * is read as the row having been cut off rather than misrecognised.
+     *
+     * <p>SPEC 8.7.5 says an edge fragment must not become a nameless line item, and that is
+     * right at the edges, where the counterpart is on the adjacent screenshot. In the middle
+     * of the page there is no counterpart: a price with no name there means the name failed
+     * to recognise, and dropping the row would quietly lose a charge.
+     */
+    public final int edgeZonePermille;
 
     private ParseTuning(Builder builder) {
         this.topCropPermille = builder.topCropPermille;
@@ -65,6 +75,7 @@ public final class ParseTuning {
         this.priceOutlierCents = builder.priceOutlierCents;
         this.maxImageDimensionPx = builder.maxImageDimensionPx;
         this.bandOverlapPermille = builder.bandOverlapPermille;
+        this.edgeZonePermille = builder.edgeZonePermille;
     }
 
     public static ParseTuning defaults() {
@@ -89,6 +100,7 @@ public final class ParseTuning {
         private long priceOutlierCents = 30_000L;             // SPEC 8.8.1: $300
         private int maxImageDimensionPx = 2048;               // SPEC 8.2.1
         private int bandOverlapPermille = 500;
+        private int edgeZonePermille = 90;
 
         public Builder topCropPermille(int value) {
             this.topCropPermille = value;
@@ -142,6 +154,11 @@ public final class ParseTuning {
 
         public Builder maxImageDimensionPx(int value) {
             this.maxImageDimensionPx = value;
+            return this;
+        }
+
+        public Builder edgeZonePermille(int value) {
+            this.edgeZonePermille = value;
             return this;
         }
 

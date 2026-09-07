@@ -11,6 +11,17 @@ import java.util.Set;
 /** One candidate row produced by the parser, before the user reviews it. SPEC 5.6. */
 public final class ParsedItem {
 
+    /**
+     * The name a row carries when a price was read but its name was not.
+     *
+     * <p>Kept as a named constant because two other places have to recognise it: the review
+     * screen must refuse to continue while a row still says this, and the parser must be
+     * able to set it. A row bearing this is a charge nobody has identified yet, which is
+     * worse than an unpriced one, so it must not be possible to split an order containing
+     * it (SPEC 7.6.9).
+     */
+    public static final String NAME_NOT_READ = "(name not read)";
+
     private final String name;
     private final String rawOcrText;
     private final int quantity;

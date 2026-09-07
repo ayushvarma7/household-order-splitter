@@ -14,7 +14,13 @@ public enum ReviewReason {
     EXCLUDED_SECTION("This came from an unavailable, cancelled or refunded section"),
     EDGE_FRAGMENT("This row was cut across two screenshots and reassembled"),
     PRICE_OUTLIER("This price is unusually large"),
-    MANUALLY_ADDED("You added this row by hand");
+    MANUALLY_ADDED("You added this row by hand"),
+    /**
+     * A price was read but no name was. The row is kept rather than dropped, because
+     * dropping it would quietly lose a charge and leave the totals short with nothing to
+     * point at. SPEC 7.6.9 then blocks Continue until it has a name.
+     */
+    NAME_NOT_READ("A price was found here but no name. Type what it was.");
 
     private final String message;
 

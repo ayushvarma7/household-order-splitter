@@ -262,4 +262,6 @@
     <string name="settle_level">Nothing to pay</string>
     <string name="settle_owes">%1$s pays %2$s</string>
     <string name="settle_owes_description">%1$s pays %2$s to %3$s</string>
+
+    <string name="item_needs_a_name">Tap to name this item</string>
 </resources>

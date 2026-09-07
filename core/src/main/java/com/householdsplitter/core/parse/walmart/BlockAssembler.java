@@ -156,9 +156,20 @@ final class BlockAssembler {
         kept = dropRedundantSizeFragments(kept);
 
         String name = normaliseWhitespace(String.join(" ", kept));
-        if (name.isEmpty()) {
-            // SPEC 8.7.5: an edge fragment must never become a nameless line item.
-            return null;
+        boolean nameMissing = name.isEmpty();
+        if (nameMissing) {
+            // SPEC 8.7.5: at a screenshot edge, a row with no name is a fragment whose
+            // counterpart is on the adjacent image, and it must not become a nameless item.
+            //
+            // Away from the edges there is no counterpart. A price with no name in the
+            // middle of the page means the name failed to recognise, and dropping the row
+            // would quietly lose a charge: the totals would come out short with nothing to
+            // point at. So the row is kept, named as unread, and flagged. SPEC 7.6.9 then
+            // refuses to leave the review screen until the user has typed what it was.
+            if (isNearEdge(priceBand, tuning)) {
+                return null;
+            }
+            name = com.householdsplitter.core.parse.model.ParsedItem.NAME_NOT_READ;
         }
 
         ParsedItem.Builder builder = ParsedItem.builder()
@@ -174,7 +185,18 @@ final class BlockAssembler {
 
         ConfidenceRules.apply(builder, name, quantity, lineTotalCents, lowestConfidence,
                 priceBand.strikeThroughResolved(), priceBand.sectionName(), tuning);
+        if (nameMissing) {
+            builder.flag(com.householdsplitter.core.parse.model.ReviewReason.NAME_NOT_READ);
+        }
         return builder.build();
+    }
+
+    private static boolean isNearEdge(TextBand band, ParseTuning tuning) {
+        int top = band.topPermille();
+        int cropTop = tuning.headerZonePermille;
+        int cropBottom = 1000 - tuning.bottomCropPermille;
+        return top <= cropTop + tuning.edgeZonePermille
+                || top >= cropBottom - tuning.edgeZonePermille;
     }
 
     private static int centerX(OcrElement element) {

@@ -117,7 +117,14 @@ and silently drops the rest. So instead:
 9. What remains, whitespace normalised, is the name. The untouched original is kept in
    `rawOcrText` and shown read-only in the edit sheet.
 
-A block whose name comes out empty is discarded rather than becoming a nameless row.
+A block whose name comes out empty is handled by where it sits. At the top or bottom edge of
+a screenshot it is a row cut in half, whose other half is on the adjacent image, and SPEC
+8.7.5 says it must not become a nameless line item, so it is discarded. In the middle of the
+page there is no other half: a price with no name there means the name failed to recognise,
+and discarding the row would quietly lose a charge and leave the totals short with nothing to
+point at. So it is kept, named `(name not read)`, and flagged. That placeholder is not a
+name, so SPEC 7.6.9 refuses to leave the review screen until the user has typed what it was.
+`edgeZonePermille` is how close to an edge counts as an edge.
 
 ---
 

@@ -454,6 +454,61 @@ public class WalmartLayoutParserTest {
         assertEquals(2, order.items().size());
     }
 
+    /**
+     * A price in the middle of the page whose name failed to recognise is kept, not dropped.
+     *
+     * <p>Dropping it would quietly lose a charge: the totals would come out short with
+     * nothing to point at. It is kept, flagged, and SPEC 7.6.9 then refuses to leave the
+     * review screen until the user has typed what it was.
+     */
+    @Test
+    public void aPriceWithNoNameInTheMiddleOfThePageIsKeptAndFlagged() {
+        Page page = Page.image(0)
+                .section("16 shopped")
+                .itemStart("Bananas", "$1.97")
+                .chrome("+ Add")
+                // A row where only the price recognised.
+                .at(900, 900, 1040, "$7.45")
+                .cursorY(1000)
+                .chrome("+ Add")
+                .itemStart("Bread", "$2.50")
+                .chrome("+ Add")
+                .summary("Total", "$11.92");
+
+        ParsedOrder order = parse(page);
+
+        assertEquals(3, order.items().size());
+        ParsedItem unread = order.items().get(1);
+        assertEquals(745L, unread.lineTotalCents());
+        assertTrue(unread.needsReview());
+        assertTrue(unread.reviewReasons().contains(ReviewReason.NAME_NOT_READ));
+        // Nothing is lost: the subtotal still accounts for every charge on the page.
+        assertEquals(197L + 745L + 250L, order.itemsSubtotalCents());
+    }
+
+    /** At a screenshot edge the same thing is a cut-off fragment, and is dropped (SPEC 8.7.5). */
+    @Test
+    public void aPriceWithNoNameAtTheEdgeIsStillDropped() {
+        Page first = Page.image(0)
+                .section("16 shopped")
+                .itemStart("Bananas", "$1.97")
+                .chrome("+ Add");
+        // A price right at the bottom edge, its name cut away with the rest of the row.
+        first.at(2270, 900, 1040, "$7.45");
+
+        Page second = Page.image(1)
+                .itemStart("Bread", "$2.50")
+                .chrome("+ Add")
+                .summary("Total", "$4.47");
+
+        ParsedOrder order = parse(first, second);
+
+        for (ParsedItem item : order.items()) {
+            assertFalse(item.lineTotalCents() == 745L);
+        }
+        assertEquals(2, order.items().size());
+    }
+
     /** SPEC 8.9.4: the worked green-tick example from a real order. */
     @Test
     public void realOrderReconcilesToTheGreenTick() {

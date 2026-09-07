@@ -76,8 +76,15 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
         }
 
         void bind(LineItem item, int position, Listener listener, CurrencyFormat money) {
+            android.content.Context context = binding.getRoot().getContext();
             binding.positionLabel.setText(String.valueOf(position + 1));
-            binding.itemName.setText(item.name.isEmpty() ? "(no name yet)" : item.name);
+            boolean unnamed = item.name.trim().isEmpty() || item.name.trim().equals(
+                    com.householdsplitter.core.parse.model.ParsedItem.NAME_NOT_READ);
+            binding.itemName.setText(unnamed
+                    ? context.getString(com.householdsplitter.R.string.item_needs_a_name)
+                    : item.name);
+            binding.itemName.setTypeface(null, unnamed
+                    ? android.graphics.Typeface.ITALIC : android.graphics.Typeface.NORMAL);
             binding.itemPrice.setText(money.format(item.lineTotalCents));
 
             binding.quantityChip.setVisibility(item.quantity > 1 ? View.VISIBLE : View.GONE);
@@ -92,7 +99,6 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
             // The tint is a faint wash of the warning container, so it reads as "look at
             // this" in both palettes and never as an error.
             boolean flagged = item.needsReview;
-            android.content.Context context = binding.getRoot().getContext();
             binding.warningIcon.setVisibility(flagged ? View.VISIBLE : View.GONE);
             binding.rowBackground.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
                     flagged ? StateColors.wash(context, StateColors.State.WARNING)

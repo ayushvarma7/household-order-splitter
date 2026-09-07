@@ -190,6 +190,43 @@ public class OrderFlowTest {
         assertEquals(2, perMember.size());
     }
 
+    /**
+     * SPEC 7.6.9: a row the parser could not name must block the review screen.
+     *
+     * <p>It carries a placeholder rather than an empty name, because dropping the charge
+     * would leave the totals short with nothing to point at. The placeholder is not a name,
+     * so it has to block just as an empty one would.
+     */
+    @Test
+    public void aRowWhoseNameWasNotReadBlocksTheReviewScreen() {
+        long orderId = newOrder();
+        long unnamed = addItem(orderId,
+                com.householdsplitter.core.parse.model.ParsedItem.NAME_NOT_READ,
+                745L, Scope.UNASSIGNED, 0);
+
+        LineItem row = database.lineItemDao().getByIdSync(unnamed);
+        org.junit.Assert.assertFalse("an unidentified charge must not be splittable",
+                row.isReadyForSplitting());
+
+        row.name = "Sourdough loaf";
+        database.lineItemDao().update(row);
+        org.junit.Assert.assertTrue(
+                database.lineItemDao().getByIdSync(unnamed).isReadyForSplitting());
+    }
+
+    /** An empty name blocks too, and so does a zero price. */
+    @Test
+    public void emptyNamesAndZeroPricesBlock() {
+        long orderId = newOrder();
+        long blank = addItem(orderId, "", 500L, Scope.UNASSIGNED, 0);
+        long free = addItem(orderId, "Something", 0L, Scope.UNASSIGNED, 1);
+
+        org.junit.Assert.assertFalse(
+                database.lineItemDao().getByIdSync(blank).isReadyForSplitting());
+        org.junit.Assert.assertFalse(
+                database.lineItemDao().getByIdSync(free).isReadyForSplitting());
+    }
+
     /** SPEC 5.3: the unique index makes the duplicate-import guard real. */
     @Test
     public void duplicateOrderNumberIsRejectedByTheIndex() {
