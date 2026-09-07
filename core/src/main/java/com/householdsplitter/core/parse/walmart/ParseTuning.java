@@ -17,6 +17,17 @@ public final class ParseTuning {
     public final int topCropPermille;
     /** SPEC 8.2.3: the gesture bar. */
     public final int bottomCropPermille;
+    /**
+     * The sticky blue app bar, which sits below the status bar on every Walmart order
+     * screenshot and scrolls with nothing.
+     *
+     * <p>It carries the order date, which IS wanted (SPEC 8.6.1), and a cart showing the
+     * live cart value and order status, which is not: it reflects what is in the basket
+     * right now, not what this delivered order cost. The date is read from the bar and then
+     * the whole zone is discarded, so the cart total can never be mistaken for a line price
+     * even though it sits squarely in the right-hand price column.
+     */
+    public final int headerZonePermille;
     /** SPEC 8.3.2: a line price sits in the right-most 30% of the content width. */
     public final int linePriceZoneStartPermille;
     /** SPEC 8.3.6: name text sits in the left 65%. */
@@ -44,6 +55,7 @@ public final class ParseTuning {
     private ParseTuning(Builder builder) {
         this.topCropPermille = builder.topCropPermille;
         this.bottomCropPermille = builder.bottomCropPermille;
+        this.headerZonePermille = builder.headerZonePermille;
         this.linePriceZoneStartPermille = builder.linePriceZoneStartPermille;
         this.nameZoneEndPermille = builder.nameZoneEndPermille;
         this.linePriceMinHeightPermilleOfMedian = builder.linePriceMinHeightPermilleOfMedian;
@@ -67,6 +79,7 @@ public final class ParseTuning {
 
         private int topCropPermille = 50;                     // SPEC 8.2.3: top 5%
         private int bottomCropPermille = 30;                  // SPEC 8.2.3: bottom 3%
+        private int headerZonePermille = 120;                 // status bar plus the app bar
         private int linePriceZoneStartPermille = 700;         // SPEC 8.3.2: right-most 30%
         private int nameZoneEndPermille = 650;                // SPEC 8.3.6: left 65%
         private int linePriceMinHeightPermilleOfMedian = 850;
@@ -84,6 +97,11 @@ public final class ParseTuning {
 
         public Builder bottomCropPermille(int value) {
             this.bottomCropPermille = value;
+            return this;
+        }
+
+        public Builder headerZonePermille(int value) {
+            this.headerZonePermille = value;
             return this;
         }
 

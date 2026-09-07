@@ -246,12 +246,27 @@ public class RealOrderFixtureTest {
         }
     }
 
-    /** The cart in the app bar prints $0.00 in the price column. It is not a purchase. */
+    /**
+     * The cart in the app bar prints the live basket value and order status, commonly
+     * "$0.00", squarely in the right-hand price column. It has nothing to do with this
+     * delivered order and is never scanned: the whole header zone is discarded after the
+     * date is read from it.
+     */
     @Test
-    public void cartTotalInTheAppBarIsNotAnItem() {
-        for (ParsedItem item : parseAll().items()) {
+    public void cartTotalInTheAppBarIsNeverScanned() {
+        ParsedOrder order = parseAll();
+        for (ParsedItem item : order.items()) {
             assertFalse("the cart total became an item", item.lineTotalCents() == 0L);
+            assertFalse(item.rawOcrText().contains("$0.00"));
         }
+        // The date still comes off that same bar (SPEC 8.6.1).
+        assertEquals("Sep 03 Walmart", order.label());
+    }
+
+    /** Raising the crop must not cost us anything below the bar. */
+    @Test
+    public void everythingBelowTheHeaderIsStillRead() {
+        assertEquals(5, parseAll().items().size());
     }
 
     /** SPEC 8.4.7: the screen-recording timer is not a price and not a name. */

@@ -81,10 +81,10 @@ public class WalmartLayoutParserTest {
     public void unitPriceOnTheSameBandIsStillNotTheLineTotal() {
         Page page = Page.image(0)
                 .section("16 shopped")
-                .at(200, 180, 560, "Fresh Bananas")
-                .at(200, 600, 700, "$3.94/lb")
-                .at(200, 900, 1040, "$1.97")
-                .cursorY(280)
+                .at(500, 180, 560, "Fresh Bananas")
+                .at(500, 600, 700, "$3.94/lb")
+                .at(500, 900, 1040, "$1.97")
+                .cursorY(580)
                 .summary("Total", "$1.97");
 
         ParsedOrder order = parse(page);

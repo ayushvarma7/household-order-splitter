@@ -70,7 +70,7 @@ public final class WalmartLayoutParser {
         int medianHeight = medianHeight(cropped);
 
         classify(bands, page);
-        markAppBarFurniture(bands);
+        markHeaderZone(bands);
         markRatingCarousel(bands);
         propagateSections(bands);
 
@@ -156,32 +156,35 @@ public final class WalmartLayoutParser {
     }
 
     /**
-     * The blue app bar is furniture, and so is everything sharing its rows.
+     * The sticky header is a no-scan zone.
      *
-     * <p>On a real order page the bar carries the title, a back chevron and a cart that
-     * prints its own total, commonly "$0.00". That total sits in the right-hand price
-     * column (SPEC 8.3.2) and is a valid price token, so without this it opens an item
-     * block. The block is currently discarded anyway, because it has no name and SPEC 8.7.5
-     * forbids nameless rows, but relying on that is relying on an accident: one stray word
-     * beneath the bar would turn the cart into a phantom purchase. The bar is identified by
-     * its date title (SPEC 8.6.1), and its vertical extent then defines the region.
+     * <p>Everything above {@code headerZonePermille} is the status bar and the blue app
+     * bar. The bar's date title has already been read by {@link #classify} for SPEC 8.6.1,
+     * and everything else up there is discarded outright: the back chevron, the recording
+     * timer, the battery, and in particular the cart, which prints the live basket value
+     * and order status in the right-hand price column. That value has nothing to do with
+     * this delivered order, so it is never eligible to become a line price or an item.
+     *
+     * <p>Zone based rather than detection based on purpose. Relying on spotting the bar
+     * would leave the cart readable on any screenshot where the title failed to recognise,
+     * and relying on the nameless-row guard of SPEC 8.7.5 to clean up afterwards would mean
+     * one stray word beneath the bar turns the cart into a phantom purchase.
      */
-    private void markAppBarFurniture(List<TextBand> bands) {
+    private void markHeaderZone(List<TextBand> bands) {
         int appBarBottom = -1;
         for (TextBand band : bands) {
             if (band.kind() == TextBand.Kind.APP_BAR) {
                 appBarBottom = Math.max(appBarBottom, band.bottom());
             }
         }
-        if (appBarBottom < 0) {
-            return;
-        }
         for (TextBand band : bands) {
             if (band.kind() == TextBand.Kind.APP_BAR) {
                 continue;
             }
-            // Anything whose vertical midpoint is level with the bar or above it.
-            if ((band.top() + band.bottom()) / 2 <= appBarBottom) {
+            boolean inZone = band.topPermille() < tuning.headerZonePermille;
+            boolean levelWithBar = appBarBottom >= 0
+                    && (band.top() + band.bottom()) / 2 <= appBarBottom;
+            if (inZone || levelWithBar) {
                 band.kind(TextBand.Kind.CHROME);
             }
         }

@@ -29,12 +29,15 @@ public final class Page {
     private final int width;
     private final int height;
     private final List<OcrElement> elements = new ArrayList<>();
-    private int cursorY = 130;
+    private int cursorY;
 
     private Page(int imageIndex, int width, int height) {
         this.imageIndex = imageIndex;
         this.width = width;
         this.height = height;
+        // Content starts below the sticky header zone that ParseTuning discards: the
+        // status bar and the blue app bar, which on a real capture run to about 12%.
+        this.cursorY = (height * 140) / 1000;
     }
 
     public static Page image(int index) {
