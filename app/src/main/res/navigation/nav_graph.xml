@@ -91,4 +91,10 @@
         android:label="@string/bulk_title"
         tools:layout="@layout/fragment_bulk_assign" />
 
+    <fragment
+        android:id="@+id/rulesFragment"
+        android:name="com.householdsplitter.ui.rules.RulesFragment"
+        android:label="@string/rules_title"
+        tools:layout="@layout/fragment_rules" />
+
 </navigation>

@@ -102,6 +102,7 @@ public class AssignFragment extends BaseFragment {
         model.index().observe(getViewLifecycleOwner(), at -> render());
         model.selection().observe(getViewLifecycleOwner(), selection -> render());
         model.suggested().observe(getViewLifecycleOwner(), value -> render());
+        model.ruleNote().observe(getViewLifecycleOwner(), note -> render());
 
         // SPEC 7.9.3.1: one tap, advances immediately.
         binding.commonButton.setOnClickListener(v -> {
@@ -177,6 +178,14 @@ public class AssignFragment extends BaseFragment {
         binding.commonNote.setVisibility(convertedToCommon ? View.VISIBLE : View.GONE);
         binding.commonNote.setTextColor(
                 StateColors.content(requireContext(), StateColors.State.SUCCESS));
+
+        // A standing rule changed who is on this item. Saying so is the whole point: the
+        // user can see it and put the person back with one tap.
+        String ruleNote = model.ruleNote().getValue();
+        binding.ruleNote.setVisibility(ruleNote == null ? View.GONE : View.VISIBLE);
+        binding.ruleNote.setText(ruleNote);
+        binding.ruleNote.setTextColor(
+                StateColors.content(requireContext(), StateColors.State.WARNING));
 
         binding.nextButton.setEnabled(model.canAdvance());
     }

@@ -90,6 +90,52 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Standing rules: the household's own answers to the questions the assign
+                     screen keeps asking. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_rules"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:text="@string/settings_rules_body"
+                            android:textAppearance="@style/Text.Body"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/rulesCount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:textAppearance="@style/Text.Caption"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/rulesButton"
+                            style="@style/Widget.Splitter.Button.Tonal"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_height_large"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/action_manage_rules" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- SPEC 7.14.2 and 8.10.3 -->
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Widget.Splitter.Card"

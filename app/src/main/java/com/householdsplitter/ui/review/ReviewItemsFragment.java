@@ -191,6 +191,17 @@ public class ReviewItemsFragment extends BaseFragment {
             public void onDeleted(LineItem deleted) {
                 deleteWithUndo(deleted);
             }
+
+            @Override
+            public void onSplitByQuantity(LineItem toSplit) {
+                model.splitByQuantity(toSplit.id, rows -> {
+                    if (binding == null || rows == null || rows < 2) {
+                        return;
+                    }
+                    Snackbar.make(binding.getRoot(), getResources().getQuantityString(
+                            R.plurals.split_done, rows, rows), Snackbar.LENGTH_LONG).show();
+                });
+            }
         }).show(getChildFragmentManager(), "edit-item");
     }
 

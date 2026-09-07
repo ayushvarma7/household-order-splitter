@@ -76,6 +76,15 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <!-- SPEC 11.1: only shown when the row covers more than one item. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/splitButton"
+            style="@style/Widget.Splitter.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_m"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/sourceGroup"
             android:layout_width="match_parent"

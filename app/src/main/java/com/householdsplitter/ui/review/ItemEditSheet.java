@@ -21,6 +21,9 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
         void onSaved(LineItem item);
 
         void onDeleted(LineItem item);
+
+        /** SPEC 11.1: break a row of quantity N into N rows of equal price. */
+        void onSplitByQuantity(LineItem item);
     }
 
     private SheetEditItemBinding binding;
@@ -81,6 +84,19 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
             listener.onDeleted(item);
             dismiss();
         });
+
+        // SPEC 11.1. Worth offering only when there is something to split: a two-pack
+        // charged as one row cannot be answered for when its halves are for two people.
+        boolean splittable = item.quantity > 1;
+        binding.splitButton.setVisibility(splittable ? View.VISIBLE : View.GONE);
+        if (splittable) {
+            binding.splitButton.setText(
+                    getString(R.string.action_split_rows, item.quantity));
+            binding.splitButton.setOnClickListener(v -> {
+                listener.onSplitByQuantity(item);
+                dismiss();
+            });
+        }
 
         return dialog;
     }

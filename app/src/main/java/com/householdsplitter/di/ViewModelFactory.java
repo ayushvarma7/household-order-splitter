@@ -14,6 +14,7 @@ import com.householdsplitter.ui.parsing.ParsingArgs;
 import com.householdsplitter.ui.parsing.ParsingViewModel;
 import com.householdsplitter.ui.participants.ParticipantsViewModel;
 import com.householdsplitter.ui.review.ReviewItemsViewModel;
+import com.householdsplitter.ui.rules.RulesViewModel;
 import com.householdsplitter.ui.details.OrderDetailsViewModel;
 import com.householdsplitter.ui.assign.AssignViewModel;
 import com.householdsplitter.ui.assign.BulkAssignViewModel;
@@ -57,6 +58,10 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
             return (T) new AnalyticsViewModel(locator.workbookService(),
                     locator.settlementRepository(), locator.currentHouseholdId());
         }
+        if (modelClass == RulesViewModel.class) {
+            return (T) new RulesViewModel(locator.ruleService(), locator.householdRepository(),
+                    locator.currentHouseholdId());
+        }
         if (modelClass == ImportViewModel.class) {
             return (T) new ImportViewModel(handle);
         }
@@ -86,7 +91,8 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         }
         if (modelClass == AssignViewModel.class) {
             return (T) new AssignViewModel(locator.orderRepository(),
-                    locator.assignmentMemory(), orderId, locator.currentHouseholdId());
+                    locator.assignmentMemory(), locator.ruleService(), orderId,
+                    locator.currentHouseholdId());
         }
         if (modelClass == BulkAssignViewModel.class) {
             return (T) new BulkAssignViewModel(locator.orderRepository(), orderId);

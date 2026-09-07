@@ -192,6 +192,16 @@
                     android:textAppearance="@style/Text.Caption"
                     android:visibility="gone" />
 
+                <!-- A standing rule changed the selection. Never silent: the user has to be
+                     able to see it and put it back. -->
+                <TextView
+                    android:id="@+id/ruleNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:textAppearance="@style/Text.Caption"
+                    android:visibility="gone" />
+
                 <!-- SPEC 7.9.5: the live per-head readout, weighted so a glance is enough. -->
                 <TextView
                     android:id="@+id/readout"

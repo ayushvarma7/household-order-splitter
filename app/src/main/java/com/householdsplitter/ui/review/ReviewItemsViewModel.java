@@ -148,6 +148,13 @@ public class ReviewItemsViewModel extends ViewModel {
                 result -> onDone.onResult(result.isOk() ? result.value() : null));
     }
 
+    /** SPEC 11.1: breaks a row of quantity N into N rows of equal price. */
+    public void splitByQuantity(long lineItemId,
+                                com.householdsplitter.util.Callback<Integer> onDone) {
+        repository.splitByQuantity(lineItemId,
+                result -> onDone.onResult(result.isOk() ? result.value() : 0));
+    }
+
     /** SPEC 7.6.7: a blank row, opened straight into the edit sheet. */
     public LineItem newBlankItem() {
         LineItem item = new LineItem();

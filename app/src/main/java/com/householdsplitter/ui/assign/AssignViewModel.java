@@ -14,8 +14,10 @@ import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.core.suggest.StandingRules;
 import com.householdsplitter.suggest.AssignmentMemoryService;
-import com.householdsplitter.core.calc.Scope;
+import com.householdsplitter.suggest.RuleService;
+import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.util.Callback;
 
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ public class AssignViewModel extends ViewModel {
 
     private final OrderRepository repository;
     private final AssignmentMemoryService memory;
+    private final RuleService rules;
     private final long orderId;
     private final long householdId;
     private final LiveData<OrderBundle> bundle;
@@ -44,16 +47,32 @@ public class AssignViewModel extends ViewModel {
             new MutableLiveData<>(new LinkedHashMap<>());
     private final MutableLiveData<Boolean> suggested = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> convertedToCommon = new MutableLiveData<>(false);
+    /**
+     * What a standing rule just did, in words, or null. A rule quietly changing who pays
+     * for something would be worse than having no rules, so every application says so.
+     */
+    private final MutableLiveData<String> ruleNote = new MutableLiveData<>(null);
 
     private long loadedForItemId = -1L;
 
     public AssignViewModel(OrderRepository repository, AssignmentMemoryService memory,
-                           long orderId, long householdId) {
+                           RuleService rules, long orderId, long householdId) {
         this.repository = repository;
         this.memory = memory;
+        this.rules = rules;
         this.orderId = orderId;
         this.householdId = householdId;
         this.bundle = repository.observeBundle(orderId);
+        // Loaded once, up front, so applying rules while prefilling each item costs nothing.
+        rules.refresh(householdId, loaded -> {
+            if (loaded != null && !loaded.isEmpty()) {
+                reapplyRulesToUntouchedSelection();
+            }
+        });
+    }
+
+    public LiveData<String> ruleNote() {
+        return ruleNote;
     }
 
     public LiveData<OrderBundle> bundle() {
@@ -144,7 +163,7 @@ public class AssignViewModel extends ViewModel {
             return;
         }
 
-        selection.setValue(next);
+        selection.setValue(applyRules(next, item.item.name));
         suggested.setValue(false);
         long itemId = item.item.id;
         memory.suggestFor(householdId, item.item.name, suggestion -> {
@@ -165,7 +184,7 @@ public class AssignViewModel extends ViewModel {
                 }
             }
             if (!prefill.isEmpty()) {
-                selection.setValue(prefill);
+                selection.setValue(applyRules(prefill, still.item.name));
                 suggested.setValue(true);
             }
         });
@@ -181,6 +200,7 @@ public class AssignViewModel extends ViewModel {
     }
 
     public void toggle(long memberId) {
+        ruleNote.setValue(null);
         Map<Long, Integer> next = new LinkedHashMap<>(currentSelection());
         if (next.containsKey(memberId)) {
             next.remove(memberId);
@@ -204,13 +224,19 @@ public class AssignViewModel extends ViewModel {
         selection.setValue(next);
     }
 
+    /**
+     * SPEC 7.9.2's "Everyone". This is where standing rules earn their keep: on a household
+     * where one person is never on beer, tapping Everyone on a beer item should not put them
+     * back on it every single order.
+     */
     public void selectEveryone() {
         Map<Long, Integer> next = new LinkedHashMap<>();
         for (Member member : participants()) {
             next.put(member.id, 1);
         }
         suggested.setValue(false);
-        selection.setValue(next);
+        LineItemWithAssignments item = currentItem();
+        selection.setValue(applyRules(next, item == null ? null : item.item.name));
     }
 
     public void selectOnly(long memberId) {
@@ -238,7 +264,97 @@ public class AssignViewModel extends ViewModel {
             }
         }
         suggested.setValue(false);
-        selection.setValue(next);
+        LineItemWithAssignments current = currentItem();
+        selection.setValue(applyRules(next, current == null ? null : current.item.name));
+    }
+
+    /**
+     * Runs the household's standing rules over a proposed selection.
+     *
+     * <p>Share counts are preserved for anybody the rules leave alone, so a rule never
+     * silently turns a double share into a single one. Somebody a rule adds gets one share,
+     * which is the only defensible default.
+     *
+     * <p>Not applied to an answer the user has already saved for this item, and not applied
+     * when they are toggling chips by hand: a rule is a starting point, not a veto.
+     */
+    private Map<Long, Integer> applyRules(Map<Long, Integer> proposed, String itemName) {
+        ruleNote.setValue(null);
+        if (itemName == null || !rules.hasRules()) {
+            return proposed;
+        }
+        List<Long> participantIds = new ArrayList<>();
+        for (Member member : participants()) {
+            participantIds.add(member.id);
+        }
+        StandingRules.Outcome outcome = rules.apply(
+                itemName, new ArrayList<>(proposed.keySet()), participantIds);
+        if (!outcome.changedAnything()) {
+            return proposed;
+        }
+        Map<Long, Integer> next = new LinkedHashMap<>();
+        for (Long memberId : outcome.members()) {
+            Integer shares = proposed.get(memberId);
+            next.put(memberId, shares == null ? 1 : shares);
+        }
+        ruleNote.setValue(describe(outcome, itemName));
+        return next;
+    }
+
+    /** Re-runs the rules once they finish loading, in case they arrived after the first item. */
+    private void reapplyRulesToUntouchedSelection() {
+        LineItemWithAssignments item = currentItem();
+        if (item == null || item.hasAssignments() || item.item.scope != Scope.UNASSIGNED) {
+            return;
+        }
+        selection.setValue(applyRules(currentSelection(), item.item.name));
+    }
+
+    /**
+     * Names the people and the keyword that moved them. "A rule did this" would leave the
+     * user hunting through settings to find out which one.
+     */
+    private String describe(StandingRules.Outcome outcome, String itemName) {
+        String off = namesWithKeyword(outcome.removed(), itemName, MemberRule.Kind.EXCLUDE);
+        String on = namesWithKeyword(outcome.added(), itemName, MemberRule.Kind.INCLUDE);
+        if (!off.isEmpty() && !on.isEmpty()) {
+            return off + " taken off and " + on + " added by your standing rules";
+        }
+        if (!off.isEmpty()) {
+            return off + " taken off by your standing rules";
+        }
+        if (!on.isEmpty()) {
+            return on + " added by your standing rules";
+        }
+        return null;
+    }
+
+    private String namesWithKeyword(List<Long> memberIds, String itemName, MemberRule.Kind kind) {
+        StringBuilder text = new StringBuilder();
+        for (Long memberId : memberIds) {
+            String name = memberName(memberId);
+            if (name.isEmpty()) {
+                continue;
+            }
+            if (text.length() > 0) {
+                text.append(", ");
+            }
+            text.append(name);
+            MemberRule matched = rules.firstMatch(memberId, itemName, kind);
+            if (matched != null) {
+                text.append(" (").append(matched.keyword).append(")");
+            }
+        }
+        return text.toString();
+    }
+
+    private String memberName(long memberId) {
+        for (Member member : participants()) {
+            if (member.id == memberId) {
+                return member.name;
+            }
+        }
+        return "";
     }
 
     private Map<Long, Integer> currentSelection() {

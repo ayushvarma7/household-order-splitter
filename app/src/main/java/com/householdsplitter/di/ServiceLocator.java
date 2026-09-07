@@ -8,6 +8,7 @@ import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.data.repo.SettlementRepository;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.suggest.AssignmentMemoryService;
+import com.householdsplitter.suggest.RuleService;
 import com.householdsplitter.parse.ReceiptParser;
 import com.householdsplitter.export.WorkbookService;
 import com.householdsplitter.prefs.SettingsStore;
@@ -41,6 +42,7 @@ public class ServiceLocator {
     private AssignmentMemoryService assignmentMemory;
     private WorkbookService workbookService;
     private SettlementRepository settlementRepository;
+    private RuleService ruleService;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -111,6 +113,13 @@ public class ServiceLocator {
                     settings, executors, applicationContext.getContentResolver());
         }
         return workbookService;
+    }
+
+    public synchronized RuleService ruleService() {
+        if (ruleService == null) {
+            ruleService = new RuleService(database.memberRuleDao(), executors);
+        }
+        return ruleService;
     }
 
     public synchronized AssignmentMemoryService assignmentMemory() {

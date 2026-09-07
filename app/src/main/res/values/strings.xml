@@ -318,4 +318,40 @@
     <string name="share_draft_message">You have an unfinished order called \"%1$s\". These screenshots can join it, or start a new order.</string>
     <string name="share_draft_add">Add to it</string>
     <string name="share_draft_new">Start a new order</string>
+
+    <!-- SPEC 11.1 -->
+    <string name="action_split_rows">Split into %1$d separate rows</string>
+    <plurals name="split_done">
+        <item quantity="one">Split into %d row</item>
+        <item quantity="other">Split into %d rows</item>
+    </plurals>
+
+    <!-- Standing rules. Not a numbered screen: SPEC 7.9.13 forbids the app guessing who an
+         item is for, so instead the household writes its own recurring answers down. -->
+    <string name="rules_title">Standing rules</string>
+    <string name="rules_intro">Rules save you re-answering the same item every order. Nothing here is guessed: the app only knows what you write.</string>
+    <string name="rules_add_title">Add a rule</string>
+    <string name="rules_who">Who is the rule about?</string>
+    <string name="rules_what">What should happen?</string>
+    <string name="rules_kind_exclude">Never on</string>
+    <string name="rules_kind_include">Always on</string>
+    <string name="rules_keyword_hint">Word in the item name</string>
+    <string name="rules_keyword_helper">Matched anywhere in the name, ignoring capitals. For example \"beer\" matches \"Great Value Light Beer, 12 pk\".</string>
+    <string name="rules_add">Add rule</string>
+    <string name="rules_added">Rule added</string>
+    <string name="rules_deleted">Rule deleted</string>
+    <string name="rules_delete">Delete rule</string>
+    <string name="rules_existing">Your rules</string>
+    <string name="rules_empty">No rules yet. Every item will keep asking who it is for.</string>
+    <string name="rules_unknown_member">Someone</string>
+    <string name="rule_row_exclude">%1$s is never on items matching \"%2$s\"</string>
+    <string name="rule_row_include">%1$s is always on items matching \"%2$s\"</string>
+    <string name="rules_note_off">%s taken off by your standing rules</string>
+    <string name="rules_note_on">%s added by your standing rules</string>
+    <string name="rules_note_both">%1$s taken off and %2$s added by your standing rules</string>
+    <string name="settings_rules">Standing rules</string>
+    <string name="settings_rules_body">Record who is never or always on a kind of item, so the assign screen stops asking.</string>
+    <string name="settings_rules_count">%d in use</string>
+    <string name="settings_rules_none">None yet</string>
+    <string name="action_manage_rules">Manage rules</string>
 </resources>

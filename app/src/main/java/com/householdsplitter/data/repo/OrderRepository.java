@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import com.householdsplitter.core.calc.AllocationMode;
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.core.calc.SplitCalculator;
+import com.householdsplitter.core.money.MoneySplitter;
 import com.householdsplitter.core.calc.result.SplitResult;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedItem;
@@ -285,6 +286,81 @@ public class OrderRepository {
                 lineItemDao.update(item);
             }
             post(callback, Result.ok(null));
+        });
+    }
+
+    /**
+     * SPEC 11.1: breaks a row of quantity N into N rows of equal price.
+     *
+     * <p>A two-pack charged as one row is a problem when the two halves are for different
+     * people: the loop can only ask who the row is for, not who each unit is for. Splitting
+     * it turns one unanswerable question into two answerable ones.
+     *
+     * <p>The division goes through {@link MoneySplitter}, not through {@code /}, so the
+     * parts sum to the original exactly. A 5.05 two-pack becomes 2.53 and 2.52 rather than
+     * two 2.52s and a lost penny, and the order's total does not move because a row was
+     * split.
+     *
+     * @return how many rows the original became
+     */
+    public void splitByQuantity(long lineItemId, Callback<Result<Integer>> callback) {
+        executors.diskIO().execute(() -> {
+            LineItem original = lineItemDao.getByIdSync(lineItemId);
+            if (original == null) {
+                post(callback, Result.failure("That row no longer exists"));
+                return;
+            }
+            if (original.quantity < 2) {
+                post(callback, Result.failure("This row is a single item already"));
+                return;
+            }
+
+            long[] parts = MoneySplitter.split(original.lineTotalCents,
+                    MoneySplitter.ones(original.quantity));
+
+            List<LineItem> rows = new ArrayList<>(parts.length);
+            for (int i = 0; i < parts.length; i++) {
+                LineItem row = new LineItem();
+                row.orderId = original.orderId;
+                row.name = original.name;
+                row.rawOcrText = original.rawOcrText;
+                row.quantity = 1;
+                row.lineTotalCents = parts[i];
+                row.unitPriceText = original.unitPriceText;
+                row.scope = original.scope;
+                row.sourceSection = original.sourceSection;
+                // The quantity warning no longer applies, since each row is now one item.
+                row.needsReview = false;
+                row.reviewReasonsCsv = null;
+                row.position = original.position + i;
+                rows.add(row);
+            }
+
+            // Everything after the original shifts down to make room.
+            for (LineItemWithAssignments later : lineItemDao.getForOrderSync(original.orderId)) {
+                if (later.item.position > original.position) {
+                    later.item.position += parts.length - 1;
+                    lineItemDao.update(later.item);
+                }
+            }
+
+            // The original's assignments have to be carried across before it is deleted.
+            // Deleting it cascades them away, and a row left with a SUBSET scope and nobody
+            // on it would fail SPEC 6.4's unassigned check on an item the user had answered.
+            List<ItemAssignment> existing = assignmentDao.getForItemSync(lineItemId);
+            lineItemDao.delete(original);
+
+            List<ItemAssignment> copied = new ArrayList<>();
+            for (LineItem row : rows) {
+                long newId = lineItemDao.insert(row);
+                for (ItemAssignment assignment : existing) {
+                    copied.add(new ItemAssignment(newId, assignment.memberId, assignment.shares));
+                }
+            }
+            if (!copied.isEmpty()) {
+                assignmentDao.insertAll(copied);
+            }
+            post(callback, Result.ok(parts.length));
         });
     }
 

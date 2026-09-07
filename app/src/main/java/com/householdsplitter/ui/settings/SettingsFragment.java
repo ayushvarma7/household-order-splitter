@@ -155,6 +155,20 @@ public class SettingsFragment extends BaseFragment {
                 locator().assignmentMemory().clear(locator().currentHouseholdId(),
                         ignored -> toast(R.string.settings_suggestions_cleared)));
 
+        // Standing rules, with a live count so the card says whether any are in force.
+        binding.rulesButton.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.rulesFragment));
+        locator().ruleService().observe(locator().currentHouseholdId())
+                .observe(getViewLifecycleOwner(), rules -> {
+                    if (binding == null) {
+                        return;
+                    }
+                    int count = rules == null ? 0 : rules.size();
+                    binding.rulesCount.setText(count == 0
+                            ? getString(R.string.settings_rules_none)
+                            : getString(R.string.settings_rules_count, count));
+                });
+
         // SPEC 7.14.5
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
