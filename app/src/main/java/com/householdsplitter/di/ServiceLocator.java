@@ -2,6 +2,8 @@ package com.householdsplitter.di;
 
 import android.content.Context;
 
+import com.householdsplitter.backup.AutoBackupService;
+import com.householdsplitter.backup.BackupService;
 import com.householdsplitter.data.db.AppDatabase;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
@@ -43,6 +45,8 @@ public class ServiceLocator {
     private WorkbookService workbookService;
     private SettlementRepository settlementRepository;
     private RuleService ruleService;
+    private BackupService backupService;
+    private AutoBackupService autoBackupService;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -113,6 +117,22 @@ public class ServiceLocator {
                     settings, executors, applicationContext.getContentResolver());
         }
         return workbookService;
+    }
+
+    public synchronized BackupService backupService() {
+        if (backupService == null) {
+            backupService = new BackupService(database, executors,
+                    applicationContext.getContentResolver());
+        }
+        return backupService;
+    }
+
+    public synchronized AutoBackupService autoBackupService() {
+        if (autoBackupService == null) {
+            autoBackupService = new AutoBackupService(backupService(), settings, executors,
+                    applicationContext.getContentResolver());
+        }
+        return autoBackupService;
     }
 
     public synchronized RuleService ruleService() {

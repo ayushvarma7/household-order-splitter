@@ -17,6 +17,9 @@ public class SettingsStore {
     private static final String KEY_CURRENCY = "currency_symbol";
     private static final String KEY_WORKBOOK_URI = "workbook_uri";
     private static final String KEY_WORKBOOK_AUTO = "workbook_auto";
+    private static final String KEY_AUTO_BACKUP_FOLDER = "auto_backup_folder";
+    private static final String KEY_AUTO_BACKUP_ENABLED = "auto_backup_enabled";
+    private static final String KEY_AUTO_BACKUP_AT = "auto_backup_at";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -79,6 +82,36 @@ public class SettingsStore {
 
     public void workbookAutoUpdate(boolean value) {
         preferences.edit().putBoolean(KEY_WORKBOOK_AUTO, value).apply();
+    }
+
+    /**
+     * The folder automatic backups are written to, as a persisted SAF tree URI, or null.
+     * A folder rather than a file, because a backup that overwrites itself is not a backup:
+     * the failure it has to survive is a bad write.
+     */
+    public String autoBackupFolderUri() {
+        return preferences.getString(KEY_AUTO_BACKUP_FOLDER, null);
+    }
+
+    public void autoBackupFolderUri(String uri) {
+        preferences.edit().putString(KEY_AUTO_BACKUP_FOLDER, uri).apply();
+    }
+
+    public boolean autoBackupEnabled() {
+        return preferences.getBoolean(KEY_AUTO_BACKUP_ENABLED, true);
+    }
+
+    public void autoBackupEnabled(boolean value) {
+        preferences.edit().putBoolean(KEY_AUTO_BACKUP_ENABLED, value).apply();
+    }
+
+    /** When the last automatic backup was written, or 0. Used to keep it to once a day. */
+    public long lastAutoBackupAt() {
+        return preferences.getLong(KEY_AUTO_BACKUP_AT, 0L);
+    }
+
+    public void lastAutoBackupAt(long millis) {
+        preferences.edit().putLong(KEY_AUTO_BACKUP_AT, millis).apply();
     }
 
     public Locale locale() {

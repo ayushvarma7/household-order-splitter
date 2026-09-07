@@ -17,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.BuildConfig;
 import com.householdsplitter.R;
+import com.householdsplitter.backup.AutoBackupService;
 import com.householdsplitter.backup.BackupService;
 import com.householdsplitter.core.calc.AllocationMode;
 import com.householdsplitter.databinding.FragmentSettingsBinding;
@@ -26,6 +27,7 @@ import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.ui.common.StateColors;
 
 /** S14. SPEC 7.14. */
 public class SettingsFragment extends BaseFragment {
@@ -40,7 +42,9 @@ public class SettingsFragment extends BaseFragment {
     private ActivityResultLauncher<String> createBackup;
     private ActivityResultLauncher<String[]> openBackup;
     private ActivityResultLauncher<String> createCsv;
+    private ActivityResultLauncher<android.net.Uri> chooseBackupFolder;
     private String pendingCsv;
+    private AutoBackupService autoBackup;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,6 +70,34 @@ public class SettingsFragment extends BaseFragment {
                         // Some providers do not offer one. It still works for this session.
                     }
                     writeWorkbook(uri);
+                });
+        chooseBackupFolder = registerForActivityResult(
+                new ActivityResultContracts.OpenDocumentTree(), uri -> {
+                    if (uri == null) {
+                        return;
+                    }
+                    // Without a persisted grant the folder is unusable the next time the
+                    // app starts, which would make the backups stop without saying so.
+                    try {
+                        requireContext().getContentResolver().takePersistableUriPermission(uri,
+                                android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                        | android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    } catch (SecurityException notPersistable) {
+                        // Some providers do not offer one. It still works for this session.
+                    }
+                    autoBackup.useFolder(uri, result -> {
+                        if (binding == null) {
+                            return;
+                        }
+                        if (result.isOk()) {
+                            toastText(getString(R.string.settings_autobackup_done,
+                                    result.value()));
+                        } else {
+                            toastText(getString(R.string.settings_autobackup_failed,
+                                    result.error()));
+                        }
+                        renderAutoBackup();
+                    });
                 });
         createCsv = registerForActivityResult(
                 new ActivityResultContracts.CreateDocument("text/csv"), uri -> {
@@ -169,12 +201,89 @@ public class SettingsFragment extends BaseFragment {
                             : getString(R.string.settings_rules_count, count));
                 });
 
+        autoBackup = locator().autoBackupService();
+        binding.autoBackupChooseButton.setOnClickListener(v -> chooseBackupFolder.launch(null));
+        binding.autoBackupNowButton.setOnClickListener(v -> autoBackup.backupNow(result -> {
+            if (binding == null) {
+                return;
+            }
+            toastText(result.isOk()
+                    ? getString(R.string.settings_autobackup_done, result.value())
+                    : getString(R.string.settings_autobackup_failed, result.error()));
+            renderAutoBackup();
+        }));
+        binding.autoBackupSwitch.setOnCheckedChangeListener((button, checked) -> {
+            if (!button.isPressed()) {
+                return;
+            }
+            settings.autoBackupEnabled(checked);
+            renderAutoBackup();
+        });
+        renderAutoBackup();
+
         // SPEC 7.14.5
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
         // SPEC 7.14.6
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
+    }
+
+    /**
+     * The status line is the only place an absent backup becomes visible, since the backup
+     * itself is deliberately silent. So it says plainly when nothing is being kept.
+     */
+    private void renderAutoBackup() {
+        if (binding == null) {
+            return;
+        }
+        boolean hasFolder = autoBackup.hasFolder();
+        boolean enabled = settings.autoBackupEnabled();
+        binding.autoBackupSwitch.setChecked(enabled);
+        binding.autoBackupSwitch.setEnabled(hasFolder);
+        binding.autoBackupNowButton.setEnabled(hasFolder);
+        binding.autoBackupChooseButton.setText(hasFolder
+                ? R.string.settings_autobackup_change : R.string.settings_autobackup_choose);
+
+        if (!hasFolder) {
+            binding.autoBackupStatus.setText(R.string.settings_autobackup_off);
+            binding.autoBackupStatus.setTextColor(
+                    StateColors.content(requireContext(), StateColors.State.WARNING));
+            return;
+        }
+        if (!enabled) {
+            binding.autoBackupStatus.setText(R.string.settings_autobackup_paused);
+            binding.autoBackupStatus.setTextColor(
+                    StateColors.content(requireContext(), StateColors.State.WARNING));
+            return;
+        }
+        long last = settings.lastAutoBackupAt();
+        if (last <= 0L) {
+            binding.autoBackupStatus.setText(R.string.settings_autobackup_never);
+            binding.autoBackupStatus.setTextColor(
+                    StateColors.content(requireContext(), StateColors.State.NEUTRAL));
+            return;
+        }
+        autoBackup.countBackups(count -> {
+            if (binding == null) {
+                return;
+            }
+            if (count == null || count < 0) {
+                binding.autoBackupStatus.setText(R.string.settings_autobackup_unreadable);
+                binding.autoBackupStatus.setTextColor(
+                        StateColors.content(requireContext(), StateColors.State.DANGER));
+                return;
+            }
+            String when = android.text.format.DateUtils.getRelativeTimeSpanString(
+                    last, System.currentTimeMillis(),
+                    android.text.format.DateUtils.DAY_IN_MILLIS).toString();
+            binding.autoBackupStatus.setText(getString(R.string.settings_autobackup_last,
+                    when.toLowerCase(java.util.Locale.getDefault()),
+                    getResources().getQuantityString(
+                            R.plurals.settings_autobackup_count, count, count)));
+            binding.autoBackupStatus.setTextColor(
+                    StateColors.content(requireContext(), StateColors.State.SUCCESS));
+        });
     }
 
     private void exportAll() {
@@ -295,6 +404,13 @@ public class SettingsFragment extends BaseFragment {
     private void toast(int messageRes) {
         if (binding != null) {
             Snackbar.make(binding.getRoot(), messageRes, Snackbar.LENGTH_SHORT).show();
+        }
+    }
+
+    /** For messages that carry a value, such as which file a backup went to. */
+    private void toastText(String message) {
+        if (binding != null) {
+            Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
         }
     }
 

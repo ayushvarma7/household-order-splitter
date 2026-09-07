@@ -394,6 +394,10 @@ public class SummaryFragment extends BaseFragment {
         } else {
             model.markSettled();
             refreshWorkbook();
+            // Settling is the moment the order's numbers become worth keeping, and the
+            // app is already doing work here, so it is the natural place to check whether
+            // a backup is due. Silent either way (see AutoBackupService).
+            locator().autoBackupService().backupIfDue();
         }
     }
 

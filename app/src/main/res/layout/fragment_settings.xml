@@ -300,6 +300,68 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- SPEC 7.14.4, 7.11.3, 9.5 -->
+                <!-- Automatic backups: the data here is unrecreatable, and a manual export
+                     only helps the households that remember to use it. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_autobackup"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:text="@string/settings_autobackup_body"
+                            android:textAppearance="@style/Text.Body"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/autoBackupStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:textAppearance="@style/Text.Caption" />
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/autoBackupSwitch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:minHeight="@dimen/touch_target_min"
+                            android:text="@string/settings_autobackup_switch"
+                            android:textAppearance="@style/Text.Body" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/autoBackupChooseButton"
+                            style="@style/Widget.Splitter.Button.Tonal"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_height_large"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_autobackup_choose" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/autoBackupNowButton"
+                            style="@style/Widget.Splitter.Button.Text"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_height_large"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:text="@string/settings_autobackup_now" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <com.google.android.material.card.MaterialCardView
                     style="@style/Widget.Splitter.Card"
                     android:layout_width="match_parent"

@@ -372,4 +372,24 @@
     <string name="home_no_matches_title">Nothing matches</string>
     <string name="home_no_matches_body">Try a different word, or clear the search to see every order.</string>
     <string name="home_clear_search">Clear search</string>
+
+    <!-- Automatic backups. SPEC 7.14.4 gives a manual export, which only helps the
+         households that remember to use it. -->
+    <string name="settings_autobackup">Automatic backups</string>
+    <string name="settings_autobackup_body">Pick a folder and the app keeps a week of dated backups there, one a day, whenever you use it. An order\'s screenshots are gone from your gallery long before the household stops asking who owed what.</string>
+    <string name="settings_autobackup_switch">Keep backups up to date</string>
+    <string name="settings_autobackup_choose">Choose folder</string>
+    <string name="settings_autobackup_change">Change folder</string>
+    <string name="settings_autobackup_now">Back up now</string>
+    <string name="settings_autobackup_off">No folder chosen. Nothing is being backed up.</string>
+    <string name="settings_autobackup_never">Folder set. No backup written yet.</string>
+    <string name="settings_autobackup_last">Last backup %1$s. %2$s kept.</string>
+    <string name="settings_autobackup_paused">Paused. The folder is still set.</string>
+    <string name="settings_autobackup_done">Backed up to %1$s</string>
+    <string name="settings_autobackup_failed">Backup failed: %1$s</string>
+    <string name="settings_autobackup_unreadable">That folder cannot be read any more. Choose it again.</string>
+    <plurals name="settings_autobackup_count">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
 </resources>

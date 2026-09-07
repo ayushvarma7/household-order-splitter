@@ -13,7 +13,9 @@ import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderImage;
+import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.data.entity.OrderParticipant;
+import com.householdsplitter.data.entity.SettlementPayment;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.util.AppExecutors;
@@ -26,15 +28,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** SPEC 7.14.4 and 7.14.5. Everything stays on the device (SPEC 1.5, 7.14.6). */
 public class BackupService {
 
+    /**
+     * The current backup format. Version 1 predates the settlement payments and standing
+     * rules tables; a version 1 file simply has no such lists, and reading one leaves them
+     * empty rather than failing, so an older backup still restores.
+     */
+    public static final int FORMAT_VERSION = 2;
+
     /** The on-disk shape. Plain fields so Gson needs no adapters. */
     public static final class Backup {
 
-        public int version = 1;
+        public int version = FORMAT_VERSION;
         public long exportedAt;
         public Household household;
         public List<Member> members = new ArrayList<>();
@@ -44,6 +55,10 @@ public class BackupService {
         public List<ItemAssignment> assignments = new ArrayList<>();
         public List<OrderImage> images = new ArrayList<>();
         public List<AssignmentMemory> memory = new ArrayList<>();
+        /** Added in format 2, with database version 2. */
+        public List<SettlementPayment> payments = new ArrayList<>();
+        /** Added in format 2, with database version 3. */
+        public List<MemberRule> rules = new ArrayList<>();
     }
 
     private final AppDatabase database;
@@ -132,26 +147,126 @@ public class BackupService {
             backup.images.addAll(bundle.images);
         }
         backup.memory = database.assignmentMemoryDao().getAllSync(backup.household.id);
+        // Both of these arrived with later migrations. Leaving them out would make the
+        // backup quietly incomplete, which is worse than no backup: the user would believe
+        // their settlement history and their standing rules were covered.
+        backup.payments = database.settlementDao().getForHouseholdSync(backup.household.id);
+        backup.rules = database.memberRuleDao().getForHouseholdSync(backup.household.id);
         return backup;
     }
 
+    /**
+     * Writes a backup's contents into the database, giving every row a fresh id and
+     * rewriting the references between them.
+     *
+     * <p>Remapping rather than preserving ids is what makes the merge of SPEC 7.14.4 work
+     * at all. The common case is a household restoring their own backup into the install
+     * it came from, where every id in the file is already taken; inserting them as they
+     * stand fails on the household row and gets no further.
+     *
+     * <p>Replace mode empties the tables first, so the ids would be free, but it takes the
+     * same path deliberately. One code path that always remaps is easier to be sure of than
+     * two that differ only in a case that is hard to test.
+     */
     private void apply(Backup backup) {
+        backup.household.id = 0L;
         long householdId = database.householdDao().insert(backup.household);
+
+        Map<Long, Long> memberIds = new HashMap<>();
         for (Member member : backup.members) {
+            long oldId = member.id;
+            member.id = 0L;
             member.householdId = householdId;
-            database.memberDao().insert(member);
+            memberIds.put(oldId, database.memberDao().insert(member));
         }
+
+        Map<Long, Long> orderIds = new HashMap<>();
         for (Order order : backup.orders) {
+            long oldId = order.id;
+            order.id = 0L;
             order.householdId = householdId;
-            database.orderDao().insert(order);
+            order.payerMemberId = order.payerMemberId == null
+                    ? null : memberIds.get(order.payerMemberId);
+            orderIds.put(oldId, database.orderDao().insert(order));
         }
-        database.participantDao().insertAll(backup.participants);
-        database.lineItemDao().insertAll(backup.lineItems);
-        database.assignmentDao().insertAll(backup.assignments);
-        database.orderImageDao().insertAll(backup.images);
+
+        List<OrderParticipant> participants = new ArrayList<>();
+        for (OrderParticipant participant : backup.participants) {
+            Long orderId = orderIds.get(participant.orderId);
+            Long memberId = memberIds.get(participant.memberId);
+            if (orderId != null && memberId != null) {
+                participants.add(new OrderParticipant(orderId, memberId));
+            }
+        }
+        database.participantDao().insertAll(participants);
+
+        Map<Long, Long> lineItemIds = new HashMap<>();
+        for (LineItem item : backup.lineItems) {
+            Long orderId = orderIds.get(item.orderId);
+            if (orderId == null) {
+                continue;
+            }
+            long oldId = item.id;
+            item.id = 0L;
+            item.orderId = orderId;
+            lineItemIds.put(oldId, database.lineItemDao().insert(item));
+        }
+
+        List<ItemAssignment> assignments = new ArrayList<>();
+        for (ItemAssignment assignment : backup.assignments) {
+            Long lineItemId = lineItemIds.get(assignment.lineItemId);
+            Long memberId = memberIds.get(assignment.memberId);
+            if (lineItemId != null && memberId != null) {
+                assignments.add(new ItemAssignment(lineItemId, memberId, assignment.shares));
+            }
+        }
+        database.assignmentDao().insertAll(assignments);
+
+        List<OrderImage> images = new ArrayList<>();
+        for (OrderImage image : backup.images) {
+            Long orderId = orderIds.get(image.orderId);
+            if (orderId == null) {
+                continue;
+            }
+            image.id = 0L;
+            image.orderId = orderId;
+            images.add(image);
+        }
+        database.orderImageDao().insertAll(images);
+
         for (AssignmentMemory memory : backup.memory) {
+            memory.id = 0L;
             memory.householdId = householdId;
             database.assignmentMemoryDao().insert(memory);
+        }
+
+        // Both of these arrived with later migrations, so a file from format 1 has no such
+        // list at all and Gson leaves the field null rather than empty.
+        if (backup.payments != null) {
+            for (SettlementPayment payment : backup.payments) {
+                Long from = memberIds.get(payment.fromMemberId);
+                Long to = memberIds.get(payment.toMemberId);
+                if (from == null || to == null) {
+                    continue;
+                }
+                payment.id = 0L;
+                payment.householdId = householdId;
+                payment.fromMemberId = from;
+                payment.toMemberId = to;
+                database.settlementDao().insert(payment);
+            }
+        }
+        if (backup.rules != null) {
+            for (MemberRule rule : backup.rules) {
+                Long memberId = memberIds.get(rule.memberId);
+                if (memberId == null) {
+                    continue;
+                }
+                rule.id = 0L;
+                rule.householdId = householdId;
+                rule.memberId = memberId;
+                database.memberRuleDao().insert(rule);
+            }
         }
     }
 
