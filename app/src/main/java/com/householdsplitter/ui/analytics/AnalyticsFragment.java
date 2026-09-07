@@ -20,7 +20,9 @@ import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.databinding.FragmentAnalyticsBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMemberBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMonthBinding;
+import com.householdsplitter.databinding.ItemPaymentBinding;
 import com.householdsplitter.databinding.ItemSettleUpBinding;
+import com.householdsplitter.data.entity.SettlementPayment;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.common.MemberPalette;
@@ -69,6 +71,16 @@ public class AnalyticsFragment extends BaseFragment {
                         ? View.VISIBLE : View.GONE));
 
         model.report().observe(getViewLifecycleOwner(), this::render);
+        model.payments().observe(getViewLifecycleOwner(), this::renderPayments);
+        model.message().observe(getViewLifecycleOwner(), text -> {
+            if (text != null && binding != null) {
+                com.google.android.material.snackbar.Snackbar
+                        .make(binding.getRoot(), text,
+                                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT)
+                        .show();
+                model.messageShown();
+            }
+        });
         model.load();
     }
 
@@ -133,8 +145,56 @@ public class AnalyticsFragment extends BaseFragment {
             row.getRoot().setContentDescription(getString(R.string.settle_owes_description,
                     transfer.from().name(), money.format(transfer.amountCents()),
                     transfer.to().name()));
+            row.markPaidButton.setOnClickListener(v -> model.recordPayment(
+                    transfer.from().memberId(), transfer.to().memberId(),
+                    transfer.amountCents(),
+                    getString(R.string.settle_payment_recorded)));
             binding.settleList.addView(row.getRoot());
         }
+    }
+
+    /** What has already been handed over, newest first, each undoable. */
+    private void renderPayments(java.util.List<SettlementPayment> payments) {
+        if (binding == null) {
+            return;
+        }
+        boolean any = payments != null && !payments.isEmpty();
+        binding.paymentSection.setVisibility(any ? View.VISIBLE : View.GONE);
+        binding.paymentList.removeAllViews();
+        if (!any) {
+            return;
+        }
+        java.util.Map<Long, String> names = memberNames();
+        java.text.SimpleDateFormat when =
+                new java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault());
+        for (SettlementPayment payment : payments) {
+            ItemPaymentBinding row = ItemPaymentBinding.inflate(
+                    getLayoutInflater(), binding.paymentList, false);
+            String from = names.get(payment.fromMemberId);
+            String to = names.get(payment.toMemberId);
+            row.paymentLine.setText(getString(R.string.settle_paid_line,
+                    from == null ? "?" : from, to == null ? "?" : to));
+            row.paymentDate.setText(when.format(new java.util.Date(payment.paidAt)));
+            row.paymentAmount.setText(money.format(payment.amountCents));
+            row.undoButton.setOnClickListener(v -> model.deletePayment(payment.id,
+                    getString(R.string.settle_payment_removed)));
+            binding.paymentList.addView(row.getRoot());
+        }
+    }
+
+    /**
+     * Names for the payment history, taken from the balances so an archived member is still
+     * named on a payment they made (SPEC 11.7 applies to money as much as to orders).
+     */
+    private java.util.Map<Long, String> memberNames() {
+        java.util.Map<Long, String> names = new java.util.LinkedHashMap<>();
+        WorkbookService.Insight insight = model.report().getValue();
+        if (insight != null) {
+            for (Balances.Balance balance : insight.balances.balances()) {
+                names.put(balance.memberId(), balance.name());
+            }
+        }
+        return names;
     }
 
     /** One bar showing how much of the household's money went on things everyone shared. */

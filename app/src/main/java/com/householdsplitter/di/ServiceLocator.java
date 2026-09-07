@@ -5,6 +5,7 @@ import android.content.Context;
 import com.householdsplitter.data.db.AppDatabase;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.data.repo.SettlementRepository;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.parse.ReceiptParser;
@@ -39,6 +40,7 @@ public class ServiceLocator {
     private OrderRepository orderRepository;
     private AssignmentMemoryService assignmentMemory;
     private WorkbookService workbookService;
+    private SettlementRepository settlementRepository;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -96,10 +98,17 @@ public class ServiceLocator {
         return orderRepository;
     }
 
+    public synchronized SettlementRepository settlementRepository() {
+        if (settlementRepository == null) {
+            settlementRepository = new SettlementRepository(database.settlementDao(), executors);
+        }
+        return settlementRepository;
+    }
+
     public synchronized WorkbookService workbookService() {
         if (workbookService == null) {
-            workbookService = new WorkbookService(orderRepository(), settings, executors,
-                    applicationContext.getContentResolver());
+            workbookService = new WorkbookService(orderRepository(), settlementRepository(),
+                    settings, executors, applicationContext.getContentResolver());
         }
         return workbookService;
     }

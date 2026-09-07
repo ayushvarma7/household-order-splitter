@@ -27,6 +27,40 @@ public final class Balances {
     private Balances() {
     }
 
+    /**
+     * A payment somebody actually made to settle up.
+     *
+     * <p>Without these the balances are advice that goes stale the moment anyone transfers
+     * money: the screen would keep asking Ben to pay Ana long after he had.
+     */
+    public static final class Payment {
+
+        private final long fromMemberId;
+        private final long toMemberId;
+        private final long amountCents;
+
+        public Payment(long fromMemberId, long toMemberId, long amountCents) {
+            if (amountCents < 0L) {
+                throw new IllegalArgumentException("a payment cannot be negative");
+            }
+            this.fromMemberId = fromMemberId;
+            this.toMemberId = toMemberId;
+            this.amountCents = amountCents;
+        }
+
+        public long fromMemberId() {
+            return fromMemberId;
+        }
+
+        public long toMemberId() {
+            return toMemberId;
+        }
+
+        public long amountCents() {
+            return amountCents;
+        }
+    }
+
     /** One order's contribution: who fronted it, and what each person owed. */
     public static final class Settlement {
 
@@ -54,12 +88,14 @@ public final class Balances {
         private final String name;
         private final long paidCents;
         private final long owedCents;
+        private final long settledCents;
 
-        Balance(long memberId, String name, long paidCents, long owedCents) {
+        Balance(long memberId, String name, long paidCents, long owedCents, long settledCents) {
             this.memberId = memberId;
             this.name = name;
             this.paidCents = paidCents;
             this.owedCents = owedCents;
+            this.settledCents = settledCents;
         }
 
         public long memberId() {
@@ -80,9 +116,19 @@ public final class Balances {
             return owedCents;
         }
 
-        /** Positive means the household owes them; negative means they owe it. */
+        /** Payments they have made, less payments they have received. */
+        public long settledCents() {
+            return settledCents;
+        }
+
+        /**
+         * Positive means the household owes them; negative means they owe it.
+         *
+         * <p>Settling payments count exactly like fronting an order: paying somebody moves
+         * you towards level, receiving a payment moves you back.
+         */
         public long netCents() {
-            return paidCents - owedCents;
+            return paidCents - owedCents + settledCents;
         }
 
         public boolean isSettled() {
@@ -151,6 +197,14 @@ public final class Balances {
     }
 
     public static Report of(List<Settlement> settlements) {
+        return of(settlements, new ArrayList<>());
+    }
+
+    /**
+     * @param payments what has already been handed over, which is what stops the screen
+     *                 asking for the same money twice
+     */
+    public static Report of(List<Settlement> settlements, List<Payment> payments) {
         Map<Long, long[]> totals = new LinkedHashMap<>();
         Map<Long, String> names = new LinkedHashMap<>();
 
@@ -181,10 +235,31 @@ public final class Balances {
             totals.get(payer)[0] += settlement.result().computedTotalCents();
         }
 
+        // Payments only move money between people who are already in the picture. One to
+        // somebody with no orders would break the sum-to-zero invariant, so it is ignored
+        // rather than silently bending the totals.
+        Map<Long, Long> settled = new LinkedHashMap<>();
+        if (payments != null) {
+            for (Payment payment : payments) {
+                if (!totals.containsKey(payment.fromMemberId())
+                        || !totals.containsKey(payment.toMemberId())
+                        || payment.fromMemberId() == payment.toMemberId()) {
+                    continue;
+                }
+                Long from = settled.get(payment.fromMemberId());
+                settled.put(payment.fromMemberId(),
+                        (from == null ? 0L : from) + payment.amountCents());
+                Long to = settled.get(payment.toMemberId());
+                settled.put(payment.toMemberId(),
+                        (to == null ? 0L : to) - payment.amountCents());
+            }
+        }
+
         List<Balance> balances = new ArrayList<>();
         for (Map.Entry<Long, long[]> entry : totals.entrySet()) {
+            Long moved = settled.get(entry.getKey());
             balances.add(new Balance(entry.getKey(), names.get(entry.getKey()),
-                    entry.getValue()[0], entry.getValue()[1]));
+                    entry.getValue()[0], entry.getValue()[1], moved == null ? 0L : moved));
         }
 
         long check = 0L;

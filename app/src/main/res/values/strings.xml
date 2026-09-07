@@ -267,4 +267,11 @@
 
     <string name="needs_a_check">Needs a check</string>
     <string name="action_remove_screenshot">Remove this screenshot</string>
+
+    <string name="settle_mark_paid">Mark as paid</string>
+    <string name="settle_paid_title">Already paid</string>
+    <string name="settle_paid_line">%1$s paid %2$s</string>
+    <string name="settle_undo_payment">Undo this payment</string>
+    <string name="settle_payment_recorded">Payment recorded</string>
+    <string name="settle_payment_removed">Payment removed</string>
 </resources>

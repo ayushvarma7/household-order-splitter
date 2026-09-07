@@ -15,6 +15,7 @@ import com.householdsplitter.core.export.xlsx.XlsxWriter;
 import com.householdsplitter.data.mapper.CalcMapper;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.data.repo.SettlementRepository;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.util.AppExecutors;
 import com.householdsplitter.util.Callback;
@@ -53,13 +54,16 @@ public class WorkbookService {
     }
 
     private final OrderRepository repository;
+    private final SettlementRepository settlements;
     private final SettingsStore settings;
     private final AppExecutors executors;
     private final ContentResolver contentResolver;
 
-    public WorkbookService(OrderRepository repository, SettingsStore settings,
-                           AppExecutors executors, ContentResolver contentResolver) {
+    public WorkbookService(OrderRepository repository, SettlementRepository settlements,
+                           SettingsStore settings, AppExecutors executors,
+                           ContentResolver contentResolver) {
         this.repository = repository;
+        this.settlements = settlements;
         this.settings = settings;
         this.executors = executors;
         this.contentResolver = contentResolver;
@@ -138,7 +142,7 @@ public class WorkbookService {
     public void analyse(long householdId, Callback<Insight> callback) {
         repository.allBundles(householdId, bundles -> executors.diskIO().execute(() -> {
             List<SpendingAnalytics.OrderPoint> points = new ArrayList<>();
-            List<Balances.Settlement> settlements = new ArrayList<>();
+            List<Balances.Settlement> orderSettlements = new ArrayList<>();
             AllocationMode mode = settings.allocationMode();
             for (OrderBundle bundle : bundles) {
                 SplitResult result = tryCalculate(bundle, mode);
@@ -147,18 +151,23 @@ public class WorkbookService {
                 }
                 points.add(new SpendingAnalytics.OrderPoint(
                         bundle.order.orderDate, bundle.order.label, result));
-                settlements.add(new Balances.Settlement(bundle.order.payerMemberId, result));
+                orderSettlements.add(new Balances.Settlement(bundle.order.payerMemberId, result));
             }
             SpendingAnalytics.Report spending = SpendingAnalytics.analyse(points);
-            Balances.Report balances;
-            try {
-                balances = Balances.of(settlements);
-            } catch (RuntimeException inconsistent) {
-                // Better no settle-up section than one that does not add up.
-                balances = Balances.of(new ArrayList<>());
-            }
-            Insight insight = new Insight(spending, balances);
-            executors.mainThread().execute(() -> callback.onResult(insight));
+            // Payments already made are what stop the screen asking for the same money
+            // twice, so they have to be in the picture before the balances are computed.
+            this.settlements.paymentsForBalances(householdId, payments ->
+                    executors.diskIO().execute(() -> {
+                        Balances.Report balances;
+                        try {
+                            balances = Balances.of(orderSettlements, payments);
+                        } catch (RuntimeException inconsistent) {
+                            // Better no settle-up section than one that does not add up.
+                            balances = Balances.of(new ArrayList<>());
+                        }
+                        Insight insight = new Insight(spending, balances);
+                        executors.mainThread().execute(() -> callback.onResult(insight));
+                    }));
         }));
     }
 

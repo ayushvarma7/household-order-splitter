@@ -310,6 +310,30 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
+
+                <!-- What has already been handed over. -->
+                <LinearLayout
+                    android:id="@+id/paymentSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:text="@string/settle_paid_title"
+                        android:textAppearance="@style/Text.SectionLabel" />
+
+                    <LinearLayout
+                        android:id="@+id/paymentList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:orientation="vertical" />
+                </LinearLayout>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

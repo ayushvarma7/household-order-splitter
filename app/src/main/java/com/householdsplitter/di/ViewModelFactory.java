@@ -54,7 +54,7 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         }
         if (modelClass == AnalyticsViewModel.class) {
             return (T) new AnalyticsViewModel(locator.workbookService(),
-                    locator.currentHouseholdId());
+                    locator.settlementRepository(), locator.currentHouseholdId());
         }
         if (modelClass == ImportViewModel.class) {
             return (T) new ImportViewModel(handle);

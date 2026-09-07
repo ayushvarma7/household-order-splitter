@@ -119,6 +119,94 @@ public class BalancesTest {
         assertTrue(report.transfers().size() <= report.balances().size() - 1);
     }
 
+    /** A payment that has actually been made stops the screen asking for it again. */
+    @Test
+    public void aPaymentClearsWhatItSettles() {
+        List<Balances.Settlement> orders = Arrays.asList(
+                new Balances.Settlement(A, sharedOrder(3000L, 3)));
+
+        Balances.Report before = Balances.of(orders);
+        assertEquals(2, before.transfers().size());
+        assertEquals(2000L, before.outstandingCents());
+
+        // Ben hands Ana his thousand.
+        Balances.Report after = Balances.of(orders,
+                Arrays.asList(new Balances.Payment(B, A, 1000L)));
+
+        assertEquals(1, after.transfers().size());
+        assertEquals(1000L, after.outstandingCents());
+        assertEquals("Gamma", after.transfers().get(0).from().name());
+        assertEquals(0L, after.balances().get(2).netCents());
+    }
+
+    /** Paying everything owed leaves the household level. */
+    @Test
+    public void payingEverythingLeavesNothingOutstanding() {
+        List<Balances.Settlement> orders = Arrays.asList(
+                new Balances.Settlement(A, sharedOrder(3000L, 3)));
+
+        Balances.Report after = Balances.of(orders, Arrays.asList(
+                new Balances.Payment(B, A, 1000L),
+                new Balances.Payment(C, A, 1000L)));
+
+        assertTrue(after.isLevel());
+        assertEquals(0L, after.outstandingCents());
+        for (Balances.Balance balance : after.balances()) {
+            assertEquals(0L, balance.netCents());
+        }
+    }
+
+    /** Payments still have to sum to zero across the household. */
+    @Test
+    public void paymentsPreserveTheSumToZeroInvariant() {
+        Balances.Report report = Balances.of(
+                Arrays.asList(new Balances.Settlement(A, sharedOrder(4444L, 3))),
+                Arrays.asList(new Balances.Payment(B, A, 700L),
+                        new Balances.Payment(C, B, 250L)));
+
+        long sum = 0L;
+        for (Balances.Balance balance : report.balances()) {
+            sum += balance.netCents();
+        }
+        assertEquals(0L, sum);
+    }
+
+    /** Overpaying flips the balance rather than being clamped, because that is the truth. */
+    @Test
+    public void overpayingFlipsTheBalance() {
+        Balances.Report report = Balances.of(
+                Arrays.asList(new Balances.Settlement(A, sharedOrder(3000L, 3))),
+                Arrays.asList(new Balances.Payment(B, A, 1500L)));
+
+        long ben = 0L;
+        for (Balances.Balance balance : report.balances()) {
+            if ("Beta".equals(balance.name())) {
+                ben = balance.netCents();
+            }
+        }
+        assertEquals("Beta paid 500 more than owed, so the household owes it back", 500L, ben);
+    }
+
+    /** A payment involving somebody with no orders is ignored, not silently absorbed. */
+    @Test
+    public void aPaymentToAStrangerIsIgnored() {
+        Balances.Report report = Balances.of(
+                Arrays.asList(new Balances.Settlement(A, sharedOrder(3000L, 3))),
+                Arrays.asList(new Balances.Payment(B, 99L, 1000L)));
+
+        assertEquals(2000L, report.outstandingCents());
+    }
+
+    /** A payment recorded to oneself would corrupt nothing, and is ignored anyway. */
+    @Test
+    public void aPaymentToOneselfIsIgnored() {
+        Balances.Report report = Balances.of(
+                Arrays.asList(new Balances.Settlement(A, sharedOrder(3000L, 3))),
+                Arrays.asList(new Balances.Payment(B, B, 1000L)));
+
+        assertEquals(2000L, report.outstandingCents());
+    }
+
     /**
      * An order with no payer says nothing about who is out of pocket. Counting what people
      * owed on it without counting what anyone paid would break the sum-to-zero invariant,

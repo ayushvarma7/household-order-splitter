@@ -2,21 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:minHeight="@dimen/touch_target_min"
-    android:orientation="horizontal">
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_xs"
+    android:paddingBottom="@dimen/space_xs">
 
-    <TextView
-        android:id="@+id/settleLine"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textAppearance="@style/Text.Body" />
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/settleAmount"
+        <TextView
+            android:id="@+id/settleLine"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="@style/Text.Body" />
+
+        <TextView
+            android:id="@+id/settleAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_m"
+            android:textAppearance="@style/Text.Money" />
+    </LinearLayout>
+
+    <!-- Recording the payment is the whole point: without it the figure above goes stale
+         the moment the money moves, and the app keeps asking for it. -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/markPaidButton"
+        style="@style/Widget.Splitter.Button.Text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/space_m"
-        android:textAppearance="@style/Text.Money" />
+        android:layout_gravity="start"
+        android:layout_marginStart="-8dp"
+        android:text="@string/settle_mark_paid"
+        app:icon="@drawable/ic_check_circle"
+        app:iconGravity="textStart"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 </LinearLayout>
