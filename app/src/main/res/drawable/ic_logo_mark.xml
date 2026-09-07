@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Left half of a receipt, with the torn edge along the split. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M11,7 A2,2 0 0 1 13,5 L22,5 L22,43 L19.6,41 L17.2,43 L14.8,41 L12.4,43 L11,41.8 Z" />
+
+    <!-- Right half, offset so the two read as separated. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.72"
+        android:pathData="M26,5 L35,5 A2,2 0 0 1 37,7 L37,41.8 L35.6,43 L33.2,41 L30.8,43 L28.4,41 L26,43 Z" />
+
+    <!-- Two ruled lines on the left half: this is a list of things, not a card. -->
+    <path
+        android:fillColor="#3F5AA6"
+        android:pathData="M14,12 h5 v2 h-5 z M14,17 h5 v2 h-5 z" />
+    <path
+        android:fillColor="#3F5AA6"
+        android:pathData="M29,12 h5 v2 h-5 z M29,17 h5 v2 h-5 z" />
+</vector>

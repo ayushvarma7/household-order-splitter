@@ -299,6 +299,25 @@ public class RealOrderFixtureTest {
                 "Great Value Tomato Basil Garlic Pasta Sauce, 24 oz").sourceSection());
     }
 
+    /**
+     * A left-hand unit price never becomes the billed amount for its row.
+     *
+     * <p>Both by-weight rows print a rate on the left ($3.94/lb and $1.31/lb) and a charge
+     * on the right ($1.97 each). The charge is what the household paid.
+     */
+    @Test
+    public void leftHandUnitPricesAreNeverTheBilledAmount() {
+        ParsedOrder order = parseAll();
+        assertEquals(197L, itemNamed(order,
+                "Great Value Triple Cheddar Finely Shredded Cheese, 8 oz Bag").lineTotalCents());
+        assertEquals(197L, itemNamed(order,
+                "Great Value Tomato Basil Garlic Pasta Sauce, 24 oz").lineTotalCents());
+        for (ParsedItem item : order.items()) {
+            assertFalse(item.lineTotalCents() == 394L);
+            assertFalse(item.lineTotalCents() == 131L);
+        }
+    }
+
     /** SPEC 8.6.3, 8.6.4 and 8.6.8: the whole summary block, exactly. */
     @Test
     public void summaryBlockIsExact() {

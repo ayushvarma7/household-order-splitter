@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <!-- The splash icon is masked to a circle of 2/3 the canvas, so the mark is drawn
+         inside that safe area rather than being clipped. -->
+    <group android:translateX="96" android:translateY="96">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M11,7 A2,2 0 0 1 13,5 L22,5 L22,43 L19.6,41 L17.2,43 L14.8,41 L12.4,43 L11,41.8 Z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.72"
+            android:pathData="M26,5 L35,5 A2,2 0 0 1 37,7 L37,41.8 L35.6,43 L33.2,41 L30.8,43 L28.4,41 L26,43 Z" />
+    </group>
+</vector>

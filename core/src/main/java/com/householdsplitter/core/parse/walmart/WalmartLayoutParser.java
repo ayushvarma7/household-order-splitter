@@ -259,9 +259,17 @@ public final class WalmartLayoutParser {
     }
 
     /**
-     * SPEC 8.3.1 and 8.3.2. A line price is a price token in the right-most zone, rendered
-     * at least as large as body text. Unit prices are excluded here and captured during
-     * block assembly instead (SPEC 8.3.3).
+     * The item's price is the final amount billed for it, and nothing else.
+     *
+     * <p>Concretely: a price token in the right-hand column (SPEC 8.3.1, 8.3.2), and where
+     * that column holds more than one amount, the right-most one wins. A Walmart row can
+     * print an original price struck through beside the charged one, and only the charged
+     * one is of any interest.
+     *
+     * <p>An amount in the left-hand column is never eligible, whatever it says. That column
+     * carries unit prices such as "$3.94/lb" or "$1.31/lb", which describe a rate rather
+     * than a charge; a row whose only amount is over there yields no line price, so it opens
+     * no block and is discarded.
      */
     private void detectLinePrices(List<TextBand> bands, int itemsEnd, int medianHeight) {
         int minHeight = medianHeight <= 0
@@ -332,11 +340,9 @@ public final class WalmartLayoutParser {
                     if (field == null || amount == null) {
                         break;
                     }
-                    if (band.strikeThroughResolved()) {
-                        page.warnings.add("A struck-through price was found beside \""
-                                + band.leftText(tuning.nameZoneEndPermille)
-                                + "\"; the last amount on the line was used.");
-                    }
+                    // No warning for two amounts on one band. The right-most is the charged
+                    // figure by definition, which is exactly what the free-delivery line
+                    // needs when it prints "$9.95 $0".
                     if (field == OrderField.OTHER_FEE) {
                         // SPEC 8.6.3: service, bag and below-minimum fees are summed.
                         otherFees += amount;

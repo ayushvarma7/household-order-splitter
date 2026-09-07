@@ -76,7 +76,10 @@ public class WalmartLayoutParserTest {
         assertFalse(item.name().contains("3.94"));
     }
 
-    /** The same, with the unit price sitting on the price row rather than under it. */
+    /**
+     * A unit price is never the billed amount, even when it sits on the same row. The rate
+     * on the left describes what a pound costs; the amount on the right is what was charged.
+     */
     @Test
     public void unitPriceOnTheSameBandIsStillNotTheLineTotal() {
         Page page = Page.image(0)
@@ -157,7 +160,12 @@ public class WalmartLayoutParserTest {
         assertEquals("Apples", order.items().get(1).name());
     }
 
-    /** 12.4.5: a struck $9.95 beside a charged $0 resolves to zero (SPEC 8.6.4). */
+    /**
+     * 12.4.5: a struck $9.95 beside a charged $0 resolves to zero (SPEC 8.6.4).
+     *
+     * <p>And it does so silently. The right-most amount on the band is the charged figure by
+     * definition, so there is nothing exceptional to report.
+     */
     @Test
     public void struckThroughDeliveryPriceResolvesToTheChargedAmount() {
         Page page = Page.image(0)
@@ -175,7 +183,8 @@ public class WalmartLayoutParserTest {
         assertEquals(5352L, order.adjustments().statedSubtotalCents());
         assertEquals(50L, order.adjustments().taxCents());
         assertEquals(5402L, order.adjustments().statedTotalCents());
-        assertFalse("the resolution must be surfaced, not silent", order.warnings().isEmpty());
+        assertTrue("taking the charged amount is the rule, not an exception to report",
+                order.warnings().isEmpty());
     }
 
     /** 12.4.6: Subtotal is not matched by the Total rule (SPEC 8.6.8). */

@@ -65,4 +65,16 @@
     <style name="Shape.Large" parent="ShapeAppearance.Material3.Corner.Large">
         <item name="cornerSize">@dimen/radius_l</item>
     </style>
+
+    <!--
+      The launch theme. Android draws this before the first frame, so the app opens into
+      its own mark rather than a white flash. It hands over to the main theme in
+      MainActivity, which is what installSplashScreen does.
+    -->
+    <style name="Theme.HouseholdSplitter.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/primary</item>
+        <item name="postSplashScreenTheme">@style/Theme.HouseholdSplitter</item>
+    </style>
 </resources>

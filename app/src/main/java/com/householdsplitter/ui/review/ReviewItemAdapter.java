@@ -83,9 +83,10 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
             binding.quantityChip.setVisibility(item.quantity > 1 ? View.VISIBLE : View.GONE);
             binding.quantityChip.setText("x" + item.quantity);
 
-            boolean hasUnitPrice = item.unitPriceText != null && !item.unitPriceText.isEmpty();
-            binding.unitPrice.setVisibility(hasUnitPrice ? View.VISIBLE : View.GONE);
-            binding.unitPrice.setText(item.unitPriceText);
+            // The unit price is captured (SPEC 8.3.3) but not shown. Only the amount
+            // actually billed for the row matters, and a second figure beside it invites a
+            // reader to wonder which one they are paying.
+            binding.unitPrice.setVisibility(View.GONE);
 
             // SPEC 7.6.4: tinted, with a warning icon whose content description says why.
             // The tint is a faint wash of the warning container, so it reads as "look at

@@ -24,9 +24,12 @@ final class ConfidenceRules {
         if (quantity > 1) {
             builder.flag(ReviewReason.QUANTITY_ABOVE_ONE);
         }
-        if (strikeThroughResolved) {
-            builder.flag(ReviewReason.STRUCK_PRICE_RESOLVED);
-        }
+        // A row that printed an original price beside the charged one is deliberately NOT
+        // flagged. The only figure that matters is what was actually billed for that item,
+        // which is the right-most amount in the price column, and taking it is the rule
+        // rather than an exception worth interrupting the user about. The same goes for a
+        // unit price such as "$3.94/lb" printed on the left: it is never the line total and
+        // never worth a warning.
         if (SectionHeaders.isExcludedSection(sectionName)) {
             builder.flag(ReviewReason.EXCLUDED_SECTION);
         }

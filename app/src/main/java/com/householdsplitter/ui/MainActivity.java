@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.WindowCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.NavGraph;
@@ -32,10 +33,21 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private volatile boolean startDestinationResolved;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Must run before super.onCreate. Holds the app's mark on screen until the first
+        // frame is ready, so launch never shows a blank white window, and hands over to the
+        // main theme afterwards.
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+
+        // The very first launch has to read the database before it knows whether to open
+        // onboarding or Home. Keeping the splash up for that read means the user never sees
+        // the wrong screen appear and then get replaced.
+        splashScreen.setKeepOnScreenCondition(() -> !startDestinationResolved);
+
         // Draw behind the system bars. Each screen then insets itself from the real bar
         // heights rather than assuming any, which is what keeps a title off the clock on
         // one device and off a gesture bar on another.
@@ -45,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             // The NavHostFragment restores its own back stack; do not re-point the graph.
+            startDestinationResolved = true;
             return;
         }
 
@@ -59,11 +72,13 @@ public class MainActivity extends AppCompatActivity {
             }
             locator.executors().mainThread().execute(() -> {
                 if (binding == null || isFinishing()) {
+                    startDestinationResolved = true;
                     return;
                 }
                 NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.nav_host);
                 if (host == null) {
+                    startDestinationResolved = true;
                     return;
                 }
                 NavController controller = host.getNavController();
@@ -71,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 graph.setStartDestination(
                         hasHousehold ? R.id.homeFragment : R.id.setupGroupFragment);
                 controller.setGraph(graph);
+                startDestinationResolved = true;
 
                 // SPEC 8.1.2: the primary real-world path. Screenshot the Walmart app, share
                 // it here, and land on the import screen with the images already loaded.
