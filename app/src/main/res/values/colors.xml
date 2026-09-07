@@ -1,0 +1,22 @@
+<resources>
+    <color name="brand_primary">#1A5FB4</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="brand_secondary">#2E7D5B</color>
+
+    <!--
+      SPEC 7.2.6: at least eight visually distinct member colours, assigned round-robin at
+      creation. Chosen to stay distinguishable for the common forms of colour blindness,
+      because SPEC (accessibility, PROMPT Phase 6.3) forbids meaning carried by colour alone
+      but the avatar colour still has to be readable at a glance.
+    -->
+    <color name="member_1">#1F77B4</color>
+    <color name="member_2">#D62728</color>
+    <color name="member_3">#2CA02C</color>
+    <color name="member_4">#FF7F0E</color>
+    <color name="member_5">#9467BD</color>
+    <color name="member_6">#8C564B</color>
+    <color name="member_7">#17BECF</color>
+    <color name="member_8">#BCBD22</color>
+    <color name="member_9">#E377C2</color>
+    <color name="member_10">#7F7F7F</color>
+</resources>

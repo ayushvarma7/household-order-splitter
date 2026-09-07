@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPEC 4.4: one graph for the whole app. The flow of SPEC 7 is filled in phase by phase;
+  Phase 0 ships the graph with a single blank start destination so the app launches.
+-->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/placeholderFragment">
+
+    <fragment
+        android:id="@+id/placeholderFragment"
+        android:name="com.householdsplitter.ui.PlaceholderFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_placeholder"
+        xmlns:tools="http://schemas.android.com/tools" />
+
+</navigation>

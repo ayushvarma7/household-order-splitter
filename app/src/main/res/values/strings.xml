@@ -1,0 +1,7 @@
+<resources>
+    <!--
+      SPEC 1.6 and PROMPT hard rule 2: no example household name, no example member name,
+      and no placeholder that could be mistaken for a value appears in this file.
+    -->
+    <string name="app_name">Order Splitter</string>
+</resources>
