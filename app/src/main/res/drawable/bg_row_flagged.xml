@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tint for a row that needs a look. Applied with a tint list so the night palette
+     changes it without a second drawable. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/radius_m" />
+    <solid android:color="#FFFFFF" />
+</shape>

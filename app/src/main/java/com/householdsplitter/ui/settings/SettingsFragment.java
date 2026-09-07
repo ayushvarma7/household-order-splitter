@@ -24,6 +24,7 @@ import com.householdsplitter.export.ExportService;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 
 /** S14. SPEC 7.14. */
 public class SettingsFragment extends BaseFragment {
@@ -67,6 +68,9 @@ public class SettingsFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         settings = locator().settings();
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottomScrollable(binding.scroll);
         backup = new BackupService(locator().database(), locator().executors(),
                 requireContext().getContentResolver());
         exportService = new ExportService(locator().orderRepository(), settings,

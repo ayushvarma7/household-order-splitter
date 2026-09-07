@@ -14,6 +14,7 @@ import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.core.parse.model.ReviewReason;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.databinding.ItemReviewRowBinding;
+import com.householdsplitter.ui.common.StateColors;
 
 /** SPEC 7.6.3 and 7.6.4. */
 public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.RowViewHolder> {
@@ -87,13 +88,22 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
             binding.unitPrice.setText(item.unitPriceText);
 
             // SPEC 7.6.4: tinted, with a warning icon whose content description says why.
+            // The tint is a faint wash of the warning container, so it reads as "look at
+            // this" in both palettes and never as an error.
             boolean flagged = item.needsReview;
+            android.content.Context context = binding.getRoot().getContext();
             binding.warningIcon.setVisibility(flagged ? View.VISIBLE : View.GONE);
-            binding.getRoot().setBackgroundColor(flagged ? 0x14FFB300 : 0x00000000);
+            binding.rowBackground.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                    flagged ? StateColors.wash(context, StateColors.State.WARNING)
+                            : android.graphics.Color.TRANSPARENT));
+            binding.warningIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    StateColors.content(context, StateColors.State.WARNING)));
             binding.warningIcon.setContentDescription(reasonText(item));
 
             boolean excluded = item.scope == Scope.EXCLUDED;
             binding.excludedLabel.setVisibility(excluded ? View.VISIBLE : View.GONE);
+            binding.excludedLabel.setTextColor(
+                    StateColors.content(context, StateColors.State.DANGER));
             binding.itemName.setAlpha(excluded ? 0.5f : 1f);
             binding.itemPrice.setAlpha(excluded ? 0.5f : 1f);
 

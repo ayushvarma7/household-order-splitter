@@ -22,6 +22,8 @@ import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.databinding.FragmentOrderDetailsBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.ui.common.CurrencyInput;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
@@ -57,6 +59,9 @@ public class OrderDetailsFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         model = viewModel(OrderDetailsViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottom(binding.footer);
         money = new CurrencyFormat(locator().settings().currencySymbol(),
                 locator().settings().locale());
 
@@ -66,6 +71,11 @@ public class OrderDetailsFragment extends BaseFragment {
         for (EditText field : moneyFields()) {
             CurrencyInput.attach(field);
             CurrencyInput.onChange(field, this::refreshReconciliation);
+        }
+        // The prefix shows whichever symbol the user chose in Settings (SPEC 7.14.3),
+        // rather than a symbol baked into the layout.
+        for (com.google.android.material.textfield.TextInputLayout layout : moneyLayouts()) {
+            layout.setPrefixText(money.symbol());
         }
 
         binding.dateButton.setOnClickListener(v -> pickDate());
@@ -166,14 +176,26 @@ public class OrderDetailsFragment extends BaseFragment {
                 money.format(reconciliation.computedTotalCents()),
                 money.format(reconciliation.statedTotalCents())));
 
-        if (reconciliation.totalMatches()) {
-            binding.reconcileDelta.setText(R.string.reconcile_matches);
-            binding.reconcileDelta.setTextColor(0xFF2E7D32);
-        } else {
-            binding.reconcileDelta.setText(getString(R.string.reconcile_delta,
-                    money.formatSigned(reconciliation.totalDeltaCents())));
-            binding.reconcileDelta.setTextColor(0xFFC62828);
-        }
+        boolean matches = reconciliation.totalMatches();
+        // SPEC 7.7.4: a delta warns, it never blocks, so it is styled as a warning rather
+        // than an error, and it carries an icon as well as a colour.
+        StateColors.State state = matches
+                ? StateColors.State.SUCCESS : StateColors.State.WARNING;
+        binding.reconcileDelta.setText(matches
+                ? getString(R.string.reconcile_matches)
+                : getString(R.string.reconcile_delta,
+                        money.formatSigned(reconciliation.totalDeltaCents())));
+        binding.reconcileDelta.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                matches ? R.drawable.ic_check_circle : R.drawable.ic_alert_circle, 0, 0, 0);
+
+        int onContainer = StateColors.onContainer(requireContext(), state);
+        binding.reconcileBanner.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(
+                        StateColors.container(requireContext(), state)));
+        binding.reconcileDelta.setTextColor(onContainer);
+        binding.reconcileLine.setTextColor(onContainer);
+        androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(binding.reconcileDelta,
+                android.content.res.ColorStateList.valueOf(onContainer));
     }
 
     private void persist() {
@@ -192,6 +214,13 @@ public class OrderDetailsFragment extends BaseFragment {
         current.statedTotalCents = CurrencyInput.readCents(binding.statedTotalInput, 0L);
         current.draftStep = com.householdsplitter.data.entity.DraftStep.PARTICIPANTS;
         model.save(current);
+    }
+
+    private com.google.android.material.textfield.TextInputLayout[] moneyLayouts() {
+        return new com.google.android.material.textfield.TextInputLayout[]{
+                binding.subtotalLayout, binding.taxLayout, binding.statedTotalLayout,
+                binding.deliveryLayout, binding.tipLayout, binding.otherFeeLayout,
+                binding.discountLayout};
     }
 
     private EditText[] moneyFields() {

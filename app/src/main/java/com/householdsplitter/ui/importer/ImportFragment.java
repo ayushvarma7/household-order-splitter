@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.householdsplitter.R;
 import com.householdsplitter.databinding.FragmentImportBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
 import java.io.File;
@@ -76,6 +77,9 @@ public class ImportFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         model = viewModel(ImportViewModel.class);
 
+        Insets.padTop(binding.toolbar);
+        Insets.padBottom(binding.footer);
+
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
 
@@ -127,6 +131,7 @@ public class ImportFragment extends BaseFragment {
             adapter.submitList(new ArrayList<>(uris));
             int count = uris.size();
             binding.previewStrip.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
+            binding.stripLabel.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
             binding.emptyHint.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
             // SPEC 7.4.2: Continue shows the count. SPEC 7.4.5: one image minimum.
             binding.continueButton.setText(count == 0

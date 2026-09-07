@@ -14,6 +14,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.householdsplitter.R;
 import com.householdsplitter.databinding.FragmentParsingBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 
 import java.util.ArrayList;
 
@@ -36,6 +37,8 @@ public class ParsingFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         model = viewModel(ParsingViewModel.class);
+
+        Insets.padTopAndBottom(binding.getRoot());
         uris = getArguments() == null
                 ? new ArrayList<>() : getArguments().getStringArrayList(ParsingArgs.ARG_URIS);
         if (uris == null) {

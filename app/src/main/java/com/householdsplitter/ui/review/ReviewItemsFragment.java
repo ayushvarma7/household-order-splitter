@@ -20,6 +20,8 @@ import com.householdsplitter.core.parse.model.Reconciliation;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.databinding.FragmentReviewItemsBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
 import java.util.List;
@@ -52,6 +54,9 @@ public class ReviewItemsFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         orderId = getArguments() == null ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID);
         model = viewModel(ReviewItemsViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottom(binding.footer);
 
         CurrencyFormat money = new CurrencyFormat(
                 locator().settings().currencySymbol(), locator().settings().locale());
@@ -104,26 +109,37 @@ public class ReviewItemsFragment extends BaseFragment {
             return;
         }
         binding.reconciliationBanner.setVisibility(View.VISIBLE);
+
+        final StateColors.State state;
+        final int icon;
         if (reconciliation.statedSubtotalCents() == 0L && reconciliation.statedTotalCents() == 0L) {
             binding.reconciliationBanner.setText(R.string.reconcile_no_totals);
-            binding.reconciliationBanner.setBackgroundColor(0x14000000);
-            return;
-        }
-        if (reconciliation.subtotalMatches()) {
+            state = StateColors.State.NEUTRAL;
+            icon = R.drawable.ic_alert_circle;
+        } else if (reconciliation.subtotalMatches()) {
             binding.reconciliationBanner.setText(getString(R.string.reconcile_items_match,
                     money.format(reconciliation.itemsSubtotalCents())));
-            binding.reconciliationBanner.setBackgroundColor(0x1A2CA02C);
+            state = StateColors.State.SUCCESS;
+            icon = R.drawable.ic_check_circle;
         } else {
             binding.reconciliationBanner.setText(getString(R.string.reconcile_items_off,
                     money.format(reconciliation.itemsSubtotalCents()),
                     money.format(reconciliation.statedSubtotalCents()),
                     money.formatSigned(reconciliation.subtotalDeltaCents())));
-            binding.reconciliationBanner.setBackgroundColor(0x1AD62728);
+            // Advisory, never a gate (SPEC 8.9.4), so it is a warning rather than an error.
+            state = StateColors.State.WARNING;
+            icon = R.drawable.ic_alert_circle;
         }
+        StateColors.applyContainer(binding.reconciliationBanner, binding.reconciliationBanner, state);
+        binding.reconciliationBanner.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+        androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(
+                binding.reconciliationBanner, android.content.res.ColorStateList.valueOf(
+                        StateColors.onContainer(requireContext(), state)));
     }
 
     private void openEditSheet(LineItem item) {
-        ItemEditSheet.forItem(item, new ItemEditSheet.Listener() {
+        ItemEditSheet.forItem(item, locator().settings().currencySymbol(),
+                new ItemEditSheet.Listener() {
             @Override
             public void onSaved(LineItem saved) {
                 model.save(saved);

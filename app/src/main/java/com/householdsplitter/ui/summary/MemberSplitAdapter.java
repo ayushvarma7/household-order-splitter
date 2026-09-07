@@ -91,7 +91,8 @@ public class MemberSplitAdapter
             CurrencyFormat money = adapter.money;
             binding.avatar.setText(initials(split.memberName()));
             binding.avatar.setBackgroundTintList(ColorStateList.valueOf(
-                    MemberPalette.parse(adapter.colorByMember.get(split.memberId()))));
+                    MemberPalette.resolve(binding.getRoot().getContext(),
+                            adapter.colorByMember.get(split.memberId()))));
             binding.avatar.setContentDescription(split.memberName());
             binding.memberName.setText(split.memberName());
             binding.finalTotal.setText(money.format(split.finalCents()));

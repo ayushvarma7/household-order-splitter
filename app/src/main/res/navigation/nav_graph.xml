@@ -74,4 +74,9 @@
         android:label="@string/menu_settings"
         tools:layout="@layout/fragment_settings" />
 
+    <fragment
+        android:id="@+id/imageViewerFragment"
+        android:name="com.householdsplitter.ui.summary.ImageViewerFragment"
+        tools:layout="@layout/fragment_image_viewer" />
+
 </navigation>

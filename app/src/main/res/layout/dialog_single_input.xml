@@ -2,13 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
-    android:paddingTop="8dp">
+    android:paddingStart="@dimen/screen_margin"
+    android:paddingEnd="@dimen/screen_margin"
+    android:paddingTop="@dimen/space_s">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/dialogInputLayout"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        style="@style/Widget.Splitter.TextInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 

@@ -3,90 +3,108 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize" />
+            style="@style/Widget.Splitter.Toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/memberSummary"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:alpha="0.7"
-            android:textAppearance="?attr/textAppearanceLabelMedium" />
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:textAppearance="@style/Text.Caption"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            app:layout_constraintWidth_max="@dimen/content_max_width" />
 
         <FrameLayout
-            android:layout_width="match_parent"
+            android:id="@+id/listArea"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/memberSummary"
+            app:layout_constraintWidth_max="@dimen/content_max_width">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/orderList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingBottom="96dp" />
+                android:paddingStart="@dimen/space_m"
+                android:paddingEnd="@dimen/space_m"
+                android:paddingTop="@dimen/space_s"
+                android:paddingBottom="@dimen/fab_clearance"
+                android:scrollbars="vertical" />
 
-            <!-- SPEC 7.3.5 -->
+            <!-- SPEC 7.3.5: an illustration, the text, and a button that does the same
+                 thing as the FAB. -->
             <LinearLayout
                 android:id="@+id/emptyState"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"
+                android:paddingStart="@dimen/space_xxl"
+                android:paddingEnd="@dimen/space_xxl"
+                android:paddingBottom="@dimen/fab_clearance"
                 android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
+                    android:layout_width="@dimen/empty_illustration"
+                    android:layout_height="@dimen/empty_illustration"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_empty_receipt" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/space_l"
                     android:text="@string/home_empty_title"
-                    android:textAppearance="?attr/textAppearanceTitleLarge" />
+                    android:textAppearance="@style/Text.ScreenTitle" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:alpha="0.7"
+                    android:layout_marginTop="@dimen/space_s"
                     android:gravity="center"
                     android:text="@string/home_empty_body"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+                    android:textAppearance="@style/Text.BodyMuted" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/emptyStateButton"
+                    style="@style/Widget.Splitter.Button.Tonal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:minHeight="48dp"
+                    android:layout_marginTop="@dimen/space_xl"
                     android:text="@string/action_new_order" />
             </LinearLayout>
         </FrameLayout>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/newOrderFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/space_l"
         android:text="@string/action_new_order"
         app:icon="@drawable/ic_add" />
 

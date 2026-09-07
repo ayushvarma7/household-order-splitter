@@ -197,4 +197,28 @@
     <string name="wipe_confirm_word">DELETE</string>
     <string name="wipe_action">Wipe everything</string>
     <string name="wipe_not_confirmed">Type DELETE exactly to confirm</string>
+
+    <string name="action_duplicate_assignments">Duplicate assignments</string>
+    <string name="action_open">Open</string>
+    <string name="order_duplicated">Copied into a new draft with the same answers</string>
+    <string name="export_needs_assignments">Finish assigning this order before exporting it</string>
+    <string name="screenshots_title">Original screenshots</string>
+    <string name="screenshot_number">Screenshot %1$d</string>
+
+    <!-- Redesign copy -->
+    <string name="setup_group_hint">You can change this later.</string>
+    <string name="assign_or_pick">Or pick who it is for</string>
+    <string name="import_order_label">Order of screenshots</string>
+    <string name="parsing_subtitle">Reading names and prices on this device. Nothing leaves your phone.</string>
+    <string name="details_totals_label">What the bill says</string>
+    <string name="summary_workings">How this was worked out</string>
+    <string name="edit_item_title">Edit item</string>
+    <string name="settings_danger_zone">Danger zone</string>
+    <string name="currency_prefix"></string>
+
+    <string name="summary_row_common">Common items, split %1$d ways</string>
+    <string name="summary_row_per_head">Each person\'s share of those</string>
+    <string name="summary_row_items">All items</string>
+    <string name="summary_row_computed">Computed total</string>
+    <string name="summary_row_stated">Printed on the bill</string>
 </resources>

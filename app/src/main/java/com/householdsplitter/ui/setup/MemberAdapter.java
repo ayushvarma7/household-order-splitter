@@ -68,7 +68,7 @@ public class MemberAdapter extends ListAdapter<Member, MemberAdapter.MemberViewH
         void bind(Member member, Listener listener) {
             binding.avatar.setText(member.initials());
             binding.avatar.setBackgroundTintList(
-                    ColorStateList.valueOf(MemberPalette.parse(member.colorHex)));
+                    ColorStateList.valueOf(MemberPalette.resolve(binding.getRoot().getContext(), member.colorHex)));
             binding.memberName.setText(member.name);
 
             // Accessibility: the avatar colour is decoration, so the name is announced.

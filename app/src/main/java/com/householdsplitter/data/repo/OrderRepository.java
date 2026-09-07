@@ -24,6 +24,7 @@ import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderImage;
 import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.mapper.CalcMapper;
+import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.util.AppExecutors;
@@ -274,6 +275,73 @@ public class OrderRepository {
 
     public void rename(long orderId, String label) {
         executors.diskIO().execute(() -> orderDao.rename(orderId, label));
+    }
+
+    /**
+     * SPEC 7.3.6, "Duplicate assignments".
+     *
+     * <p>Copies the order into a fresh draft carrying its rows, its participants and its
+     * answers, so a weekly shop of largely the same things starts from last week's answers
+     * rather than from nothing. The copy is a DRAFT with no order number, so it can never
+     * collide with the original under the unique index of SPEC 5.3, and no screenshot is
+     * carried over because those belong to the shop that actually happened (SPEC 3.4).
+     */
+    public void duplicate(long orderId, Callback<Result<Long>> callback) {
+        executors.diskIO().execute(() -> {
+            OrderBundle source = orderDao.getBundleSync(orderId);
+            if (source == null) {
+                post(callback, Result.failure("That order no longer exists"));
+                return;
+            }
+            Order copy = new Order();
+            copy.householdId = source.order.householdId;
+            copy.label = source.order.label + " (copy)";
+            copy.orderDate = System.currentTimeMillis();
+            copy.createdAt = copy.orderDate;
+            copy.status = OrderStatus.DRAFT;
+            copy.draftStep = DraftStep.REVIEW;
+            copy.taxCents = source.order.taxCents;
+            copy.deliveryFeeCents = source.order.deliveryFeeCents;
+            copy.tipCents = source.order.tipCents;
+            copy.otherFeeCents = source.order.otherFeeCents;
+            copy.discountCents = source.order.discountCents;
+            copy.statedSubtotalCents = source.order.statedSubtotalCents;
+            copy.statedTotalCents = source.order.statedTotalCents;
+            copy.payerMemberId = source.order.payerMemberId;
+            long copyId = orderDao.insert(copy);
+
+            List<Long> participants = new ArrayList<>();
+            for (Member member : source.participants) {
+                participants.add(member.id);
+            }
+            participantDao.replaceForOrder(copyId, participants);
+
+            for (LineItemWithAssignments row : source.items) {
+                LineItem item = new LineItem();
+                item.orderId = copyId;
+                item.name = row.item.name;
+                item.rawOcrText = row.item.rawOcrText;
+                item.quantity = row.item.quantity;
+                item.lineTotalCents = row.item.lineTotalCents;
+                item.unitPriceText = row.item.unitPriceText;
+                item.scope = row.item.scope;
+                item.sourceSection = row.item.sourceSection;
+                item.needsReview = row.item.needsReview;
+                item.reviewReasonsCsv = row.item.reviewReasonsCsv;
+                item.position = row.item.position;
+                long newItemId = lineItemDao.insert(item);
+
+                List<ItemAssignment> assignments = new ArrayList<>();
+                for (ItemAssignment assignment : row.assignments) {
+                    assignments.add(new ItemAssignment(newItemId, assignment.memberId,
+                            assignment.shares));
+                }
+                if (!assignments.isEmpty()) {
+                    assignmentDao.insertAll(assignments);
+                }
+            }
+            post(callback, Result.ok(copyId));
+        });
     }
 
     /** SPEC 7.3.6. */

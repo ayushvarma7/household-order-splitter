@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tablets and unfolded foldables, 600dp and wider.
+
+  Two changes only: more room at the edge, and a cap on the reading column so text does not
+  span the whole width. Everything else inherits, because the components themselves are
+  already sized from tokens.
+-->
+<resources>
+    <dimen name="screen_margin">32dp</dimen>
+    <dimen name="screen_margin_vertical">24dp</dimen>
+    <dimen name="content_max_width">560dp</dimen>
+    <dimen name="empty_illustration">128dp</dimen>
+    <dimen name="thumbnail_size">120dp</dimen>
+    <dimen name="preview_strip_height">220dp</dimen>
+    <dimen name="preview_tile_width">148dp</dimen>
+</resources>

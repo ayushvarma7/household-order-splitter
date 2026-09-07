@@ -1,66 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- S1, SPEC 7.1.2: app name, one line of explanation, the field, then Continue. -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  S1, group setup. SPEC 7.1.2: app name, one line of explanation, the field, then Continue.
+
+  The content sits in a column capped at @dimen/content_max_width and centred, so on a
+  tablet the line length stays readable instead of spanning the whole width. Continue lives
+  in a bottom bar rather than under the field, because it is the one action on the screen
+  and the bottom of the display is where a thumb reaches.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:fillViewport="true">
+    android:background="?attr/colorSurface">
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="480dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.42"
+                app:layout_constraintWidth_max="@dimen/content_max_width">
+
+                <FrameLayout
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="@dimen/space_xl"
+                    android:background="@drawable/bg_banner"
+                    android:backgroundTint="?attr/colorPrimary">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_group" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textAppearance="@style/Text.Display" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:text="@string/setup_group_intro"
+                    android:textAppearance="@style/Text.BodyMuted" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/groupNameLayout"
+                    style="@style/Widget.Splitter.TextInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xxl"
+                    android:hint="@string/hint_group_name"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="60">
+
+                    <!-- SPEC 7.1.3: empty on load, no android:text, no example value. The
+                         hint is the field's floating label, so it can never be mistaken for
+                         content. -->
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/groupNameInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords"
+                        android:maxLength="60" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    android:text="@string/setup_group_hint"
+                    android:textAppearance="@style/Text.Caption" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:minHeight="600dp"
-        android:padding="24dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textAppearance="?attr/textAppearanceHeadlineMedium"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/setup_group_intro"
-            android:textAppearance="?attr/textAppearanceBodyLarge"
-            android:alpha="0.75" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/groupNameLayout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:hint="@string/hint_group_name"
-            app:counterEnabled="true"
-            app:counterMaxLength="60">
-
-            <!--
-              SPEC 7.1.3: empty on load, and no android:text and no example value. The hint
-              is the field's label, which floats above the text once typing starts, so it
-              can never be mistaken for content.
-            -->
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/groupNameInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textCapWords"
-                android:maxLength="60"
-                android:imeOptions="actionDone" />
-        </com.google.android.material.textfield.TextInputLayout>
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_m"
+        android:paddingBottom="@dimen/space_l"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/continueButton"
+            style="@style/Widget.Splitter.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:minHeight="48dp"
             android:enabled="false"
+            android:maxWidth="@dimen/content_max_width"
             android:text="@string/action_continue" />
     </LinearLayout>
-</ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,67 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- S4, SPEC 7.4.2. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:orientation="vertical">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
+        style="@style/Widget.Splitter.Toolbar"
+        android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
         app:title="@string/import_title" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:padding="24dp">
+        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/chooseButton"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="64dp"
-            android:text="@string/action_choose_screenshots" />
+            android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/cameraButton"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:minHeight="64dp"
-            android:text="@string/action_take_photo" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:paddingTop="@dimen/space_s"
+                android:paddingBottom="@dimen/space_l"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/content_max_width">
 
-        <TextView
-            android:id="@+id/emptyHint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:alpha="0.7"
-            android:text="@string/import_hint"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chooseButton"
+                    style="@style/Widget.Splitter.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height_large"
+                    android:text="@string/action_choose_screenshots" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/previewStrip"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="20dp"
-            android:clipToPadding="false"
-            android:orientation="horizontal"
-            android:visibility="gone" />
-    </LinearLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cameraButton"
+                    style="@style/Widget.Splitter.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height_large"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:text="@string/action_take_photo" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/continueButton"
+                <TextView
+                    android:id="@+id/emptyHint"
+                    style="@style/Widget.Splitter.Banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:backgroundTint="?attr/colorSurfaceContainer"
+                    android:text="@string/import_hint" />
+
+                <TextView
+                    android:id="@+id/stripLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:text="@string/import_order_label"
+                    android:textAppearance="@style/Text.SectionLabel"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/previewStrip"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/preview_strip_height"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        android:enabled="false"
-        android:minHeight="48dp"
-        android:text="@string/action_continue" />
-</LinearLayout>
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:paddingTop="@dimen/space_m"
+        android:paddingBottom="@dimen/space_l"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/continueButton"
+            style="@style/Widget.Splitter.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:maxWidth="@dimen/content_max_width"
+            android:text="@string/action_continue" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

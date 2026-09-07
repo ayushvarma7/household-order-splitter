@@ -30,6 +30,9 @@ import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.databinding.FragmentSummaryBinding;
 import com.householdsplitter.export.ExportService;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.ui.common.StateColors;
+import com.householdsplitter.databinding.ItemSummaryRowBinding;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
 import java.text.SimpleDateFormat;
@@ -96,6 +99,9 @@ public class SummaryFragment extends BaseFragment {
         readOnly = getArguments() != null && getArguments().getBoolean(ARG_READ_ONLY, false);
 
         model = viewModel(SummaryViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottomScrollable(binding.scroll);
         money = new CurrencyFormat(locator().settings().currencySymbol(),
                 locator().settings().locale());
         exportService = new ExportService(locator().orderRepository(), locator().settings(),
@@ -128,6 +134,7 @@ public class SummaryFragment extends BaseFragment {
             }
             adapter.setPayer(bundle.order.payerMemberId, payer);
             applyReadOnly(bundle);
+            renderScreenshots(bundle);
             model.recalculate();
         });
 
@@ -165,6 +172,10 @@ public class SummaryFragment extends BaseFragment {
         binding.editParticipantsButton.setEnabled(!locked);
         binding.settleButton.setText(settled ? R.string.action_reopen : R.string.action_mark_settled);
         binding.statusChip.setVisibility(settled ? View.VISIBLE : View.GONE);
+        if (settled) {
+            StateColors.applyContainer(binding.statusChip, binding.statusChip,
+                    StateColors.State.SUCCESS);
+        }
     }
 
     private void renderResult(SplitResult result) {
@@ -178,48 +189,84 @@ public class SummaryFragment extends BaseFragment {
         binding.summaryContent.setVisibility(View.VISIBLE);
         adapter.submitList(result.members());
 
-        // SPEC 7.10.3
-        StringBuilder footer = new StringBuilder();
-        footer.append(getString(R.string.summary_common_bucket,
-                money.format(result.commonBucketCents()),
-                result.participantCount(),
+        // SPEC 7.10.3, as a label-and-value table rather than a paragraph, so a figure can
+        // be found by scanning one column instead of reading a sentence.
+        binding.footerRows.removeAllViews();
+        addFooterRow(getString(R.string.summary_row_common,  result.participantCount()),
+                money.format(result.commonBucketCents()));
+        addFooterRow(getString(R.string.summary_row_per_head),
                 money.symbol() + Cents.quotientForDisplay(result.commonBucketCents(),
-                        Math.max(1, result.participantCount()))));
-        footer.append('\n').append(getString(R.string.summary_item_subtotal,
-                money.format(result.itemSubtotalCents())));
+                        Math.max(1, result.participantCount())));
+        addFooterRow(getString(R.string.summary_row_items),
+                money.format(result.itemSubtotalCents()));
         for (AdjustmentType type : AdjustmentType.values()) {
             long value = result.adjustmentTotal(type);
             if (value != 0L) {
-                footer.append('\n').append(type.label()).append(": ").append(money.format(value));
+                addFooterRow(type.label(), money.format(value));
             }
         }
-        footer.append('\n').append(getString(R.string.summary_computed_total,
-                money.format(result.computedTotalCents())));
+        addFooterRow(getString(R.string.summary_row_computed),
+                money.format(result.computedTotalCents()));
         if (result.statedTotalCents() != 0L) {
-            footer.append('\n').append(getString(R.string.summary_stated_total,
-                    money.format(result.statedTotalCents())));
-        }
-        binding.footerDetail.setText(footer.toString());
-
-        // SPEC 7.10.3 and 8.9.4: the verdict, restated here as SPEC 7.7.4 requires.
-        if (result.matchesStatedTotal()) {
-            binding.verdict.setText(R.string.summary_matches);
-            binding.verdict.setTextColor(0xFF2E7D32);
-        } else {
-            binding.verdict.setText(getString(R.string.summary_off_by,
-                    money.formatSigned(result.deltaCents())));
-            binding.verdict.setTextColor(0xFFC62828);
+            addFooterRow(getString(R.string.summary_row_stated),
+                    money.format(result.statedTotalCents()));
         }
 
-        if (result.equalFallbackUsed()) {
-            binding.fallbackNote.setVisibility(View.VISIBLE);
-        } else {
-            binding.fallbackNote.setVisibility(View.GONE);
-        }
+        // SPEC 7.10.3 and 8.9.4. The verdict carries an icon as well as a colour, so it
+        // still reads for a colour blind user and in a greyscale screenshot.
+        boolean matches = result.matchesStatedTotal();
+        StateColors.State state = matches
+                ? StateColors.State.SUCCESS : StateColors.State.DANGER;
+        binding.verdict.setText(matches
+                ? getString(R.string.summary_matches)
+                : getString(R.string.summary_off_by, money.formatSigned(result.deltaCents())));
+        binding.verdict.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                matches ? R.drawable.ic_check_circle : R.drawable.ic_alert_circle, 0, 0, 0);
+        StateColors.applyContainer(binding.verdict, binding.verdict, state);
+        androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(binding.verdict,
+                android.content.res.ColorStateList.valueOf(
+                        StateColors.onContainer(requireContext(), state)));
+
+        binding.fallbackNote.setVisibility(
+                result.equalFallbackUsed() ? View.VISIBLE : View.GONE);
 
         if (!readOnly) {
             model.markAssigned();
         }
+    }
+
+    private void addFooterRow(String label, String value) {
+        ItemSummaryRowBinding row = ItemSummaryRowBinding.inflate(
+                getLayoutInflater(), binding.footerRows, false);
+        row.rowLabel.setText(label);
+        row.rowValue.setText(value);
+        binding.footerRows.addView(row.getRoot());
+    }
+
+    /** SPEC 7.12.2: the original screenshots, tappable to full screen. */
+    private void renderScreenshots(OrderBundle bundle) {
+        java.util.List<String> uris = new java.util.ArrayList<>();
+        for (com.householdsplitter.data.entity.OrderImage image : bundle.images) {
+            uris.add(image.uri);
+        }
+        boolean any = !uris.isEmpty();
+        binding.screenshotsLabel.setVisibility(any ? View.VISIBLE : View.GONE);
+        binding.screenshotStrip.setVisibility(any ? View.VISIBLE : View.GONE);
+        if (!any) {
+            return;
+        }
+        if (binding.screenshotStrip.getAdapter() == null) {
+            binding.screenshotStrip.setLayoutManager(new LinearLayoutManager(
+                    requireContext(), LinearLayoutManager.HORIZONTAL, false));
+            binding.screenshotStrip.setAdapter(new ScreenshotAdapter((uri, position) -> {
+                Bundle args = new Bundle();
+                args.putString(ImageViewerFragment.ARG_URI, uri);
+                args.putInt(ImageViewerFragment.ARG_POSITION, position);
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.imageViewerFragment, args);
+            }));
+        }
+        ((ScreenshotAdapter) binding.screenshotStrip.getAdapter()).submitList(uris);
     }
 
     /** SPEC 7.10.6: a blocking panel listing the offenders, each tappable. */
@@ -229,10 +276,23 @@ public class SummaryFragment extends BaseFragment {
         }
         boolean blocked = unassigned != null && !unassigned.isEmpty();
         binding.blockingPanel.setVisibility(blocked ? View.VISIBLE : View.GONE);
-        binding.summaryContent.setVisibility(blocked ? View.GONE : binding.summaryContent.getVisibility());
+        if (blocked) {
+            binding.summaryContent.setVisibility(View.GONE);
+        }
         if (!blocked) {
             return;
         }
+        StateColors.State state = StateColors.State.DANGER;
+        binding.blockingPanel.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                StateColors.container(requireContext(), state)));
+        int onContainer = StateColors.onContainer(requireContext(), state);
+        binding.blockingTitle.setTextColor(onContainer);
+        binding.blockingHint.setTextColor(onContainer);
+        binding.blockingTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                R.drawable.ic_alert_circle, 0, 0, 0);
+        androidx.core.widget.TextViewCompat.setCompoundDrawableTintList(binding.blockingTitle,
+                android.content.res.ColorStateList.valueOf(onContainer));
+
         binding.blockingList.removeAllViews();
         binding.blockingTitle.setText(getResources().getQuantityString(
                 R.plurals.summary_blocked, unassigned.size(), unassigned.size()));
@@ -242,6 +302,14 @@ public class SummaryFragment extends BaseFragment {
                             com.google.android.material.R.attr.materialButtonOutlinedStyle);
             row.setText(item.name);
             row.setMinHeight(dp(48));
+            row.setTextColor(onContainer);
+            row.setStrokeColor(android.content.res.ColorStateList.valueOf(onContainer));
+            android.widget.LinearLayout.LayoutParams params =
+                    new android.widget.LinearLayout.LayoutParams(
+                            android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.bottomMargin = dp(8);
+            row.setLayoutParams(params);
             row.setOnClickListener(v -> {
                 Bundle args = new Bundle();
                 args.putLong(ParsingArgs.ARG_ORDER_ID, orderId);

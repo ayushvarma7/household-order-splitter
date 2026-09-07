@@ -4,43 +4,37 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
-    android:minHeight="64dp"
+    android:minHeight="@dimen/list_row_min_height"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingEnd="4dp">
+    android:paddingStart="@dimen/space_s"
+    android:paddingEnd="@dimen/space_xs">
 
     <TextView
         android:id="@+id/avatar"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_avatar_circle"
-        android:gravity="center"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="14sp" />
+        style="@style/Widget.Splitter.Avatar" />
 
     <TextView
         android:id="@+id/memberName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="@dimen/space_l"
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textAppearance="?attr/textAppearanceBodyLarge" />
+        android:textAppearance="@style/Text.Body" />
 
-    <!-- 48dp minimum touch targets, per the accessibility pass. -->
+    <!-- 48dp minimum touch targets throughout. -->
     <ImageButton
         android:id="@+id/editButton"
         style="?attr/borderlessButtonStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
         android:src="@drawable/ic_edit" />
 
     <ImageButton
         android:id="@+id/deleteButton"
         style="?attr/borderlessButtonStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
         android:src="@drawable/ic_delete" />
 </LinearLayout>

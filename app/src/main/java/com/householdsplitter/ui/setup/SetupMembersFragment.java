@@ -19,6 +19,7 @@ import com.householdsplitter.R;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.databinding.FragmentSetupMembersBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 
 /**
  * S2, member setup, and S13, the same list reached later from Home. SPEC 7.2 and 7.13.
@@ -48,6 +49,10 @@ public class SetupMembersFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         model = viewModel(SetupMembersViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padTop(binding.header);
+        Insets.padBottom(binding.footer);
         boolean manageMode = getArguments() != null
                 && getArguments().getBoolean(ARG_MANAGE_MODE, false);
 

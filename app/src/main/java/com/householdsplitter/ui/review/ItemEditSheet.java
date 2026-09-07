@@ -26,10 +26,12 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
     private SheetEditItemBinding binding;
     private LineItem item;
     private Listener listener;
+    private String currencySymbol;
 
-    public static ItemEditSheet forItem(LineItem item, Listener listener) {
+    public static ItemEditSheet forItem(LineItem item, String currencySymbol, Listener listener) {
         ItemEditSheet sheet = new ItemEditSheet();
         sheet.item = item;
+        sheet.currencySymbol = currencySymbol;
         sheet.listener = listener;
         return sheet;
     }
@@ -49,6 +51,10 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
         binding.nameInput.setText(item.name);
         binding.quantityInput.setText(String.valueOf(item.quantity));
         CurrencyInput.attach(binding.priceInput);
+        if (currencySymbol != null) {
+            ((com.google.android.material.textfield.TextInputLayout)
+                    binding.priceInput.getParent().getParent()).setPrefixText(currencySymbol);
+        }
         CurrencyInput.writeCents(binding.priceInput, item.lineTotalCents);
 
         // SPEC 7.6.5: the original OCR text, read only, so a wrong parse can be diagnosed.

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Component styles. A layout names a style; it never repeats a size, a corner radius or a
+  colour. That is what keeps the responsive buckets and the night palette working with no
+  duplicated layouts.
+-->
+<resources>
+
+    <!-- Typography. A deliberate five-step hierarchy rather than whatever a screen reached
+         for: screen title, section label, body, money, caption. -->
+    <style name="Text.ScreenTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:lineSpacingMultiplier">1.1</item>
+    </style>
+
+    <style name="Text.Display" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Text.SectionLabel" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="Text.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+
+    <style name="Text.BodyMuted" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+
+    <style name="Text.Caption" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Money is tabular so columns of amounts line up digit under digit. -->
+    <style name="Text.Money" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <style name="Text.MoneyLarge" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <style name="Text.MoneySmall" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+    </style>
+
+    <!-- Buttons. Exactly one filled button per screen: the way forward. -->
+    <style name="Widget.Splitter.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_m</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelLarge</item>
+    </style>
+
+    <style name="Widget.Splitter.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_m</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+    </style>
+
+    <style name="Widget.Splitter.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="cornerRadius">@dimen/radius_m</item>
+    </style>
+
+    <style name="Widget.Splitter.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/radius_m</item>
+    </style>
+
+    <style name="Widget.Splitter.Button.Danger" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:textColor">?attr/colorError</item>
+        <item name="rippleColor">?attr/colorError</item>
+    </style>
+
+    <style name="Widget.Splitter.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_m</item>
+    </style>
+
+    <!-- Cards are outlined rather than elevated: a list of them stays calm, and elevation
+         is reserved for things that genuinely float, like the FAB. -->
+    <style name="Widget.Splitter.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardCornerRadius">@dimen/radius_l</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
+        <item name="strokeWidth">@dimen/stroke_width</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLowest</item>
+    </style>
+
+    <style name="Widget.Splitter.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/Text.ScreenTitle</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="Widget.Splitter.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="chipCornerRadius">@dimen/radius_pill</item>
+        <item name="ensureMinTouchTargetSize">true</item>
+        <item name="chipStrokeWidth">@dimen/stroke_width</item>
+    </style>
+
+    <!-- A small pill for a status word. Always carries a word, never colour alone. -->
+    <style name="Widget.Splitter.Pill" parent="">
+        <item name="android:background">@drawable/bg_pill</item>
+        <item name="android:paddingStart">@dimen/space_s</item>
+        <item name="android:paddingEnd">@dimen/space_s</item>
+        <item name="android:paddingTop">@dimen/space_xxs</item>
+        <item name="android:paddingBottom">@dimen/space_xxs</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.LabelSmall</item>
+    </style>
+
+    <style name="Widget.Splitter.Avatar" parent="">
+        <item name="android:layout_width">@dimen/avatar_size</item>
+        <item name="android:layout_height">@dimen/avatar_size</item>
+        <item name="android:background">@drawable/bg_avatar_circle</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">@dimen/avatar_text</item>
+    </style>
+
+    <!-- A banner that carries state: reconciliation, a warning, a block. -->
+    <style name="Widget.Splitter.Banner" parent="">
+        <item name="android:background">@drawable/bg_banner</item>
+        <item name="android:padding">@dimen/space_m</item>
+        <item name="android:textAppearance">@style/TextAppearance.Material3.BodyMedium</item>
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+</resources>

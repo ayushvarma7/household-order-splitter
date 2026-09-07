@@ -1,178 +1,242 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- S10 and S12, SPEC 7.10.1 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  S10, the summary, and S12 read-only. SPEC 7.10.1 and 7.12.
+
+  The order of the screen follows the order of the question: what each person owes first,
+  then how that was arrived at, then the verdict against the printed bill, then the actions.
+  The per-member figures are the largest type on the page because they are the answer; the
+  workings sit underneath in a quiet label-and-value table rather than a paragraph, so a
+  figure can be found by scanning down one column.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:orientation="vertical">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
+        style="@style/Widget.Splitter.Toolbar"
+        android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back" />
 
     <ScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/scroll"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/orderDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:alpha="0.7"
-                android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-            <TextView
-                android:id="@+id/statusChip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:background="#1A2CA02C"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:text="@string/status_settled"
-                android:textAppearance="?attr/textAppearanceLabelMedium"
-                android:visibility="gone" />
-
-            <!-- SPEC 7.10.6: the blocking panel replaces the totals entirely. -->
-            <LinearLayout
-                android:id="@+id/blockingPanel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#1AD62728"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/blockingTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/summary_blocked_hint"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-                <LinearLayout
-                    android:id="@+id/blockingList"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="vertical" />
-            </LinearLayout>
+            android:layout_height="wrap_content">
 
             <LinearLayout
-                android:id="@+id/summaryContent"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="gone">
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:paddingBottom="@dimen/space_xxl"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/content_max_width">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/memberList"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/payerButton"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:minHeight="48dp"
-                    android:text="@string/action_choose_payer" />
-
-                <!-- SPEC 7.10.3 -->
-                <TextView
-                    android:id="@+id/footerDetail"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:background="#11000000"
-                    android:padding="12dp"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-                <TextView
-                    android:id="@+id/verdict"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/fallbackNote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/summary_equal_fallback"
-                    android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:visibility="gone" />
-
-                <!-- SPEC 7.10.5 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/shareButton"
+                    <TextView
+                        android:id="@+id/orderDate"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:minHeight="48dp"
-                        android:text="@string/action_share" />
+                        android:textAppearance="@style/Text.Caption" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/exportButton"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
+                    <TextView
+                        android:id="@+id/statusChip"
+                        style="@style/Widget.Splitter.Pill"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        android:minHeight="48dp"
-                        android:text="@string/action_export_csv" />
+                        android:text="@string/status_settled"
+                        android:visibility="gone" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/editAssignmentsButton"
-                    style="@style/Widget.Material3.Button.TextButton"
+                <!-- SPEC 7.10.6: the blocking panel replaces the totals entirely. -->
+                <LinearLayout
+                    android:id="@+id/blockingPanel"
+                    style="@style/Widget.Splitter.Banner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/action_edit_assignments" />
+                    android:layout_marginTop="@dimen/space_m"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_l"
+                    android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/editParticipantsButton"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/action_edit_participants" />
+                    <TextView
+                        android:id="@+id/blockingTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawablePadding="@dimen/space_s"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/settleButton"
-                    style="@style/Widget.Material3.Button.TextButton"
+                    <TextView
+                        android:id="@+id/blockingHint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/summary_blocked_hint"
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
+
+                    <LinearLayout
+                        android:id="@+id/blockingList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_m"
+                        android:orientation="vertical" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/summaryContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/action_mark_settled" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/memberList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_m" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/payerButton"
+                        style="@style/Widget.Splitter.Button.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_m"
+                        android:text="@string/action_choose_payer" />
+
+                    <!-- SPEC 7.10.3: the workings, as a table rather than a paragraph. -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:text="@string/summary_workings"
+                        android:textAppearance="@style/Text.SectionLabel" />
+
+                    <LinearLayout
+                        android:id="@+id/footerRows"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:background="@drawable/bg_banner"
+                        android:backgroundTint="?attr/colorSurfaceContainerLow"
+                        android:orientation="vertical"
+                        android:paddingStart="@dimen/space_l"
+                        android:paddingEnd="@dimen/space_l"
+                        android:paddingTop="@dimen/space_s"
+                        android:paddingBottom="@dimen/space_s" />
+
+                    <!-- The verdict carries an icon as well as a colour, so it survives for a
+                         colour blind reader and in a greyscale screenshot. -->
+                    <TextView
+                        android:id="@+id/verdict"
+                        style="@style/Widget.Splitter.Banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_m"
+                        android:drawablePadding="@dimen/space_s"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleMedium" />
+
+                    <TextView
+                        android:id="@+id/fallbackNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/summary_equal_fallback"
+                        android:textAppearance="@style/Text.Caption"
+                        android:visibility="gone" />
+
+                    <!-- SPEC 7.12.2: the original screenshots, tappable to full screen. -->
+                    <TextView
+                        android:id="@+id/screenshotsLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:text="@string/screenshots_title"
+                        android:textAppearance="@style/Text.SectionLabel"
+                        android:visibility="gone" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/screenshotStrip"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/thumbnail_size"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:visibility="gone" />
+
+                    <!-- SPEC 7.10.5 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/shareButton"
+                            style="@style/Widget.Splitter.Button"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/action_share" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/exportButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_s"
+                            android:layout_weight="1"
+                            android:text="@string/action_export_csv" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/editAssignmentsButton"
+                        style="@style/Widget.Splitter.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:text="@string/action_edit_assignments" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/editParticipantsButton"
+                        style="@style/Widget.Splitter.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_edit_participants" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/settleButton"
+                        style="@style/Widget.Splitter.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_mark_settled" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

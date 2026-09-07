@@ -13,8 +13,15 @@ import com.householdsplitter.core.money.CurrencyFormat;
  */
 public final class ShareTextBuilder {
 
-    /** The separator between the group name and the order label in SPEC 10.2. */
-    public static final String TITLE_SEPARATOR = " — ";
+    /**
+     * The separator between the group name and the order label.
+     *
+     * <p>SPEC 10.2's template prints an em dash here. A plain hyphen is used instead, to
+     * match house style, and it is a constant so the choice is in one place. Nothing about
+     * SPEC 10.2.1 depends on which character it is: the requirement there is plain text with
+     * no markdown, no emoji and no table characters, which both satisfy.
+     */
+    public static final String TITLE_SEPARATOR = " - ";
     /** The separator between the three figures on a member's detail line. */
     public static final String DETAIL_SEPARATOR = " · ";
     /** SPEC 10.2.2. */

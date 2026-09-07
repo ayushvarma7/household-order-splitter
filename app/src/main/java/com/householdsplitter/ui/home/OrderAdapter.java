@@ -18,6 +18,7 @@ import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.databinding.ItemOrderBinding;
 import com.householdsplitter.ui.common.MemberPalette;
+import com.householdsplitter.ui.common.StateColors;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -86,9 +87,10 @@ public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.Ord
                     .format(new java.util.Date(row.order.orderDate)));
             binding.orderTotal.setText(money.format(row.order.statedTotalCents));
 
-            // Not colour alone: the chip carries its own word.
+            // Not colour alone: the pill carries its own word.
             binding.statusChip.setText(statusLabel(row.order.status));
-            binding.statusChip.setBackgroundColor(statusTint(row.order.status));
+            StateColors.applyContainer(binding.statusChip, binding.statusChip,
+                    statusState(row.order.status));
 
             renderAvatars(row);
 
@@ -111,7 +113,7 @@ public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.Ord
                 avatar.setGravity(android.view.Gravity.CENTER);
                 avatar.setBackgroundResource(R.drawable.bg_avatar_circle);
                 avatar.setBackgroundTintList(
-                        ColorStateList.valueOf(MemberPalette.parse(member.colorHex)));
+                        ColorStateList.valueOf(MemberPalette.resolve(binding.getRoot().getContext(), member.colorHex)));
                 avatar.setContentDescription(member.name);
                 android.widget.LinearLayout.LayoutParams params =
                         new android.widget.LinearLayout.LayoutParams(24 * density, 24 * density);
@@ -134,14 +136,14 @@ public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.Ord
             }
         }
 
-        private int statusTint(OrderStatus status) {
+        private StateColors.State statusState(OrderStatus status) {
             switch (status) {
                 case SETTLED:
-                    return 0x1A2CA02C;
+                    return StateColors.State.SUCCESS;
                 case ASSIGNED:
-                    return 0x1A1F77B4;
+                    return StateColors.State.NEUTRAL;
                 default:
-                    return 0x1AFFB300;
+                    return StateColors.State.WARNING;
             }
         }
     }

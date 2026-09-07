@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.Member;
+import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
@@ -64,5 +65,16 @@ public class HomeViewModel extends ViewModel {
     public void delete(long orderId) {
         orderRepository.delete(orderId, result -> {
         });
+    }
+
+    /** SPEC 7.3.6: "Duplicate assignments". */
+    public void duplicate(long orderId, com.householdsplitter.util.Callback<Long> onDone) {
+        orderRepository.duplicate(orderId, result ->
+                onDone.onResult(result.isOk() ? result.value() : null));
+    }
+
+    /** SPEC 7.3.6: "Export", which needs the order totalled first. */
+    public void bundleFor(long orderId, com.householdsplitter.util.Callback<OrderBundle> onBundle) {
+        orderRepository.bundle(orderId, onBundle);
     }
 }

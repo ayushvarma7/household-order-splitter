@@ -11,9 +11,23 @@ package com.householdsplitter.ui.common;
  */
 public final class MemberPalette {
 
+    /**
+     * The stored value, which is what a member row keeps in the database. It is a light
+     * palette value; {@link #resolve} maps it to the readable equivalent for the current
+     * configuration, so a household created in light mode still has legible avatars at
+     * night without rewriting a single row.
+     */
     private static final String[] COLORS = {
-            "#1F77B4", "#D62728", "#2CA02C", "#FF7F0E", "#9467BD",
-            "#8C564B", "#17BECF", "#BCBD22", "#E377C2", "#7F7F7F"
+            "#1F6FB2", "#B3261E", "#2E7D4F", "#B25E00", "#7A4FBF",
+            "#8C5A3C", "#00707D", "#7A7300", "#B03A7A", "#525968"
+    };
+
+    private static final int[] RESOURCES = {
+            com.householdsplitter.R.color.member_1, com.householdsplitter.R.color.member_2,
+            com.householdsplitter.R.color.member_3, com.householdsplitter.R.color.member_4,
+            com.householdsplitter.R.color.member_5, com.householdsplitter.R.color.member_6,
+            com.householdsplitter.R.color.member_7, com.householdsplitter.R.color.member_8,
+            com.householdsplitter.R.color.member_9, com.householdsplitter.R.color.member_10
     };
 
     private MemberPalette() {
@@ -30,6 +44,24 @@ public final class MemberPalette {
             safe += COLORS.length;
         }
         return COLORS[safe];
+    }
+
+    /**
+     * Maps a stored colour to the palette entry for the current configuration, so avatars
+     * stay legible in dark mode without migrating any data. An unrecognised value is parsed
+     * as-is, and a malformed one falls back rather than crashing.
+     */
+    public static int resolve(android.content.Context context, String colorHex) {
+        for (int i = 0; i < COLORS.length; i++) {
+            if (COLORS[i].equalsIgnoreCase(colorHex)) {
+                return androidx.core.content.ContextCompat.getColor(context, RESOURCES[i]);
+            }
+        }
+        try {
+            return android.graphics.Color.parseColor(colorHex);
+        } catch (IllegalArgumentException | NullPointerException malformed) {
+            return androidx.core.content.ContextCompat.getColor(context, RESOURCES[0]);
+        }
     }
 
     /** Falls back to the first colour rather than crashing on a malformed stored value. */

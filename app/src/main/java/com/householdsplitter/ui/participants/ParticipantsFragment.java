@@ -16,6 +16,7 @@ import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.databinding.FragmentParticipantsBinding;
 import com.householdsplitter.databinding.ItemParticipantBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.common.MemberPalette;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
@@ -41,6 +42,9 @@ public class ParticipantsFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         orderId = getArguments() == null ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID);
         model = viewModel(ParticipantsViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottom(binding.footer);
 
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
@@ -85,7 +89,7 @@ public class ParticipantsFragment extends BaseFragment {
                     inflater, binding.memberContainer, false);
             row.avatar.setText(member.initials());
             row.avatar.setBackgroundTintList(
-                    ColorStateList.valueOf(MemberPalette.parse(member.colorHex)));
+                    ColorStateList.valueOf(MemberPalette.resolve(requireContext(), member.colorHex)));
             row.avatar.setContentDescription(member.name);
             MaterialCheckBox checkBox = row.checkbox;
             checkBox.setText(member.name);

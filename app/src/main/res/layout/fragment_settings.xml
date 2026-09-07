@@ -1,184 +1,288 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- S14, SPEC 7.14 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- S14, SPEC 7.14. Grouped into cards so a destructive action never sits next to a
+     harmless one. -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:orientation="vertical">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
+        style="@style/Widget.Splitter.Toolbar"
+        android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_back"
         app:title="@string/menu_settings" />
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:id="@+id/scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/settings_allocation"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <RadioGroup
-                android:id="@+id/allocationGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/allocationProportional"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/settings_allocation_proportional" />
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/allocationEqual"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/settings_allocation_equal" />
-            </RadioGroup>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/settings_parser"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <RadioGroup
-                android:id="@+id/parserGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/parserOnDevice"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/settings_parser_on_device" />
-
-                <com.google.android.material.radiobutton.MaterialRadioButton
-                    android:id="@+id/parserCloud"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="48dp"
-                    android:text="@string/settings_parser_cloud" />
-            </RadioGroup>
-
-            <TextView
-                android:id="@+id/parserNote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:alpha="0.7"
-                android:textAppearance="?attr/textAppearanceBodySmall" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/settings_currency"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
+            android:layout_height="wrap_content">
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:paddingTop="@dimen/space_s"
+                android:paddingBottom="@dimen/space_xxl"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_max="@dimen/content_max_width">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="@string/settings_currency_symbol">
+                <!-- SPEC 7.14.1 -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/currencyInput"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxLength="3" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/currencySave"
-                    android:layout_width="wrap_content"
-                    android:layout_height="56dp"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/action_save" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_allocation"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <RadioGroup
+                            android:id="@+id/allocationGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs">
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/allocationProportional"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/touch_target_min"
+                                android:text="@string/settings_allocation_proportional"
+                                android:textAppearance="@style/Text.Body" />
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/allocationEqual"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/touch_target_min"
+                                android:text="@string/settings_allocation_equal"
+                                android:textAppearance="@style/Text.Body" />
+                        </RadioGroup>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SPEC 7.14.2 and 8.10.3 -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_parser"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <RadioGroup
+                            android:id="@+id/parserGroup"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs">
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/parserOnDevice"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/touch_target_min"
+                                android:text="@string/settings_parser_on_device"
+                                android:textAppearance="@style/Text.Body" />
+
+                            <com.google.android.material.radiobutton.MaterialRadioButton
+                                android:id="@+id/parserCloud"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="@dimen/touch_target_min"
+                                android:text="@string/settings_parser_cloud"
+                                android:textAppearance="@style/Text.Body" />
+                        </RadioGroup>
+
+                        <TextView
+                            android:id="@+id/parserNote"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:textAppearance="@style/Text.Caption" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SPEC 7.14.3 -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_currency"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.Splitter.TextInput"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:hint="@string/settings_currency_symbol">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/currencyInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:maxLength="3" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/currencySave"
+                                style="@style/Widget.Splitter.Button.Tonal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="@dimen/button_height_large"
+                                android:layout_marginStart="@dimen/space_s"
+                                android:text="@string/action_save" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SPEC 7.14.4, 7.11.3, 9.5 -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_data"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/exportAllButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/menu_export_all" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/backupButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_backup" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/restoreButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_restore" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/clearSuggestionsButton"
+                            style="@style/Widget.Splitter.Button.Outlined"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_clear_suggestions" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SPEC 7.14.5. Kept in its own card, away from everything reversible. -->
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/Widget.Splitter.Card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    app:strokeColor="?attr/colorError">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_l">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_danger_zone"
+                            android:textAppearance="@style/Text.SectionLabel"
+                            android:textColor="?attr/colorError" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/wipeButton"
+                            style="@style/Widget.Splitter.Button.Danger"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:text="@string/settings_wipe" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SPEC 7.14.6 -->
+                <TextView
+                    android:id="@+id/aboutText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:textAppearance="@style/Text.Caption" />
             </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/settings_data"
-                android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/exportAllButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
-                android:text="@string/menu_export_all" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/backupButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
-                android:text="@string/settings_backup" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/restoreButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
-                android:text="@string/settings_restore" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/clearSuggestionsButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
-                android:text="@string/settings_clear_suggestions" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/wipeButton"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
-                android:text="@string/settings_wipe"
-                android:textColor="#C62828" />
-
-            <TextView
-                android:id="@+id/aboutText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:alpha="0.75"
-                android:textAppearance="?attr/textAppearanceBodySmall" />
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

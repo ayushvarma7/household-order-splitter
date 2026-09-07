@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.householdsplitter.R;
 import com.householdsplitter.databinding.FragmentSetupGroupBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 
 /**
  * S1, group setup. SPEC 7.1.
@@ -40,6 +41,9 @@ public class SetupGroupFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         model = viewModel(SetupGroupViewModel.class);
+
+        Insets.padTop(binding.scroll);
+        Insets.padBottom(binding.footer);
 
         String current = model.currentName();
         if (!current.contentEquals(binding.groupNameInput.getText() == null

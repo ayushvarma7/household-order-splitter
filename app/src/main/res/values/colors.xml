@@ -1,22 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The light palette.
+
+  Three ideas drive it. First, the app's job is to answer "what do I owe?", so money and
+  reconciliation state get the strongest colour and everything else stays quiet. Second,
+  every state that colour encodes also carries an icon or a word, because colour alone must
+  never be the only signal. Third, the member palette has to stay distinguishable both from
+  each other and for the common forms of colour blindness, since a household can have ten
+  people on one screen.
+-->
 <resources>
-    <color name="brand_primary">#1A5FB4</color>
-    <color name="brand_on_primary">#FFFFFF</color>
-    <color name="brand_secondary">#2E7D5B</color>
+
+    <!-- Primary: a calm indigo. Used for the primary action on each screen and nothing else,
+         so "the blue thing" always means "the way forward". -->
+    <color name="primary">#3F5AA6</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#DDE1FF</color>
+    <color name="on_primary_container">#00164E</color>
+
+    <!-- Secondary: a muted slate for supporting chrome. -->
+    <color name="secondary">#5A5D72</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#DFE1F9</color>
+    <color name="on_secondary_container">#171A2C</color>
+
+    <!-- Tertiary: warm, used for the "needs a look" states so they read as attention
+         rather than as failure. -->
+    <color name="tertiary">#785900</color>
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="tertiary_container">#FFDF9B</color>
+    <color name="on_tertiary_container">#251A00</color>
+
+    <color name="surface">#FCFBFF</color>
+    <color name="on_surface">#1B1B1F</color>
+    <color name="surface_variant">#E3E1EC</color>
+    <color name="on_surface_variant">#46464F</color>
+    <color name="surface_container_lowest">#FFFFFF</color>
+    <color name="surface_container_low">#F6F4FB</color>
+    <color name="surface_container">#F0EEF6</color>
+    <color name="surface_container_high">#EAE8F0</color>
+    <color name="outline">#777680</color>
+    <color name="outline_variant">#C7C5D0</color>
+    <color name="scrim">#000000</color>
+    <color name="inverse_surface">#303034</color>
+    <color name="inverse_on_surface">#F3F0F4</color>
+
+    <color name="error">#BA1A1A</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="error_container">#FFDAD6</color>
+    <color name="on_error_container">#410002</color>
 
     <!--
-      SPEC 7.2.6: at least eight visually distinct member colours, assigned round-robin at
-      creation. Chosen to stay distinguishable for the common forms of colour blindness,
-      because SPEC (accessibility, PROMPT Phase 6.3) forbids meaning carried by colour alone
-      but the avatar colour still has to be readable at a glance.
+      Semantic states. These are named for what they mean, not what they look like, so the
+      dark palette can pick different hues without a single layout changing.
     -->
-    <color name="member_1">#1F77B4</color>
-    <color name="member_2">#D62728</color>
-    <color name="member_3">#2CA02C</color>
-    <color name="member_4">#FF7F0E</color>
-    <color name="member_5">#9467BD</color>
-    <color name="member_6">#8C564B</color>
-    <color name="member_7">#17BECF</color>
-    <color name="member_8">#BCBD22</color>
-    <color name="member_9">#E377C2</color>
-    <color name="member_10">#7F7F7F</color>
+    <!-- The computed total matches the printed bill (SPEC 7.10.3). -->
+    <color name="success">#2C6B4F</color>
+    <color name="on_success">#FFFFFF</color>
+    <color name="success_container">#B4F1CE</color>
+    <color name="on_success_container">#00210F</color>
+    <!-- A parsed row wants checking (SPEC 7.6.4), or an advisory delta (SPEC 8.9.4). -->
+    <color name="warning">#7A5900</color>
+    <color name="on_warning">#FFFFFF</color>
+    <color name="warning_container">#FFDF9E</color>
+    <color name="on_warning_container">#261A00</color>
+    <!-- A row nobody has answered for, blocking the summary (SPEC 7.10.6). -->
+    <color name="danger">#BA1A1A</color>
+    <color name="danger_container">#FFDAD6</color>
+    <color name="on_danger_container">#410002</color>
+
+    <!--
+      SPEC 7.2.6: at least eight visually distinct member colours, assigned round-robin.
+      Ten here, all dark enough to carry white initials at 4.5:1 or better, and spaced around
+      the wheel so adjacent members never look alike.
+    -->
+    <color name="member_1">#1F6FB2</color>
+    <color name="member_2">#B3261E</color>
+    <color name="member_3">#2E7D4F</color>
+    <color name="member_4">#B25E00</color>
+    <color name="member_5">#7A4FBF</color>
+    <color name="member_6">#8C5A3C</color>
+    <color name="member_7">#00707D</color>
+    <color name="member_8">#7A7300</color>
+    <color name="member_9">#B03A7A</color>
+    <color name="member_10">#525968</color>
+
+    <color name="ic_launcher_background">#3F5AA6</color>
 </resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spacing and sizing tokens, on a 4dp grid.
+
+  Nothing in a layout should carry a raw dp value. Every measurement comes from here, which
+  is what makes the responsive buckets work: values-sw600dp and values-sw840dp override the
+  same names, so a tablet gets roomier margins and a capped reading column without a single
+  layout file being duplicated or a single size being hard coded to a device.
+-->
+<resources>
+
+    <!-- The 4dp scale. -->
+    <dimen name="space_xxs">2dp</dimen>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_s">8dp</dimen>
+    <dimen name="space_m">12dp</dimen>
+    <dimen name="space_l">16dp</dimen>
+    <dimen name="space_xl">24dp</dimen>
+    <dimen name="space_xxl">32dp</dimen>
+    <dimen name="space_xxxl">48dp</dimen>
+
+    <!-- Horizontal breathing room at the screen edge. Grows with the window. -->
+    <dimen name="screen_margin">20dp</dimen>
+    <dimen name="screen_margin_vertical">16dp</dimen>
+
+    <!--
+      The reading column. On a phone this is larger than any window so it has no effect; on
+      a tablet or an unfolded foldable it stops a line of text running the full width, which
+      is unreadable past roughly 75 characters.
+    -->
+    <dimen name="content_max_width">4000dp</dimen>
+
+    <!-- Touch targets. 48dp is the floor for anything tappable. -->
+    <dimen name="touch_target_min">48dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="button_height_large">56dp</dimen>
+
+    <!-- Avatars. -->
+    <dimen name="avatar_size">40dp</dimen>
+    <dimen name="avatar_size_small">28dp</dimen>
+    <dimen name="avatar_size_large">44dp</dimen>
+    <dimen name="avatar_overlap">-8dp</dimen>
+    <dimen name="avatar_text">14sp</dimen>
+    <dimen name="avatar_text_small">11sp</dimen>
+
+    <!-- Shape. -->
+    <dimen name="radius_s">8dp</dimen>
+    <dimen name="radius_m">12dp</dimen>
+    <dimen name="radius_l">20dp</dimen>
+    <dimen name="radius_pill">100dp</dimen>
+
+    <!-- Components. -->
+    <dimen name="card_elevation">0dp</dimen>
+    <dimen name="stroke_width">1dp</dimen>
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="list_row_min_height">64dp</dimen>
+    <dimen name="fab_clearance">96dp</dimen>
+    <dimen name="thumbnail_size">96dp</dimen>
+    <dimen name="preview_strip_height">180dp</dimen>
+    <dimen name="preview_tile_width">116dp</dimen>
+    <dimen name="empty_illustration">104dp</dimen>
+    <dimen name="progress_bar_height">6dp</dimen>
+</resources>

@@ -21,7 +21,9 @@ import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.databinding.FragmentAssignBinding;
 import com.householdsplitter.ui.common.BaseFragment;
+import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.common.MemberPalette;
+import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
 import java.util.List;
@@ -48,6 +50,9 @@ public class AssignFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         orderId = getArguments() == null ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID);
         model = viewModel(AssignViewModel.class);
+
+        Insets.padTop(binding.toolbar);
+        Insets.padBottom(binding.footer);
         money = new CurrencyFormat(locator().settings().currencySymbol(),
                 locator().settings().locale());
 
@@ -142,6 +147,8 @@ public class AssignFragment extends BaseFragment {
         boolean convertedToCommon = model.resolvedScope() == Scope.COMMON
                 && !model.participants().isEmpty();
         binding.commonNote.setVisibility(convertedToCommon ? View.VISIBLE : View.GONE);
+        binding.commonNote.setTextColor(
+                StateColors.content(requireContext(), StateColors.State.SUCCESS));
 
         binding.nextButton.setEnabled(model.canAdvance());
     }
@@ -161,9 +168,17 @@ public class AssignFragment extends BaseFragment {
             chip.setChipIconVisible(false);
             chip.setMinHeight(dp(48));
             chip.setEnsureMinTouchTargetSize(true);
+            // A selected chip is filled with that member's own colour, so who is on an item
+            // is legible at a glance and matches their avatar everywhere else. The name is
+            // always on the chip, so the colour is reinforcement rather than the signal.
+            int memberColor = MemberPalette.resolve(requireContext(), member.colorHex);
             if (selected) {
-                chip.setChipBackgroundColor(ColorStateList.valueOf(
-                        (MemberPalette.parse(member.colorHex) & 0x00FFFFFF) | 0x33000000));
+                chip.setChipBackgroundColor(ColorStateList.valueOf(memberColor));
+                chip.setTextColor(0xFFFFFFFF);
+                chip.setChipStrokeColor(ColorStateList.valueOf(memberColor));
+            } else {
+                chip.setChipStrokeColor(ColorStateList.valueOf(memberColor));
+                chip.setChipStrokeWidth(getResources().getDimension(R.dimen.stroke_width));
             }
             // Not colour alone: the name is on the chip and in its description.
             chip.setContentDescription(member.name + (selected
@@ -183,8 +198,13 @@ public class AssignFragment extends BaseFragment {
         long[] shares = model.previewShares();
         if (shares.length == 0) {
             binding.readout.setText(R.string.assign_pick_someone);
+            StateColors.applyContainer(binding.readout, binding.readout,
+                    StateColors.State.NEUTRAL);
             return;
         }
+        // Once somebody is chosen the readout becomes the confirmed figure, so it takes the
+        // success container: the consequence of the choice is visible without reading.
+        StateColors.applyContainer(binding.readout, binding.readout, StateColors.State.SUCCESS);
         boolean allEqual = true;
         for (long share : shares) {
             if (share != shares[0]) {
