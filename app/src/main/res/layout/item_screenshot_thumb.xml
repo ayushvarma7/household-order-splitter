@@ -19,6 +19,8 @@
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="?attr/colorSurfaceContainerHigh"
         android:importantForAccessibility="no"
-        android:scaleType="centerCrop" />
+        android:padding="@dimen/space_xxs"
+        android:scaleType="fitCenter" />
 </com.google.android.material.card.MaterialCardView>

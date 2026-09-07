@@ -14,12 +14,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!--
+          fitCenter rather than centerCrop. A screenshot is a tall, mostly white page, and
+          centre-cropping it shows the blank middle, which reads as an empty tile. Fitting
+          the whole page in shows the coloured app bar and the shape of the content, which
+          is what tells the user which screenshot this is and therefore whether the order
+          they are about to drag into is right.
+        -->
         <ImageView
             android:id="@+id/preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="?attr/colorSurfaceContainerHigh"
             android:contentDescription="@string/screenshot_preview"
-            android:scaleType="centerCrop" />
+            android:padding="@dimen/space_xxs"
+            android:scaleType="fitCenter" />
 
         <TextView
             android:id="@+id/positionLabel"

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Any window at least 600dp wide, whichever device it belongs to.
+
+  This is the bucket a phone in landscape lands in, and sw600dp is not: "smallest width"
+  keys off the shorter edge, which for a phone stays around 390dp however you hold it. So a
+  landscape phone was getting the compact reading column stretched across 870dp, which is
+  the unreadable line length the cap exists to prevent.
+
+  Only the horizontal measurements change here. Vertical space is scarce in landscape, so
+  the vertical rhythm stays as it is rather than growing.
+-->
+<resources>
+    <dimen name="screen_margin">28dp</dimen>
+    <dimen name="content_max_width">560dp</dimen>
+</resources>

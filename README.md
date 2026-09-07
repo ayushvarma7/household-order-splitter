@@ -137,11 +137,13 @@ content description instead of the screen being one opaque canvas.
 
 ## Design and accessibility
 
-Spacing runs on a 4dp scale in `values/dimens.xml`, and `values-sw600dp` and `values-sw840dp`
-override the same names, so a tablet gets wider margins and a capped reading column with no
-duplicated layouts and no size fixed to a device. Every screen lays its content in a column
-constrained to `content_max_width` and centred, so line length stays readable as the window
-grows.
+Spacing runs on a 4dp scale in `values/dimens.xml`, and three qualified folders override the
+same names: `values-sw600dp` and `values-sw840dp` for tablets, and `values-w600dp` for any
+window at least 600dp wide. That last one matters because "smallest width" keys off the
+shorter edge, which for a phone stays around 390dp however you hold it, so a landscape phone
+would otherwise stretch the compact reading column across 870dp. Every screen lays its
+content in a column constrained to `content_max_width` and centred, so line length stays
+readable as the window grows, with no duplicated layouts and no size fixed to a device.
 
 Colour is semantic and paired: `success`, `warning` and `danger` exist as container plus
 on-container pairs in `values/colors.xml` and its `values-night` twin, and `StateColors`
