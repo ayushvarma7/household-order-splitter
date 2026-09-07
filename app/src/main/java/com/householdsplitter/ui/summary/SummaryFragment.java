@@ -232,6 +232,9 @@ public class SummaryFragment extends BaseFragment {
 
         if (!readOnly) {
             model.markAssignedIfStillDraft();
+            // An order whose totals have just computed is worth recording, not only one
+            // that has been settled: the figures are final either way.
+            refreshWorkbook();
         }
     }
 
