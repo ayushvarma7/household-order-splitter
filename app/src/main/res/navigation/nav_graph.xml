@@ -39,4 +39,39 @@
         android:label="@string/import_title"
         tools:layout="@layout/fragment_parsing" />
 
+    <fragment
+        android:id="@+id/reviewItemsFragment"
+        android:name="com.householdsplitter.ui.review.ReviewItemsFragment"
+        android:label="@string/review_title"
+        tools:layout="@layout/fragment_review_items" />
+
+    <fragment
+        android:id="@+id/orderDetailsFragment"
+        android:name="com.householdsplitter.ui.details.OrderDetailsFragment"
+        android:label="@string/details_title"
+        tools:layout="@layout/fragment_order_details" />
+
+    <fragment
+        android:id="@+id/participantsFragment"
+        android:name="com.householdsplitter.ui.participants.ParticipantsFragment"
+        android:label="@string/participants_title"
+        tools:layout="@layout/fragment_participants" />
+
+    <fragment
+        android:id="@+id/assignFragment"
+        android:name="com.householdsplitter.ui.assign.AssignFragment"
+        android:label="@string/assign_title"
+        tools:layout="@layout/fragment_assign" />
+
+    <fragment
+        android:id="@+id/summaryFragment"
+        android:name="com.householdsplitter.ui.summary.SummaryFragment"
+        tools:layout="@layout/fragment_summary" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.householdsplitter.ui.settings.SettingsFragment"
+        android:label="@string/menu_settings"
+        tools:layout="@layout/fragment_settings" />
+
 </navigation>

@@ -107,4 +107,94 @@
         <item quantity="one">%d item still needs a name and a price</item>
         <item quantity="other">%d items still need a name and a price</item>
     </plurals>
+
+    <!-- S9, SPEC 7.9 -->
+    <string name="assign_title">Who is this for?</string>
+    <string name="assign_progress">Item %1$d of %2$d</string>
+    <string name="assign_quantity">Quantity %1$d</string>
+    <string name="assign_common">Common, everyone in this order</string>
+    <string name="assign_same_as_previous">Same as previous</string>
+    <string name="assign_just">Just one person</string>
+    <string name="assign_exclude">Exclude, nobody pays for this</string>
+    <string name="assign_suggested">Suggested from your last order. Change it if it is wrong.</string>
+    <string name="assign_became_common">Everyone is selected, so this counts as a common item.</string>
+    <string name="assign_pick_someone">Pick who this is for</string>
+    <string name="assign_each">%1$s each</string>
+    <string name="assign_nothing_to_do">There are no items to assign.</string>
+    <string name="assign_jump_title">Jump to an item</string>
+    <string name="assign_all_common_title">Assign all remaining as common</string>
+    <string name="action_back">Back</string>
+    <string name="action_next">Next</string>
+    <string name="scope_common">common</string>
+    <string name="scope_excluded">not charged</string>
+    <string name="scope_unassigned">not answered yet</string>
+
+    <!-- S10, S11, S12, SPEC 7.10 to 7.12 -->
+    <string name="summary_common_bucket">Common items: %1$s, split %2$d ways, about %3$s each</string>
+    <string name="summary_item_subtotal">All items: %1$s</string>
+    <string name="summary_computed_total">Computed total: %1$s</string>
+    <string name="summary_stated_total">Printed on the bill: %1$s</string>
+    <string name="summary_matches">Matches bill amount</string>
+    <string name="summary_off_by">Off by %1$s</string>
+    <string name="summary_equal_fallback">Tax and fees were split equally, because a proportional split was not possible for this order.</string>
+    <string name="summary_blocked_hint">Tap one to go and answer for it.</string>
+    <string name="action_choose_payer">Who paid?</string>
+    <string name="payer_none">Nobody yet</string>
+    <string name="action_share">Share as text</string>
+    <string name="action_export_csv">Export CSV</string>
+    <string name="action_edit_assignments">Edit assignments</string>
+    <string name="action_edit_participants">Edit participants</string>
+    <string name="action_mark_settled">Mark as settled</string>
+    <string name="action_reopen">Reopen</string>
+    <string name="reopen_title">Reopen this order?</string>
+    <string name="reopen_message">It will become editable again.</string>
+    <string name="status_settled">Settled</string>
+    <string name="status_draft">Draft</string>
+    <string name="status_assigned">Assigned</string>
+    <string name="export_saved">Saved</string>
+    <string name="export_failed">Could not save that file</string>
+
+    <plurals name="assign_all_common_message">
+        <item quantity="one">%d item from here onwards will be marked as common.</item>
+        <item quantity="other">%d items from here onwards will be marked as common.</item>
+    </plurals>
+    <plurals name="summary_blocked">
+        <item quantity="one">%d item still needs an answer</item>
+        <item quantity="other">%d items still need an answer</item>
+    </plurals>
+
+    <!-- S3 context menu, SPEC 7.3.6 -->
+    <string name="action_rename">Rename</string>
+    <string name="delete_order_title">Delete %1$s?</string>
+    <string name="delete_order_message">This removes the order and everything in it. It cannot be undone.</string>
+
+    <!-- S14, SPEC 7.14 -->
+    <string name="settings_allocation">Tax and fees</string>
+    <string name="settings_allocation_proportional">Split in proportion to what each person spent</string>
+    <string name="settings_allocation_equal">Split equally between everyone</string>
+    <string name="settings_parser">Reading screenshots</string>
+    <string name="settings_parser_on_device">On this device</string>
+    <string name="settings_parser_cloud">In the cloud</string>
+    <string name="settings_parser_cloud_available">The cloud reader sends your screenshots to a model to be read.</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_currency_symbol">Symbol</string>
+    <string name="settings_data">Your data</string>
+    <string name="settings_backup">Back up to a file</string>
+    <string name="settings_restore">Restore from a file</string>
+    <string name="settings_clear_suggestions">Clear suggestion history</string>
+    <string name="settings_suggestions_cleared">Suggestion history cleared</string>
+    <string name="settings_wipe">Wipe all data</string>
+    <string name="settings_saved">Saved</string>
+    <string name="settings_about">Version %1$s. Everything you enter stays on this device. There is no account, no server and no sync.</string>
+    <string name="restore_title">Restore this backup</string>
+    <string name="restore_message">Replace wipes what is here first. Merge keeps it and adds the backup alongside.</string>
+    <string name="restore_replace">Replace</string>
+    <string name="restore_merge">Merge</string>
+    <string name="restore_done">Restored</string>
+    <string name="wipe_title">Wipe all data?</string>
+    <string name="wipe_message">Every group, person and order is deleted permanently.</string>
+    <string name="wipe_confirm_hint">Type DELETE to confirm</string>
+    <string name="wipe_confirm_word">DELETE</string>
+    <string name="wipe_action">Wipe everything</string>
+    <string name="wipe_not_confirmed">Type DELETE exactly to confirm</string>
 </resources>

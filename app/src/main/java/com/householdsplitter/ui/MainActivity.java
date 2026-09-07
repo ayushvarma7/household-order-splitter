@@ -1,5 +1,7 @@
 package com.householdsplitter.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -12,6 +14,10 @@ import com.householdsplitter.R;
 import com.householdsplitter.SplitterApp;
 import com.householdsplitter.databinding.ActivityMainBinding;
 import com.householdsplitter.di.ServiceLocator;
+import com.householdsplitter.ui.importer.ImportFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The single Activity. SPEC 4.4: everything else is a Fragment inside one navigation graph.
@@ -60,8 +66,41 @@ public class MainActivity extends AppCompatActivity {
                 graph.setStartDestination(
                         hasHousehold ? R.id.homeFragment : R.id.setupGroupFragment);
                 controller.setGraph(graph);
+
+                // SPEC 8.1.2: the primary real-world path. Screenshot the Walmart app, share
+                // it here, and land on the import screen with the images already loaded.
+                ArrayList<String> shared = sharedImageUris(getIntent());
+                if (!shared.isEmpty() && hasHousehold) {
+                    Bundle args = new Bundle();
+                    args.putStringArrayList(ImportFragment.ARG_SHARED_URIS, shared);
+                    controller.navigate(R.id.importFragment, args);
+                }
             });
         });
+    }
+
+    /** SPEC 8.1.2: both ACTION_SEND and ACTION_SEND_MULTIPLE, single and multiple images. */
+    private static ArrayList<String> sharedImageUris(Intent intent) {
+        ArrayList<String> uris = new ArrayList<>();
+        if (intent == null || intent.getType() == null || !intent.getType().startsWith("image/")) {
+            return uris;
+        }
+        if (Intent.ACTION_SEND.equals(intent.getAction())) {
+            Uri single = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (single != null) {
+                uris.add(single.toString());
+            }
+        } else if (Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
+            List<Uri> many = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+            if (many != null) {
+                for (Uri uri : many) {
+                    if (uri != null) {
+                        uris.add(uri.toString());
+                    }
+                }
+            }
+        }
+        return uris;
     }
 
     @Override
