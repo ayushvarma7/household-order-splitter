@@ -33,6 +33,74 @@
             app:layout_constraintTop_toBottomOf="@id/toolbar"
             app:layout_constraintWidth_max="@dimen/content_max_width" />
 
+        <!-- Search and filters. Hidden entirely until there is something to search, so a
+             new household is not shown controls for a list it does not have yet. -->
+        <LinearLayout
+            android:id="@+id/browseControls"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_margin"
+            android:paddingEnd="@dimen/screen_margin"
+            android:paddingTop="@dimen/space_s"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/memberSummary"
+            app:layout_constraintWidth_max="@dimen/content_max_width">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/searchField"
+                style="@style/Widget.Splitter.TextInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/home_search_hint"
+                app:endIconContentDescription="@string/home_clear_search"
+                app:endIconMode="clear_text"
+                app:startIconDrawable="@drawable/ic_search">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/filterChips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/filterAll"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/home_filter_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/filterOpen"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_filter_open" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/filterSettled"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_filter_settled" />
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
         <FrameLayout
             android:id="@+id/listArea"
             android:layout_width="0dp"
@@ -40,7 +108,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/memberSummary"
+            app:layout_constraintTop_toBottomOf="@id/browseControls"
             app:layout_constraintWidth_max="@dimen/content_max_width">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -95,6 +163,42 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xl"
                     android:text="@string/action_new_order" />
+            </LinearLayout>
+
+            <!-- "Nothing matches" is not the same thing as "you have no orders", and
+                 offering to start a new order would be the wrong answer to a search. -->
+            <LinearLayout
+                android:id="@+id/noMatchesState"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/space_xxl"
+                android:paddingEnd="@dimen/space_xxl"
+                android:paddingBottom="@dimen/fab_clearance"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_no_matches_title"
+                    android:textAppearance="@style/Text.ScreenTitle" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:gravity="center"
+                    android:text="@string/home_no_matches_body"
+                    android:textAppearance="@style/Text.BodyMuted" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/clearSearchButton"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:text="@string/home_clear_search" />
             </LinearLayout>
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

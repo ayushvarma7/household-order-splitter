@@ -27,6 +27,7 @@ import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.mapper.CalcMapper;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
+import com.householdsplitter.data.relation.OrderItemNames;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.util.AppExecutors;
 import com.householdsplitter.util.Callback;
@@ -62,6 +63,11 @@ public class OrderRepository {
 
     public LiveData<List<OrderWithMembers>> observeOrders(long householdId) {
         return orderDao.observeOrders(householdId);
+    }
+
+    /** Item names per order, so the home list can search inside orders. */
+    public LiveData<List<OrderItemNames>> observeItemNames(long householdId) {
+        return lineItemDao.observeItemNames(householdId);
     }
 
     public LiveData<OrderBundle> observeBundle(long orderId) {

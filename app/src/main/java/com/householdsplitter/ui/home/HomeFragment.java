@@ -1,6 +1,8 @@
 package com.householdsplitter.ui.home;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,11 +103,50 @@ public class HomeFragment extends BaseFragment {
                         ? "" : getResources().getQuantityString(
                         R.plurals.member_count, members.size(), members.size())));
 
+        model.rows().observe(getViewLifecycleOwner(), rows -> {
+            adapter.submitList(rows);
+            renderEmptyStates(rows);
+        });
+        // The controls only appear once there is something to search, so a new household is
+        // not shown a filter for a list it does not have yet.
         model.orders().observe(getViewLifecycleOwner(), orders -> {
-            adapter.submitList(orders);
-            boolean empty = orders == null || orders.isEmpty();
-            binding.orderList.setVisibility(empty ? View.GONE : View.VISIBLE);
-            binding.emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+            boolean any = orders != null && !orders.isEmpty();
+            binding.browseControls.setVisibility(any ? View.VISIBLE : View.GONE);
+            renderEmptyStates(model.rows().getValue());
+        });
+
+        binding.searchInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence text, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable text) {
+                model.search(text == null ? "" : text.toString());
+            }
+        });
+
+        binding.filterChips.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) {
+                return;
+            }
+            int checked = checkedIds.get(0);
+            if (checked == R.id.filterOpen) {
+                model.filterBy(HomeViewModel.Filter.OPEN);
+            } else if (checked == R.id.filterSettled) {
+                model.filterBy(HomeViewModel.Filter.SETTLED);
+            } else {
+                model.filterBy(HomeViewModel.Filter.ALL);
+            }
+        });
+
+        binding.clearSearchButton.setOnClickListener(v -> {
+            binding.searchInput.setText("");
+            binding.filterChips.check(R.id.filterAll);
         });
 
         binding.newOrderFab.setOnClickListener(v -> startNewOrder());
@@ -134,6 +175,28 @@ public class HomeFragment extends BaseFragment {
             }
             return false;
         });
+    }
+
+    /**
+     * Three states, and telling them apart matters. An empty list because the household is
+     * new wants an invitation to start; an empty list because a search matched nothing wants
+     * a way back, and offering to create an order would be the wrong answer to a search.
+     */
+    private void renderEmptyStates(java.util.List<HomeRow> rows) {
+        if (binding == null) {
+            return;
+        }
+        boolean nothingShown = rows == null || rows.isEmpty();
+        boolean filtered = nothingShown && model.isFilteredEmpty();
+        binding.orderList.setVisibility(nothingShown ? View.GONE : View.VISIBLE);
+        binding.emptyState.setVisibility(nothingShown && !filtered ? View.VISIBLE : View.GONE);
+        binding.noMatchesState.setVisibility(filtered ? View.VISIBLE : View.GONE);
+        // The FAB would sit over "Nothing matches" saying the opposite of what is needed.
+        if (filtered) {
+            binding.newOrderFab.hide();
+        } else {
+            binding.newOrderFab.show();
+        }
     }
 
     private void startNewOrder() {

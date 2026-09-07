@@ -1,5 +1,6 @@
 package com.householdsplitter.ui.home;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,14 +18,19 @@ import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.databinding.ItemOrderBinding;
+import com.householdsplitter.databinding.ItemOrderHeaderBinding;
 import com.householdsplitter.ui.common.MemberPalette;
 import com.householdsplitter.ui.common.StateColors;
 
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** SPEC 7.3.3: label, date, total, overlapping participant avatars, and a status chip. */
-public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.OrderViewHolder> {
+/**
+ * SPEC 7.3.3: label, date, total, overlapping participant avatars, and a status chip,
+ * grouped under month headings.
+ */
+public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> {
 
     public interface Listener {
         void onOpen(OrderWithMembers order);
@@ -41,35 +47,89 @@ public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.Ord
         this.money = money;
     }
 
-    private static final DiffUtil.ItemCallback<OrderWithMembers> DIFF =
-            new DiffUtil.ItemCallback<OrderWithMembers>() {
+    private static final DiffUtil.ItemCallback<HomeRow> DIFF =
+            new DiffUtil.ItemCallback<HomeRow>() {
                 @Override
-                public boolean areItemsTheSame(@NonNull OrderWithMembers a,
-                                               @NonNull OrderWithMembers b) {
-                    return a.order.id == b.order.id;
+                public boolean areItemsTheSame(@NonNull HomeRow a, @NonNull HomeRow b) {
+                    return a.key().equals(b.key());
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull OrderWithMembers a,
-                                                  @NonNull OrderWithMembers b) {
-                    return a.order.label.equals(b.order.label)
-                            && a.order.status == b.order.status
-                            && a.order.statedTotalCents == b.order.statedTotalCents
-                            && a.order.orderDate == b.order.orderDate
-                            && a.participants.size() == b.participants.size();
+                public boolean areContentsTheSame(@NonNull HomeRow a, @NonNull HomeRow b) {
+                    if (a.type != b.type) {
+                        return false;
+                    }
+                    if (a.type == HomeRow.TYPE_HEADER) {
+                        return a.heading == b.heading
+                                && a.orderCount == b.orderCount
+                                && a.totalCents == b.totalCents;
+                    }
+                    return a.order.order.label.equals(b.order.order.label)
+                            && a.order.order.status == b.order.order.status
+                            && a.order.order.statedTotalCents == b.order.order.statedTotalCents
+                            && a.order.order.orderDate == b.order.order.orderDate
+                            && a.order.participants.size() == b.order.participants.size();
                 }
             };
 
+    @Override
+    public int getItemViewType(int position) {
+        return getItem(position).type;
+    }
+
     @NonNull
     @Override
-    public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new OrderViewHolder(ItemOrderBinding.inflate(
-                LayoutInflater.from(parent.getContext()), parent, false));
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        if (viewType == HomeRow.TYPE_HEADER) {
+            return new HeaderViewHolder(ItemOrderHeaderBinding.inflate(inflater, parent, false));
+        }
+        return new OrderViewHolder(ItemOrderBinding.inflate(inflater, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-        holder.bind(getItem(position), listener, money);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        HomeRow row = getItem(position);
+        if (holder instanceof HeaderViewHolder) {
+            ((HeaderViewHolder) holder).bind(row, money);
+        } else {
+            ((OrderViewHolder) holder).bind(row.order, listener, money);
+        }
+    }
+
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+
+        private final ItemOrderHeaderBinding binding;
+
+        HeaderViewHolder(ItemOrderHeaderBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
+
+        void bind(HomeRow row, CurrencyFormat money) {
+            Context context = binding.getRoot().getContext();
+            binding.heading.setText(headingText(context, row));
+            binding.subheading.setText(context.getResources().getQuantityString(
+                    R.plurals.home_month_summary, row.orderCount, row.orderCount,
+                    money.format(row.totalCents)));
+        }
+
+        private String headingText(Context context, HomeRow row) {
+            switch (row.heading) {
+                case THIS_MONTH:
+                    return context.getString(R.string.home_month_current);
+                case LAST_MONTH:
+                    return context.getString(R.string.home_month_previous);
+                case MONTH:
+                    return row.month.format(DateTimeFormatter.ofPattern(
+                            context.getString(R.string.home_month_pattern),
+                            Locale.getDefault()));
+                default:
+                    return row.month.format(DateTimeFormatter.ofPattern(
+                            context.getString(R.string.home_month_pattern_with_year),
+                            Locale.getDefault()));
+            }
+        }
     }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {

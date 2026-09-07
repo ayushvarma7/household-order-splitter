@@ -354,4 +354,22 @@
     <string name="settings_rules_count">%d in use</string>
     <string name="settings_rules_none">None yet</string>
     <string name="action_manage_rules">Manage rules</string>
+
+    <!-- Home list: search, filters, and month headings. -->
+    <string name="home_search_hint">Search orders and items</string>
+    <string name="home_filter_all">All</string>
+    <string name="home_filter_open">Open</string>
+    <string name="home_filter_settled">Settled</string>
+    <string name="home_month_current">This month</string>
+    <string name="home_month_previous">Last month</string>
+    <!-- java.time patterns, not printed text: MMMM is the month name. -->
+    <string name="home_month_pattern" translatable="false">MMMM</string>
+    <string name="home_month_pattern_with_year" translatable="false">MMMM yyyy</string>
+    <plurals name="home_month_summary">
+        <item quantity="one">%1$d order, %2$s</item>
+        <item quantity="other">%1$d orders, %2$s</item>
+    </plurals>
+    <string name="home_no_matches_title">Nothing matches</string>
+    <string name="home_no_matches_body">Try a different word, or clear the search to see every order.</string>
+    <string name="home_clear_search">Clear search</string>
 </resources>
