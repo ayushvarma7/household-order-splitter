@@ -4,4 +4,38 @@
       and no placeholder that could be mistaken for a value appears in this file.
     -->
     <string name="app_name">Order Splitter</string>
+
+    <!-- S1, SPEC 7.1 -->
+    <string name="setup_group_intro">Split a shared shop between the people you live with, and see exactly what each person owes.</string>
+    <string name="hint_group_name">Group name</string>
+    <string name="action_continue">Continue</string>
+
+    <!-- S2, SPEC 7.2 -->
+    <string name="members_title">Who\'s in %1$s?</string>
+    <string name="hint_member_name">Name</string>
+    <string name="action_add">Add</string>
+    <string name="action_done">Done</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_archive">Archive</string>
+    <string name="action_rename_group">Rename group</string>
+    <string name="members_empty_hint">Add everyone who shares the shop. You need at least two people.</string>
+    <string name="error_name_empty">Enter a name</string>
+    <string name="dialog_rename_member">Rename</string>
+    <string name="dialog_remove_member_title">Remove %1$s?</string>
+    <string name="dialog_remove_member_message">They appear in past orders, so they will be archived instead of deleted. Those orders will still show their name and amount.</string>
+
+    <!-- S3, SPEC 7.3 -->
+    <string name="home_empty_title">No orders yet</string>
+    <string name="home_empty_body">Screenshot a Walmart order page and share it here, or start one from scratch.</string>
+    <string name="action_new_order">New order</string>
+    <string name="menu_members">Members</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_export_all">Export all</string>
+    <string name="not_yet_built">Import is the next phase</string>
+
+    <plurals name="member_count">
+        <item quantity="one">%d person</item>
+        <item quantity="other">%d people</item>
+    </plurals>
 </resources>
