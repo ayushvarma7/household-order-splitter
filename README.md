@@ -38,6 +38,10 @@ Run the instrumented tests, which need a device or emulator:
 ./gradlew :app:connectedStandardDebugAndroidTest
 ```
 
+These include the whole of SPEC 12.5, among them the happy path from a share intent
+through parsing to a computed summary, and an on-device parse of three real order
+screenshots that also proves text recognition works with no network permission at all.
+
 If Gradle cannot find the SDK, create `local.properties` with `sdk.dir=/path/to/Android/sdk`.
 That file is deliberately not committed.
 
@@ -90,6 +94,58 @@ on the one before it:
 A person's total may land a cent away from a spreadsheet that used floating point. That is
 expected and correct (SPEC 6.5). What may not vary is the sum: the members' totals always
 add up to the pre-tax total plus every adjustment, and that is asserted in code.
+
+---
+
+## The Excel workbook
+
+Settings, "Excel workbook". Pick a destination file once and the app keeps it up to date on
+its own: settle an order and it turns up as a new sheet, with no export step to remember.
+
+The workbook holds an overview sheet with a row per order and a column per member, then one
+sheet per order behind it carrying the full detail. Amounts are real numbers with a currency
+format, so a column sums in the spreadsheet rather than being text that looks like money.
+
+It is written by hand from `java.util.zip`, so no spreadsheet library is involved. The whole
+file is rewritten rather than appended to, which is deliberate: it needs nothing to read the
+existing workbook, and it keeps the file a faithful picture of the database instead of an
+append-only log that drifts when an order is edited or deleted. An order that cannot be
+totalled yet, because something is still unassigned, is left out rather than written with
+invented numbers.
+
+---
+
+## Spending
+
+Home overflow, "Spending". Total spent, average and largest order, how much of the money went
+on things everyone shared against things assigned to particular people, and a per-person
+breakdown with each member's own colour.
+
+Every figure is a sum of figures the split calculator already produced, so the analytics can
+never disagree with what somebody was actually asked to pay. Shares are integer permille for
+the same reason money is `long` cents. The bars are ordinary weighted views rather than a
+charting library, which keeps the dependency budget intact and means each bar carries its own
+content description instead of the screen being one opaque canvas.
+
+---
+
+## Design and accessibility
+
+Spacing runs on a 4dp scale in `values/dimens.xml`, and `values-sw600dp` and `values-sw840dp`
+override the same names, so a tablet gets wider margins and a capped reading column with no
+duplicated layouts and no size fixed to a device. Every screen lays its content in a column
+constrained to `content_max_width` and centred, so line length stays readable as the window
+grows.
+
+Colour is semantic and paired: `success`, `warning` and `danger` exist as container plus
+on-container pairs in `values/colors.xml` and its `values-night` twin, and `StateColors`
+resolves them at runtime. Nothing in the code carries an ARGB literal, which is what makes
+dark mode work at all.
+
+Every state that colour encodes also carries an icon and a word, so meaning survives for a
+colour blind reader and in a greyscale screenshot. Touch targets are at least 48dp. The app
+draws edge to edge and each screen insets itself from the real system bar heights, so no
+title ends up under the clock on one device and floating on another.
 
 ---
 

@@ -47,6 +47,26 @@ the same horizontal band as their labels. Both are band statements.
 
 ---
 
+## The one figure that matters
+
+The price for a row is the final amount billed for it. Nothing else on the row is a price as
+far as this app is concerned.
+
+That has two consequences worth stating before the algorithm below.
+
+**A struck-through original loses, silently.** Where the price column prints two amounts, the
+right-most is what was charged. There is no warning and no review flag for it, because taking
+the charged figure is the rule rather than an exception worth interrupting anyone about. This
+is also what turns the free-delivery line's `$9.95 $0` into zero.
+
+**A left-hand amount is never a price.** That column carries unit prices such as `$3.94/lb`,
+which describe what a pound costs rather than what the household paid. They are captured into
+`unitPriceText` because SPEC 8.3.3 asks for it, kept out of the name, and not shown anywhere
+in the interface: a second figure beside the real one only invites the reader to wonder which
+they are paying.
+
+---
+
 ## Row grouping, the key algorithm
 
 A Walmart item row is not one line. The name wraps over two to four lines, metadata lines
