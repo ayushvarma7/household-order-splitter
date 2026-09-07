@@ -38,6 +38,13 @@ Run the instrumented tests, which need a device or emulator:
 ./gradlew :app:connectedStandardDebugAndroidTest
 ```
 
+Turn device animations off first, which is Espresso's documented setup step. With them on,
+`closeSoftKeyboard` intermittently throws instead of typing:
+
+```bash
+adb shell settings put global window_animation_scale 0
+```
+
 These include the whole of SPEC 12.5, among them the happy path from a share intent
 through parsing to a computed summary, and an on-device parse of three real order
 screenshots that also proves text recognition works with no network permission at all.
