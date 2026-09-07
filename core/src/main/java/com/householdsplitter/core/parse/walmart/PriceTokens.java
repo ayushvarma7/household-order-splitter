@@ -27,15 +27,24 @@ final class PriceTokens {
      * these are the exact confusions a recogniser makes on this text: the l of "/lb" is
      * dropped or read as 1 or I, and the o of "/oz" is read as a zero. A unit price that is
      * not recognised as one does not merely lose the unit price, it leaks the whole
-     * fragment into the product name.
+     * fragment into the product name and reads as an item of its own.
+     *
+     * <p>The denominators are the ordinary grocery set. Only /lb and cents-per-lb appear on
+     * the orders traced so far, but an unlisted denominator does not fail quietly: the whole
+     * "$0.71/qt" fragment becomes a product name. These are units of measure, not claims
+     * about any product, so covering them costs nothing and closes that gap.
      */
+    private static final String UNITS =
+            "[l1i|]?b|lbs|[o0]z|fl\\s?[o0]z|ea|each|kg|g|qt|pt|gal|ct|pk|"
+                    + "sheet|sheets|roll|rolls";
+
     private static final Pattern UNIT_SUFFIX =
-            Pattern.compile("(?i)(/\\s?[l1i|]?b|/\\s?[o0]z|/\\s?ea|/\\s?each|/\\s?kg|¢\\s?/)");
+            Pattern.compile("(?i)(/\\s?(" + UNITS + ")\\b|¢\\s?/)");
 
     private static final Pattern UNIT_PRICE_WHOLE =
-            Pattern.compile("(?i)^-?\\$?\\d{1,3}(,\\d{3})*(\\.\\d{2})?\\s?"
-                    + "(/\\s?[l1i|]?b|/\\s?[o0]z|/\\s?ea|/\\s?each|/\\s?kg)$"
-                    + "|^\\d{1,3}\\s?¢\\s?/\\s?\\w+$");
+            Pattern.compile("(?i)^-?\\$?\\d{1,3}(,\\d{3})*(\\.\\d{1,2})?\\s?"
+                    + "/\\s?(" + UNITS + ")\\.?$"
+                    + "|^\\d{1,3}(\\.\\d)?\\s?¢\\s?/\\s?\\w+$");
 
     private PriceTokens() {
     }

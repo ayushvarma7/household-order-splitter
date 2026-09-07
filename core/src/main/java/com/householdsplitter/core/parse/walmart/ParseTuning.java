@@ -32,6 +32,16 @@ public final class ParseTuning {
     public final int linePriceZoneStartPermille;
     /** SPEC 8.3.6: name text sits in the left 65%. */
     public final int nameZoneEndPermille;
+
+    /**
+     * Where the name column starts, as a permille of image width.
+     *
+     * <p>Left of this sits the product thumbnail, and ML Kit reads the text printed on the
+     * packaging inside it: a bag of apples contributes "GALA APPLES" as though it were part
+     * of the item name. The name column has a left edge as well as a right one, and only the
+     * right one was being applied.
+     */
+    public final int nameZoneStartPermille;
     /**
      * SPEC 8.3.2 also asks for "larger or bolder than body text". OCR reports no font
      * weight, so height relative to the median element height stands in for it. Held
@@ -68,6 +78,7 @@ public final class ParseTuning {
         this.headerZonePermille = builder.headerZonePermille;
         this.linePriceZoneStartPermille = builder.linePriceZoneStartPermille;
         this.nameZoneEndPermille = builder.nameZoneEndPermille;
+        this.nameZoneStartPermille = builder.nameZoneStartPermille;
         this.linePriceMinHeightPermilleOfMedian = builder.linePriceMinHeightPermilleOfMedian;
         this.dedupeWindow = builder.dedupeWindow;
         this.minConfidencePercent = builder.minConfidencePercent;
@@ -93,6 +104,9 @@ public final class ParseTuning {
         private int headerZonePermille = 120;                 // status bar plus the app bar
         private int linePriceZoneStartPermille = 700;         // SPEC 8.3.2: right-most 30%
         private int nameZoneEndPermille = 650;                // SPEC 8.3.6: left 65%
+        // The thumbnail column. Measured at 75..240px on an 899px capture, so the name
+        // starts around 290 permille; 260 leaves room without reaching the text.
+        private int nameZoneStartPermille = 260;
         private int linePriceMinHeightPermilleOfMedian = 850;
         private int dedupeWindow = 4;                         // SPEC 8.7.3
         private int minConfidencePercent = 50;                // SPEC 8.8.1
@@ -124,6 +138,11 @@ public final class ParseTuning {
 
         public Builder nameZoneEndPermille(int value) {
             this.nameZoneEndPermille = value;
+            return this;
+        }
+
+        public Builder nameZoneStartPermille(int value) {
+            this.nameZoneStartPermille = value;
             return this;
         }
 

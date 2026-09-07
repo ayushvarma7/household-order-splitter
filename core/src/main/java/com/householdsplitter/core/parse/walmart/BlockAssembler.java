@@ -40,9 +40,16 @@ final class BlockAssembler {
     static List<ParsedItem> assemble(List<TextBand> bands, int itemsEndIndex, ParseTuning tuning) {
         List<ParsedItem> items = new ArrayList<>();
 
+        int lastOpened = -1;
         for (int i = 0; i < itemsEndIndex; i++) {
             TextBand start = bands.get(i);
             if (!start.hasLinePrice() || start.kind() != TextBand.Kind.CONTENT) {
+                continue;
+            }
+            // A discounted row prints its original price struck through on the band below
+            // the charged one, right-aligned in the same column. That is a second price
+            // band, and treating it as a second item invents a charge nobody paid.
+            if (isStruckOriginal(bands, i, lastOpened, itemsEndIndex, tuning)) {
                 continue;
             }
 
@@ -50,10 +57,16 @@ final class BlockAssembler {
             int end = itemsEndIndex;
             for (int j = i + 1; j < itemsEndIndex; j++) {
                 TextBand next = bands.get(j);
-                if (next.hasLinePrice()
-                        || next.kind() == TextBand.Kind.SECTION
+                if (next.kind() == TextBand.Kind.SECTION
                         || next.kind() == TextBand.Kind.CHROME
                         || next.kind() == TextBand.Kind.SUMMARY) {
+                    end = j;
+                    break;
+                }
+                // A struck-through original does not end the block either: the lines below
+                // it, the quantity and the savings note, still belong to this item.
+                if (next.hasLinePrice()
+                        && !isStruckOriginal(bands, j, i, itemsEndIndex, tuning)) {
                     end = j;
                     break;
                 }
@@ -62,9 +75,165 @@ final class BlockAssembler {
             ParsedItem item = buildItem(bands, i, end, tuning);
             if (item != null) {
                 items.add(item);
+                lastOpened = i;
             }
         }
         return items;
+    }
+
+    /**
+     * True when a price band carries the struck-through original of the item that opened
+     * just above it, rather than a charge of its own.
+     *
+     * <p>The observed layout, from a real order:
+     * <pre>
+     *   Fresh Gala Apples, 3 lb Bag        $3.24     &lt;- charged, opens the block
+     *   $1.08/lb                           $4.44     &lt;- struck through
+     *   Qty 1
+     *   $1.20 from savings
+     * </pre>
+     *
+     * <p>Three things have to hold, and the third is what makes this arithmetic rather than
+     * a guess:
+     * <ol>
+     *   <li>the band sits inside the block opened above, with no product name of its own,
+     *       only a unit price, a quantity or a savings note;
+     *   <li>its amount is larger than the charged one, since an original exceeds the price
+     *       it was discounted to;
+     *   <li>the difference equals the savings the row itself prints. 4.44 - 3.24 = 1.20, and
+     *       the row says "$1.20 from savings".
+     * </ol>
+     *
+     * <p>When the row prints no savings amount to check against, the band is left alone and
+     * becomes an item, flagged for review. Dropping a charge on a hunch is the one outcome
+     * worth avoiding: an invented row is visible in a list the user reads, a missing one is
+     * a total that is quietly short.
+     */
+    private static boolean isStruckOriginal(List<TextBand> bands, int candidateIndex,
+                                            int openIndex, int itemsEndIndex,
+                                            ParseTuning tuning) {
+        if (openIndex < 0 || candidateIndex <= openIndex) {
+            return false;
+        }
+        TextBand open = bands.get(openIndex);
+        TextBand candidate = bands.get(candidateIndex);
+        if (!open.hasLinePrice() || !candidate.hasLinePrice()) {
+            return false;
+        }
+
+        long chargedCents;
+        long candidateCents;
+        try {
+            chargedCents = PriceTokens.toCents(open.linePrice().text());
+            candidateCents = PriceTokens.toCents(candidate.linePrice().text());
+        } catch (NumberFormatException notAnAmount) {
+            return false;
+        }
+        // An original price is higher than what it was discounted to.
+        if (candidateCents <= chargedCents) {
+            return false;
+        }
+
+        // Nothing between the two bands, nor on the candidate itself, may be a product name.
+        for (int index = openIndex + 1; index <= candidateIndex; index++) {
+            if (hasOwnName(bands.get(index), tuning)) {
+                return false;
+            }
+        }
+
+        // The row has to say how much came off, and the figure has to match.
+        long savings = savingsCentsInCard(bands, openIndex, itemsEndIndex, tuning);
+        return savings >= 0 && candidateCents - chargedCents == savings;
+    }
+
+    /**
+     * True when a band contributes text to a product name: anything in the name column that
+     * is not a unit price, a quantity, a multipack count or price commentary.
+     */
+    private static boolean hasOwnName(TextBand band, ParseTuning tuning) {
+        if (band.kind() != TextBand.Kind.CONTENT) {
+            return false;
+        }
+        for (String line : nameZoneLines(band, tuning)) {
+            if (QTY.matcher(line).matches()
+                    || MULTIPACK.matcher(line).matches()
+                    || PriceTokens.isBareUnitPriceLine(line)
+                    || RowAnnotations.isPriceCommentary(line)
+                    || ChromeFilter.isChrome(line)) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * The savings amount printed anywhere in the item card that opened at
+     * {@code openIndex}, in cents, or -1 when the card prints none.
+     */
+    private static long savingsCentsInCard(List<TextBand> bands, int openIndex,
+                                           int itemsEndIndex, ParseTuning tuning) {
+        for (int index = openIndex; index < itemsEndIndex; index++) {
+            TextBand band = bands.get(index);
+            if (band.kind() == TextBand.Kind.SECTION || band.kind() == TextBand.Kind.SUMMARY) {
+                return -1L;
+            }
+            // The card ends at its own buttons: "+ Add" and "Review item".
+            if (index > openIndex && band.kind() == TextBand.Kind.CHROME) {
+                return -1L;
+            }
+            for (String line : nameZoneLines(band, tuning)) {
+                long savings = RowAnnotations.savingsCentsIn(line);
+                if (savings >= 0) {
+                    return savings;
+                }
+            }
+            // A second product name means the card is over.
+            if (index > openIndex && hasOwnNameIgnoringSavings(band, tuning)) {
+                return -1L;
+            }
+        }
+        return -1L;
+    }
+
+    private static boolean hasOwnNameIgnoringSavings(TextBand band, ParseTuning tuning) {
+        return hasOwnName(band, tuning);
+    }
+
+    /** The band's text, split per line, restricted to the name column. */
+    private static List<String> nameZoneLines(TextBand band, ParseTuning tuning) {
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        List<OcrElement> elements = band.elements();
+        for (int e = 0; e < elements.size(); e++) {
+            OcrElement element = elements.get(e);
+            if (element == band.linePrice()) {
+                continue;
+            }
+            if (!inNameZone(element, tuning)) {
+                continue;
+            }
+            if (line.length() > 0) {
+                line.append(' ');
+            }
+            line.append(element.text());
+        }
+        String text = line.toString().trim();
+        if (!text.isEmpty()) {
+            lines.add(text);
+        }
+        return lines;
+    }
+
+    /**
+     * The name column has a left edge as well as a right one. Left of it sits the product
+     * thumbnail, and ML Kit reads the packaging inside it, so a bag of apples offers up
+     * "GALA APPLES" as though it were part of the name.
+     */
+    private static boolean inNameZone(OcrElement element, ParseTuning tuning) {
+        int centre = element.centerXPermille();
+        return centre >= tuning.nameZoneStartPermille
+                && centre < tuning.nameZoneEndPermille;
     }
 
     private static ParsedItem buildItem(List<TextBand> bands, int startIndex, int endIndex,
@@ -117,6 +286,11 @@ final class BlockAssembler {
                 if (centerX(element) >= nameBoundaryPx) {
                     continue;
                 }
+                // And from the right of the thumbnail. ML Kit reads the packaging in the
+                // product image, which is how "GALA APPLES" ends up inside an item name.
+                if (element.centerXPermille() < tuning.nameZoneStartPermille) {
+                    continue;
+                }
                 if (line.length() > 0) {
                     line.append(' ');
                 }
@@ -149,6 +323,11 @@ final class BlockAssembler {
                 if (unitPriceText == null) {
                     unitPriceText = candidate.trim();
                 }
+                continue;
+            }
+            // "$1.20 from savings" and "Ordered price $13.97" describe the price, they are
+            // not part of what the thing is called. Both stay in rawOcrText.
+            if (RowAnnotations.isPriceCommentary(candidate)) {
                 continue;
             }
             kept.add(candidate);

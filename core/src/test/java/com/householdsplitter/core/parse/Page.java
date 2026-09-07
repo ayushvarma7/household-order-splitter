@@ -108,6 +108,27 @@ public final class Page {
         return this;
     }
 
+    /**
+     * The struck-through original on its own band below the charged price, which is how a
+     * discounted item is actually laid out: the charged figure sits beside the name, the
+     * original one line down, right-aligned in the same column.
+     */
+    public Page struckOriginalBelow(String leftText, String struckPrice) {
+        at(cursorY, LEFT_X, LEFT_X_END, leftText);
+        at(cursorY, PRICE_X, PRICE_X_END, struckPrice);
+        cursorY += LINE_STEP;
+        return this;
+    }
+
+    /**
+     * Text ML Kit reads off the product packaging inside the thumbnail, left of the name
+     * column. Real, and it must never reach an item name.
+     */
+    public Page thumbnailText(String text) {
+        at(cursorY - LINE_STEP, 95, 200, text, 30, 88);
+        return this;
+    }
+
     /** A complete single-line item. */
     public Page item(String name, String price) {
         return itemStart(name, price);
