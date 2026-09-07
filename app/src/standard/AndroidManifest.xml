@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+      SPEC 4.10 and PROMPT hard rule 8: no network in the default build.
+
+      ML Kit's manifest declares INTERNET so its unbundled variant can fetch models. This
+      build uses the bundled `com.google.mlkit:text-recognition`, whose model ships inside
+      the APK, so recognition works with no network at all. The permission is therefore
+      removed here rather than merged in, and the claim in the README and in Settings that
+      this build cannot reach the network is literally true of the shipped manifest.
+
+      The `cloud` flavour adds the permission back for the optional parser, and only there.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+
+</manifest>

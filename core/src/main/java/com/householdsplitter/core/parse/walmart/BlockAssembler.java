@@ -27,7 +27,7 @@ final class BlockAssembler {
     private static final Pattern QTY = Pattern.compile("(?i)^qty:? (\\d+)$");
     private static final Pattern MULTIPACK = Pattern.compile("(?i)^multipack quantity:? ?(\\d+)$");
     private static final Pattern SIZE_FRAGMENT =
-            Pattern.compile("(?i)^[\\d.]+ ?(fl ?oz|oz|lb|lbs|ct|pk|gal|qt|g|kg|ml|l)\\.?$");
+            Pattern.compile("(?i)^[\\d.]+ ?(fl ?[o0]z|[o0]z|lb|lbs|ct|pk|gal|qt|g|kg|ml|l)\\.?$");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private BlockAssembler() {
@@ -77,6 +77,14 @@ final class BlockAssembler {
             return null;
         }
 
+        // SPEC 8.3.6 puts name text in "the left 65%", but that fraction is a description
+        // of where the name column sits, not a place to cut words off. A long name line
+        // legitimately runs past 65% of the width, and slicing at the fraction silently
+        // drops its tail: "Cheese Snack, 9 oz Bag, 12" loses the "12", and
+        // "Finely Shredded Cheese, 8 oz" loses the "8 oz". The real boundary is the price
+        // column, and this block's own line price marks exactly where that starts.
+        final int nameBoundaryPx = nameBoundary(priceBand, tuning);
+
         List<String> nameLines = new ArrayList<>();
         List<String> rawLines = new ArrayList<>();
         String unitPriceText = null;
@@ -105,8 +113,8 @@ final class BlockAssembler {
                         && PriceTokens.isUnitPriceAt(elements, e - 1)) {
                     continue;
                 }
-                // SPEC 8.3.6: names come from the left column only.
-                if (element.centerXPermille() >= tuning.nameZoneEndPermille) {
+                // Names come from the left of the price column (SPEC 8.3.6).
+                if (centerX(element) >= nameBoundaryPx) {
                     continue;
                 }
                 if (line.length() > 0) {
@@ -167,6 +175,23 @@ final class BlockAssembler {
         ConfidenceRules.apply(builder, name, quantity, lineTotalCents, lowestConfidence,
                 priceBand.strikeThroughResolved(), priceBand.sectionName(), tuning);
         return builder.build();
+    }
+
+    private static int centerX(OcrElement element) {
+        return (element.left() + element.right()) / 2;
+    }
+
+    /**
+     * Where the name column ends: just left of this block's line price, with a small gutter.
+     * Falls back to the tuning fraction when the price sits somewhere unexpected.
+     */
+    private static int nameBoundary(TextBand priceBand, ParseTuning tuning) {
+        OcrElement price = priceBand.linePrice();
+        int imageWidth = price.imageWidth();
+        int fractionBoundary = (imageWidth * tuning.nameZoneEndPermille) / 1000;
+        int gutter = Math.max(4, imageWidth / 50);
+        int priceBoundary = price.left() - gutter;
+        return priceBoundary > fractionBoundary ? priceBoundary : fractionBoundary;
     }
 
     /**

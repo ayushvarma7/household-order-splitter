@@ -13,7 +13,11 @@ Two properties are worth knowing before changing anything:
 - **Text recognition is the only non-deterministic part.** Given the recognised text and its
   boxes, which line belongs to which row and which amount is the line price are decided by
   the rules below with no guessing. If a name comes out truncated, that is a bug here, not
-  an OCR limitation.
+  an OCR limitation. What is genuinely outside this code is glyph recognition: a recogniser
+  may read `oz` as `0Z`. No attempt is made to correct characters inside a product name,
+  because that would be inventing content. The editable review screen exists for it, and the
+  on-device test folds only known lookalike pairs so that a glyph misread cannot masquerade
+  as a parsing bug and a parsing bug cannot hide behind one.
 
 ---
 
@@ -68,15 +72,25 @@ and silently drops the rest. So instead:
    The threshold sits under the median on purpose: Walmart's price and body text are often
    the same size, and missing a price loses an entire row.
 3. It is a **unit price** instead when the element itself is a complete unit price such as
-   `$3.94/lb`, or when the element immediately after it is a bare suffix such as `/lb`.
+   `$3.94/lb`, or when the element immediately after it is a bare suffix such as `/lb`. The
+   suffix patterns are written tolerantly, because these are the confusions a recogniser
+   actually makes on this text: the `l` of `/lb` gets dropped or read as `1` or `I`, and the
+   `o` of `/oz` gets read as a zero. A unit price that goes unrecognised does not merely
+   lose the unit price, it leaks the whole fragment into the product name.
    Unit prices are captured for display and never charged. Note the asymmetry: the backward
    neighbour test only fires for a *bare* suffix, never for a complete unit price sitting to
    the left of a line price, which would otherwise disqualify the line price itself.
 4. A block **opens** at each line price, starting at that band's top.
 5. It **ends** at whichever comes first: the next line price, a section header, a chrome
    band, or the start of the summary region.
-6. Within the block, every element whose horizontal centre is in the left 65% is joined in
-   reading order into the candidate name.
+6. Within the block, every element to the left of the **price column** is joined in reading
+   order into the candidate name. The boundary is this block's own line price, less a small
+   gutter, not a fixed fraction of the width. SPEC 8.3.6 says "the left 65%", but that
+   fraction describes where the name column sits, it is not a place to cut words off: a long
+   name line legitimately runs past it, and slicing at the fraction silently drops the tail.
+   Real captures showed exactly that, losing the `12` from
+   `Cheese Snack, 9 oz Bag, 12` and the `8 oz` from `Finely Shredded Cheese, 8 oz`. The
+   fraction remains as a fallback for a block whose price sits somewhere unexpected.
 7. Metadata lines are stripped: `Qty N`, `Multipack Quantity: N`, a bare unit price, and a
    bare size fragment that already appears inside the name.
 8. `Qty N` sets the quantity; absent, it is 1.

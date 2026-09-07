@@ -22,12 +22,19 @@ final class PriceTokens {
     private static final Pattern LOOSE_AMOUNT =
             Pattern.compile("^-?\\$\\d{1,3}(,\\d{3})*(\\.\\d{1,2})?$|^-?\\d{1,3}(,\\d{3})*\\.\\d{2}$");
 
-    /** SPEC 8.3.3. */
+    /**
+     * SPEC 8.3.3, written tolerantly because SPEC 8.4 asks for tolerance of OCR noise and
+     * these are the exact confusions a recogniser makes on this text: the l of "/lb" is
+     * dropped or read as 1 or I, and the o of "/oz" is read as a zero. A unit price that is
+     * not recognised as one does not merely lose the unit price, it leaks the whole
+     * fragment into the product name.
+     */
     private static final Pattern UNIT_SUFFIX =
-            Pattern.compile("(?i)(/\\s?lb|/\\s?oz|/\\s?ea|/\\s?each|/\\s?kg|¢\\s?/)");
+            Pattern.compile("(?i)(/\\s?[l1i|]?b|/\\s?[o0]z|/\\s?ea|/\\s?each|/\\s?kg|¢\\s?/)");
 
     private static final Pattern UNIT_PRICE_WHOLE =
-            Pattern.compile("(?i)^-?\\$?\\d{1,3}(,\\d{3})*(\\.\\d{2})?\\s?(/\\s?lb|/\\s?oz|/\\s?ea|/\\s?each|/\\s?kg)$"
+            Pattern.compile("(?i)^-?\\$?\\d{1,3}(,\\d{3})*(\\.\\d{2})?\\s?"
+                    + "(/\\s?[l1i|]?b|/\\s?[o0]z|/\\s?ea|/\\s?each|/\\s?kg)$"
                     + "|^\\d{1,3}\\s?¢\\s?/\\s?\\w+$");
 
     private PriceTokens() {
@@ -80,7 +87,8 @@ final class PriceTokens {
             return false;
         }
         String trimmed = text.trim();
-        return trimmed.matches("(?i)^/ ?(lb|oz|ea|each|kg)$") || trimmed.matches("(?i)^(lb|oz|ea|each|kg)$");
+        return trimmed.matches("(?i)^/ ?([l1i|]?b|[o0]z|ea|each|kg)$")
+                || trimmed.matches("(?i)^([l1i|]?b|[o0]z|ea|each|kg)$");
     }
 
     /** The neighbour form: an element that is nothing but {@code /lb}. */
@@ -90,7 +98,7 @@ final class PriceTokens {
         }
         String trimmed = text.trim();
         return UNIT_SUFFIX.matcher(trimmed).lookingAt()
-                || trimmed.matches("(?i)^(lb|oz|ea|each|kg)$");
+                || trimmed.matches("(?i)^([l1i|]?b|[o0]z|ea|each|kg)$");
     }
 
     /** The displayed unit price, joining the neighbour form back together. */
