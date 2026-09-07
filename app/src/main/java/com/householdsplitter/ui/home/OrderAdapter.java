@@ -108,7 +108,8 @@ public class OrderAdapter extends ListAdapter<OrderWithMembers, OrderAdapter.Ord
             for (Member member : row.participants) {
                 TextView avatar = new TextView(binding.getRoot().getContext());
                 avatar.setText(member.initials());
-                avatar.setTextColor(0xFFFFFFFF);
+                avatar.setTextColor(androidx.core.content.ContextCompat.getColor(
+                        binding.getRoot().getContext(), R.color.on_member_color));
                 avatar.setTextSize(10f);
                 avatar.setGravity(android.view.Gravity.CENTER);
                 avatar.setBackgroundResource(R.drawable.bg_avatar_circle);

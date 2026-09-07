@@ -13,9 +13,12 @@
     app:strokeColor="?attr/colorOutlineVariant"
     app:strokeWidth="@dimen/stroke_width">
 
+    <!-- The card carries the description ("Screenshot 2"), so the image itself stays out
+         of the accessibility tree rather than announcing the same thing twice. -->
     <ImageView
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:importantForAccessibility="no"
         android:scaleType="centerCrop" />
 </com.google.android.material.card.MaterialCardView>

@@ -178,7 +178,8 @@ public class AssignFragment extends BaseFragment {
             int memberColor = MemberPalette.resolve(requireContext(), member.colorHex);
             if (selected) {
                 chip.setChipBackgroundColor(ColorStateList.valueOf(memberColor));
-                chip.setTextColor(0xFFFFFFFF);
+                chip.setTextColor(androidx.core.content.ContextCompat.getColor(
+                        requireContext(), R.color.on_member_color));
                 chip.setChipStrokeColor(ColorStateList.valueOf(memberColor));
             } else {
                 chip.setChipStrokeColor(ColorStateList.valueOf(memberColor));

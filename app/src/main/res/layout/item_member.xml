@@ -24,11 +24,14 @@
         android:textAppearance="@style/Text.Body" />
 
     <!-- 48dp minimum touch targets throughout. -->
+    <!-- The adapter replaces these with the member's name. The defaults exist so the
+         control is never unlabelled, whatever path renders it. -->
     <ImageButton
         android:id="@+id/editButton"
         style="?attr/borderlessButtonStyle"
         android:layout_width="@dimen/touch_target_min"
         android:layout_height="@dimen/touch_target_min"
+        android:contentDescription="@string/action_rename"
         android:src="@drawable/ic_edit" />
 
     <ImageButton
@@ -36,5 +39,6 @@
         style="?attr/borderlessButtonStyle"
         android:layout_width="@dimen/touch_target_min"
         android:layout_height="@dimen/touch_target_min"
+        android:contentDescription="@string/action_delete"
         android:src="@drawable/ic_delete" />
 </LinearLayout>

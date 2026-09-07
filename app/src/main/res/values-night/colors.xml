@@ -54,6 +54,10 @@
     <color name="danger_container">#93000A</color>
     <color name="on_danger_container">#FFDAD6</color>
 
+    <!-- Same in both palettes; see the light file for why. -->
+    <color name="on_member_color">#FFFFFF</color>
+    <color name="viewer_backdrop">#000000</color>
+
     <!-- Lifted so white initials still clear 4.5:1 against a dark surface. -->
     <color name="member_1">#6FB0E8</color>
     <color name="member_2">#F2837B</color>

@@ -264,4 +264,7 @@
     <string name="settle_owes_description">%1$s pays %2$s to %3$s</string>
 
     <string name="item_needs_a_name">Tap to name this item</string>
+
+    <string name="needs_a_check">Needs a check</string>
+    <string name="action_remove_screenshot">Remove this screenshot</string>
 </resources>

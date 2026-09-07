@@ -60,4 +60,6 @@
     <dimen name="preview_tile_width">116dp</dimen>
     <dimen name="empty_illustration">104dp</dimen>
     <dimen name="progress_bar_height">6dp</dimen>
+    <!-- The hairline between two segments of a single bar. -->
+    <dimen name="bar_gap">2dp</dimen>
 </resources>

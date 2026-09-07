@@ -78,6 +78,7 @@
             android:layout_height="20dp"
             android:layout_marginStart="@dimen/space_s"
             android:layout_marginEnd="@dimen/space_s"
+            android:contentDescription="@string/needs_a_check"
             android:src="@drawable/ic_alert_circle"
             android:visibility="gone" />
 

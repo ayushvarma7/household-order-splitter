@@ -210,7 +210,7 @@
                         android:id="@+id/personalBar"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:layout_marginStart="2dp"
+                        android:layout_marginStart="@dimen/bar_gap"
                         android:layout_weight="1"
                         android:background="@drawable/bg_bar_end"
                         android:backgroundTint="?attr/colorTertiary" />

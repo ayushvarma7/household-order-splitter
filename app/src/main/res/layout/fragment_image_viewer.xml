@@ -6,7 +6,7 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/viewer_backdrop">
 
     <ImageView
         android:id="@+id/image"
@@ -27,6 +27,6 @@
         android:background="@android:color/transparent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:navigationIconTint="#FFFFFF"
-        app:titleTextColor="#FFFFFF" />
+        app:navigationIconTint="@color/on_member_color"
+        app:titleTextColor="@color/on_member_color" />
 </androidx.constraintlayout.widget.ConstraintLayout>

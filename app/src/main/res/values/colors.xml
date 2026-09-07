@@ -85,5 +85,18 @@
     <color name="member_9">#B03A7A</color>
     <color name="member_10">#525968</color>
 
+    <!--
+      Text drawn on a member's own colour. Fixed white in both palettes, and deliberately
+      not a theme colour: the member palette is tuned so every entry carries white at 4.5:1
+      or better, so flipping this with the theme would break the contrast it guarantees.
+    -->
+    <color name="on_member_color">#FFFFFF</color>
+
+    <!--
+      The full-screen photo viewer. Black in both palettes, because a photograph should be
+      shown against black whatever the rest of the app is doing.
+    -->
+    <color name="viewer_backdrop">#000000</color>
+
     <color name="ic_launcher_background">#3F5AA6</color>
 </resources>

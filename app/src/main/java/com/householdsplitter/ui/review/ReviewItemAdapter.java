@@ -105,7 +105,7 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
                             : android.graphics.Color.TRANSPARENT));
             binding.warningIcon.setImageTintList(android.content.res.ColorStateList.valueOf(
                     StateColors.content(context, StateColors.State.WARNING)));
-            binding.warningIcon.setContentDescription(reasonText(item));
+            binding.warningIcon.setContentDescription(reasonText(context, item));
 
             boolean excluded = item.scope == Scope.EXCLUDED;
             binding.excludedLabel.setVisibility(excluded ? View.VISIBLE : View.GONE);
@@ -118,9 +118,9 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
         }
 
         /** SPEC 8.8.2: every flagged row states its reason. */
-        private static String reasonText(LineItem item) {
+        private static String reasonText(android.content.Context context, LineItem item) {
             if (item.reviewReasonsCsv == null || item.reviewReasonsCsv.isEmpty()) {
-                return "Needs a check";
+                return context.getString(com.householdsplitter.R.string.needs_a_check);
             }
             StringBuilder out = new StringBuilder();
             for (String name : item.reviewReasonsCsv.split(",")) {
@@ -133,7 +133,9 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
                 }
                 out.append(reason.message());
             }
-            return out.length() == 0 ? "Needs a check" : out.toString();
+            return out.length() == 0
+                    ? context.getString(com.householdsplitter.R.string.needs_a_check)
+                    : out.toString();
         }
     }
 }
