@@ -33,4 +33,17 @@ public final class TestData {
         locator().settings().clear();
         locator().currentHouseholdId(0L);
     }
+
+    /**
+     * A fresh install whose introduction has already been read, so the app opens on S1.
+     *
+     * <p>The screens SPEC 12.5 describes start at the group name. A genuinely untouched
+     * install now opens on the introduction first, and a test about the setup flow should
+     * not have to page through it, nor start failing because it exists.
+     * {@link WelcomeFlowTest} covers the introduction itself.
+     */
+    public static void wipePastIntro() {
+        wipe();
+        locator().settings().welcomeSeen(true);
+    }
 }

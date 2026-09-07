@@ -34,7 +34,7 @@ public class RotationTest {
 
     @Before
     public void startClean() {
-        TestData.wipe();
+        TestData.wipePastIntro();
     }
 
     /** SPEC 7.1.6: the typed group name survives. */

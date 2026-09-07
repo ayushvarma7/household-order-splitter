@@ -20,6 +20,7 @@ public class SettingsStore {
     private static final String KEY_AUTO_BACKUP_FOLDER = "auto_backup_folder";
     private static final String KEY_AUTO_BACKUP_ENABLED = "auto_backup_enabled";
     private static final String KEY_AUTO_BACKUP_AT = "auto_backup_at";
+    private static final String KEY_WELCOME_SEEN = "welcome_seen";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -112,6 +113,21 @@ public class SettingsStore {
 
     public void lastAutoBackupAt(long millis) {
         preferences.edit().putLong(KEY_AUTO_BACKUP_AT, millis).apply();
+    }
+
+    /**
+     * Whether the introduction has been read.
+     *
+     * <p>Separate from whether a household exists, because those are different questions.
+     * Somebody who reads the introduction and closes the app before naming their group
+     * should land on the setup screen next time, not read the introduction again.
+     */
+    public boolean welcomeSeen() {
+        return preferences.getBoolean(KEY_WELCOME_SEEN, false);
+    }
+
+    public void welcomeSeen(boolean value) {
+        preferences.edit().putBoolean(KEY_WELCOME_SEEN, value).apply();
     }
 
     public Locale locale() {

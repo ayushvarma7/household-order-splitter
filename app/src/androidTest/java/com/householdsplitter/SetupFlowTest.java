@@ -28,7 +28,7 @@ public class SetupFlowTest {
 
     @Before
     public void startFromAFreshInstall() {
-        TestData.wipe();
+        TestData.wipePastIntro();
     }
 
     /** 12.5.1: an empty group field and a disabled Continue. */

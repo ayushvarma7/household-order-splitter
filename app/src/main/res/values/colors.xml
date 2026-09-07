@@ -106,4 +106,6 @@
     <color name="widget_background">#FFFFFFFF</color>
     <color name="widget_title">#FF5A5E73</color>
     <color name="widget_body">#FF1B1C22</color>
+
+    <color name="welcome_dot_inactive">#33000000</color>
 </resources>

@@ -10,6 +10,12 @@
     app:startDestination="@id/setupGroupFragment">
 
     <fragment
+        android:id="@+id/welcomeFragment"
+        android:name="com.householdsplitter.ui.welcome.WelcomeFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_welcome" />
+
+    <fragment
         android:id="@+id/setupGroupFragment"
         android:name="com.householdsplitter.ui.setup.SetupGroupFragment"
         android:label="@string/app_name"

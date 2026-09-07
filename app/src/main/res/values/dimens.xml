@@ -62,4 +62,7 @@
     <dimen name="progress_bar_height">6dp</dimen>
     <!-- The hairline between two segments of a single bar. -->
     <dimen name="bar_gap">2dp</dimen>
+
+    <!-- The introduction's page dots. -->
+    <dimen name="welcome_dot">8dp</dimen>
 </resources>

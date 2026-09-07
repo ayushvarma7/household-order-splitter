@@ -408,4 +408,17 @@
     <string name="shortcut_new_order_long">Start a new order</string>
     <string name="shortcut_balances_short">Who owes what</string>
     <string name="shortcut_balances_long">See who owes whom</string>
+
+    <!-- The introduction, shown once on a fresh install. SPEC 7.1.2 gives the setup screen
+         one line of explanation, which assumes the reader already knows what this is. -->
+    <string name="welcome_skip">Skip</string>
+    <string name="welcome_next">Next</string>
+    <string name="welcome_start">Get started</string>
+    <string name="welcome_page_of">Page %1$d of %2$d</string>
+    <string name="welcome_1_title">Start with a screenshot</string>
+    <string name="welcome_1_body">Screenshot your Walmart order page and share it straight into this app. It reads the item names and the price each one was actually billed at, so there is nothing to type in.</string>
+    <string name="welcome_2_title">Say who each item is for</string>
+    <string name="welcome_2_body">Tap the people an item was for, one item at a time. Something two of you shared is split between those two, not across everyone, which is the part a spreadsheet makes you do by hand.</string>
+    <string name="welcome_3_title">Everyone owes an exact figure</string>
+    <string name="welcome_3_body">Tax and fees are shared out in proportion, and the totals add up to the printed bill to the penny. It all stays on this phone: no account, no server, no sync.</string>
 </resources>

@@ -92,8 +92,19 @@ public class MainActivity extends AppCompatActivity {
                 }
                 NavController controller = host.getNavController();
                 NavGraph graph = controller.getNavInflater().inflate(R.navigation.nav_graph);
-                graph.setStartDestination(
-                        hasHousehold ? R.id.homeFragment : R.id.setupGroupFragment);
+                // Three cases, not two: a household means Home (SPEC 7.3.1); no household
+                // and no introduction read means start by explaining what this is; no
+                // household but the introduction already read means straight to S1
+                // (SPEC 7.1.1), because nobody should have to read it twice.
+                int start;
+                if (hasHousehold) {
+                    start = R.id.homeFragment;
+                } else if (locator.settings().welcomeSeen()) {
+                    start = R.id.setupGroupFragment;
+                } else {
+                    start = R.id.welcomeFragment;
+                }
+                graph.setStartDestination(start);
                 controller.setGraph(graph);
                 startDestinationResolved = true;
 

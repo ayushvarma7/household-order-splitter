@@ -76,4 +76,6 @@
     <color name="widget_background">#FF23242B</color>
     <color name="widget_title">#FFB6BAC9</color>
     <color name="widget_body">#FFF2F2F6</color>
+
+    <color name="welcome_dot_inactive">#33FFFFFF</color>
 </resources>

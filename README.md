@@ -142,6 +142,22 @@ content description instead of the screen being one opaque canvas.
 
 ---
 
+## First launch
+
+Three pages before the setup screen: where the numbers come from, what you do with them,
+and what you get back. SPEC 7.1.2 gives the setup screen one line of explanation, which is
+enough for somebody who already knows what the app is and not enough for anybody else, and
+the app asks for a group name before it has said what a group is for.
+
+Skip sits top-right throughout, so somebody who does know can go straight to the field they
+came for. It appears exactly once, tracked by its own setting rather than by whether a
+household exists: those are different questions, and somebody who reads it and closes the
+app before naming their group should land on setup next time, not read it again. It replaces
+itself on the back stack, so Back from setup leaves the app rather than reopening an
+introduction already dismissed.
+
+---
+
 ## Finding an old order
 
 Home groups orders under month headings carrying that month's own count and total, with
