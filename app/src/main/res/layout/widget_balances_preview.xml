@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget picker's preview. The live layout starts with every row hidden, and an empty
+  layout shows up in the picker as a blank white box that looks broken, so the preview is a
+  copy carrying sample text.
+
+  The text is obviously placeholder. A preview showing real-looking amounts would be a claim
+  about the user's own money before they have entered any.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/widget_preview_title"
+        android:textColor="@color/widget_title"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/widget_preview_row1"
+        android:textColor="@color/widget_body"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="@string/widget_preview_row2"
+        android:textColor="@color/widget_body"
+        android:textSize="14sp" />
+</LinearLayout>

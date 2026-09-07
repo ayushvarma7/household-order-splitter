@@ -37,7 +37,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
+            <!-- Long-press the launcher icon: the two things a household opens the app
+                 to do. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- The balances widget. exported="false" would stop the launcher binding to it. -->
+        <receiver
+            android:name=".widget.BalancesWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_balances_info" />
+        </receiver>
 
         <!-- SPEC 7.4.3: the camera capture is written to our own cache and shared back. -->
         <provider

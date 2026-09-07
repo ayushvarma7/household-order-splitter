@@ -31,6 +31,7 @@ import com.householdsplitter.databinding.FragmentSummaryBinding;
 import com.householdsplitter.export.ExportService;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.widget.BalancesWidgetProvider;
 import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.databinding.ItemSummaryRowBinding;
 import com.householdsplitter.ui.parsing.ParsingArgs;
@@ -398,6 +399,8 @@ public class SummaryFragment extends BaseFragment {
             // app is already doing work here, so it is the natural place to check whether
             // a backup is due. Silent either way (see AutoBackupService).
             locator().autoBackupService().backupIfDue();
+            // Settling changes who owes whom, which is the whole content of the widget.
+            BalancesWidgetProvider.refresh(requireContext().getApplicationContext());
         }
     }
 

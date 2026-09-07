@@ -69,4 +69,11 @@
     <color name="member_8">#C9C25A</color>
     <color name="member_9">#EE8BBE</color>
     <color name="member_10">#A8AFC0</color>
+
+    <!-- The widget cannot use theme attributes: RemoteViews are inflated by the launcher,
+         not the app, so its colours are resolved against the launcher's theme. These are
+         literal, with a values-night variant. -->
+    <color name="widget_background">#FF23242B</color>
+    <color name="widget_title">#FFB6BAC9</color>
+    <color name="widget_body">#FFF2F2F6</color>
 </resources>

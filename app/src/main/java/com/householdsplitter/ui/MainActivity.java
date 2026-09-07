@@ -32,6 +32,15 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
+    /**
+     * Which screen to open past Home, set by the widget and the launcher shortcuts. Not a
+     * nav deep link: the start destination is decided here at runtime (see the class note),
+     * so a deep link would fight it for the back stack.
+     */
+    public static final String EXTRA_OPEN = "com.householdsplitter.OPEN";
+    public static final String OPEN_BALANCES = "balances";
+    public static final String OPEN_NEW_ORDER = "new_order";
+
     private ActivityMainBinding binding;
     private volatile boolean startDestinationResolved;
 
@@ -93,9 +102,28 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<String> shared = sharedImageUris(getIntent());
                 if (!shared.isEmpty() && hasHousehold) {
                     offerToAddToDraft(locator, controller, shared);
+                    return;
+                }
+                if (hasHousehold) {
+                    openRequestedScreen(controller, getIntent());
                 }
             });
         });
+    }
+
+    /**
+     * Follows a widget tap or a launcher shortcut, once Home is on the stack.
+     *
+     * <p>Navigating on top of Home rather than replacing it means Back goes where the user
+     * expects: to their list of orders, not out of the app.
+     */
+    private void openRequestedScreen(NavController controller, Intent intent) {
+        String open = intent == null ? null : intent.getStringExtra(EXTRA_OPEN);
+        if (OPEN_BALANCES.equals(open)) {
+            controller.navigate(R.id.analyticsFragment);
+        } else if (OPEN_NEW_ORDER.equals(open)) {
+            controller.navigate(R.id.importFragment);
+        }
     }
 
     /**

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Static shortcuts, from a long-press on the launcher icon. Only two, because a list of
+  shortcuts nobody reads is worse than none: these are the two reasons a household opens
+  the app at all.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_add"
+        android:shortcutId="new_order"
+        android:shortcutLongLabel="@string/shortcut_new_order_long"
+        android:shortcutShortLabel="@string/shortcut_new_order_short">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetClass="com.householdsplitter.ui.MainActivity"
+            android:targetPackage="com.householdsplitter">
+            <extra
+                android:name="com.householdsplitter.OPEN"
+                android:value="new_order" />
+        </intent>
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_analytics"
+        android:shortcutId="balances"
+        android:shortcutLongLabel="@string/shortcut_balances_long"
+        android:shortcutShortLabel="@string/shortcut_balances_short">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetClass="com.householdsplitter.ui.MainActivity"
+            android:targetPackage="com.householdsplitter">
+            <extra
+                android:name="com.householdsplitter.OPEN"
+                android:value="balances" />
+        </intent>
+    </shortcut>
+</shortcuts>

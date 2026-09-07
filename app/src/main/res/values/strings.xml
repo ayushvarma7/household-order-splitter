@@ -392,4 +392,20 @@
         <item quantity="one">%d file</item>
         <item quantity="other">%d files</item>
     </plurals>
+
+    <!-- Home-screen widget and launcher shortcuts. -->
+    <string name="widget_description">Who owes whom, at a glance.</string>
+    <!-- Shown only in the widget picker, never over real data. -->
+    <string name="widget_preview_title">Your group</string>
+    <string name="widget_preview_row1">Someone pays someone else</string>
+    <string name="widget_preview_row2">And a second line</string>
+    <string name="widget_no_household">Open the app to set up your group.</string>
+    <string name="widget_nothing_yet">No settled orders yet.</string>
+    <string name="widget_all_square">Everyone is square.</string>
+    <string name="widget_transfer">%1$s pays %2$s %3$s</string>
+    <string name="widget_more">and %1$d more</string>
+    <string name="shortcut_new_order_short">New order</string>
+    <string name="shortcut_new_order_long">Start a new order</string>
+    <string name="shortcut_balances_short">Who owes what</string>
+    <string name="shortcut_balances_long">See who owes whom</string>
 </resources>

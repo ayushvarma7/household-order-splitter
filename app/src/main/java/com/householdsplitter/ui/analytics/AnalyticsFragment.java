@@ -26,6 +26,7 @@ import com.householdsplitter.data.entity.SettlementPayment;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.common.MemberPalette;
+import com.householdsplitter.widget.BalancesWidgetProvider;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -145,10 +146,14 @@ public class AnalyticsFragment extends BaseFragment {
             row.getRoot().setContentDescription(getString(R.string.settle_owes_description,
                     transfer.from().name(), money.format(transfer.amountCents()),
                     transfer.to().name()));
-            row.markPaidButton.setOnClickListener(v -> model.recordPayment(
-                    transfer.from().memberId(), transfer.to().memberId(),
-                    transfer.amountCents(),
-                    getString(R.string.settle_payment_recorded)));
+            row.markPaidButton.setOnClickListener(v -> {
+                model.recordPayment(
+                        transfer.from().memberId(), transfer.to().memberId(),
+                        transfer.amountCents(),
+                        getString(R.string.settle_payment_recorded));
+                // A recorded payment changes who owes whom, so the widget is now stale.
+                BalancesWidgetProvider.refresh(requireContext().getApplicationContext());
+            });
             binding.settleList.addView(row.getRoot());
         }
     }
@@ -176,8 +181,11 @@ public class AnalyticsFragment extends BaseFragment {
                     from == null ? "?" : from, to == null ? "?" : to));
             row.paymentDate.setText(when.format(new java.util.Date(payment.paidAt)));
             row.paymentAmount.setText(money.format(payment.amountCents));
-            row.undoButton.setOnClickListener(v -> model.deletePayment(payment.id,
-                    getString(R.string.settle_payment_removed)));
+            row.undoButton.setOnClickListener(v -> {
+                model.deletePayment(payment.id,
+                        getString(R.string.settle_payment_removed));
+                BalancesWidgetProvider.refresh(requireContext().getApplicationContext());
+            });
             binding.paymentList.addView(row.getRoot());
         }
     }
