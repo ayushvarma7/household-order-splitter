@@ -1,6 +1,7 @@
 package com.householdsplitter.core.parse.walmart;
 
 import com.householdsplitter.core.calc.Scope;
+import com.householdsplitter.core.parse.model.ItemBounds;
 import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.model.ParsedItem;
 
@@ -236,6 +237,42 @@ final class BlockAssembler {
                 && centre < tuning.nameZoneEndPermille;
     }
 
+    /**
+     * The box on the screenshot that this block occupies, in permille.
+     *
+     * <p>Every element of every band in the block counts, including the thumbnail, because
+     * the point is to show the user the row as they saw it rather than just its text.
+     */
+    private static ItemBounds measure(List<TextBand> bands, int startIndex, int endIndex) {
+        int left = Integer.MAX_VALUE, top = Integer.MAX_VALUE;
+        int right = Integer.MIN_VALUE, bottom = Integer.MIN_VALUE;
+        int imageIndex = -1;
+        int width = 0, height = 0;
+
+        for (int index = startIndex; index < endIndex; index++) {
+            for (OcrElement element : bands.get(index).elements()) {
+                // A block never spans two screenshots: it opens and closes on one page.
+                if (imageIndex < 0) {
+                    imageIndex = element.imageIndex();
+                    width = element.imageWidth();
+                    height = element.imageHeight();
+                } else if (element.imageIndex() != imageIndex) {
+                    continue;
+                }
+                left = Math.min(left, element.left());
+                top = Math.min(top, element.top());
+                right = Math.max(right, element.right());
+                bottom = Math.max(bottom, element.bottom());
+            }
+        }
+        if (imageIndex < 0 || width <= 0 || height <= 0 || right <= left || bottom <= top) {
+            return ItemBounds.UNKNOWN;
+        }
+        return new ItemBounds(imageIndex,
+                (left * 1000) / width, (top * 1000) / height,
+                (right * 1000) / width, (bottom * 1000) / height);
+    }
+
     private static ParsedItem buildItem(List<TextBand> bands, int startIndex, int endIndex,
                                         ParseTuning tuning) {
         TextBand priceBand = bands.get(startIndex);
@@ -359,6 +396,7 @@ final class BlockAssembler {
                 .unitPriceText(unitPriceText)
                 .sourceSection(priceBand.sectionName())
                 .imageIndex(priceBand.imageIndex())
+                .bounds(measure(bands, startIndex, endIndex))
                 .scope(SectionHeaders.isExcludedSection(priceBand.sectionName())
                         ? Scope.EXCLUDED : Scope.UNASSIGNED);
 

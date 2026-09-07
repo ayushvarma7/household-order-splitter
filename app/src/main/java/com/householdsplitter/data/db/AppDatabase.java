@@ -54,7 +54,7 @@ import com.householdsplitter.data.entity.SettlementPayment;
                 SettlementPayment.class,
                 MemberRule.class
         },
-        version = 3,
+        version = 4,
         exportSchema = true)
 @TypeConverters(Converters.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -148,6 +148,31 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    /**
+     * Adds where each row was read from, so the app can show the user the screenshot region
+     * a charge came from.
+     *
+     * <p>Every column has a default, so existing rows keep working: they simply report no
+     * region, which is honest. Orders imported before this migration were never measured,
+     * and inventing a box for them would put a red ring around the wrong part of the page.
+     */
+    public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `sourceImageIndex` "
+                    + "INTEGER NOT NULL DEFAULT -1");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `boundsLeftPermille` "
+                    + "INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `boundsTopPermille` "
+                    + "INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `boundsRightPermille` "
+                    + "INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `boundsBottomPermille` "
+                    + "INTEGER NOT NULL DEFAULT 0");
+        }
+    };
+
+
     public static AppDatabase build(Context context) {
         return Room.databaseBuilder(context.getApplicationContext(),
                         AppDatabase.class, DATABASE_NAME)
@@ -156,7 +181,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                 // No destructive fallback anywhere: losing a household's history to a
                 // schema change is not an acceptable outcome for data nobody can recreate.
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build();
     }
 

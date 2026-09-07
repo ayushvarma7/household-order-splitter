@@ -67,6 +67,39 @@ public class LineItem {
     /** SPEC 7.6.3: display order. */
     public int position;
 
+    /**
+     * Which screenshot this row was read from, and where on it, so the app can show the
+     * user the page the money came from with the row ringed.
+     *
+     * <p>The index is into the order's own images, ordered as the user arranged them. -1
+     * means unknown, which is the case for a row typed by hand or added as a difference.
+     *
+     * <p>The box is in permille of the image, matching the parser's geometry, because a
+     * pixel box measured on a 1080-wide capture means nothing when the same picture is
+     * displayed at another size.
+     */
+    @ColumnInfo(defaultValue = "-1")
+    public int sourceImageIndex = -1;
+
+    @ColumnInfo(defaultValue = "0")
+    public int boundsLeftPermille;
+
+    @ColumnInfo(defaultValue = "0")
+    public int boundsTopPermille;
+
+    @ColumnInfo(defaultValue = "0")
+    public int boundsRightPermille;
+
+    @ColumnInfo(defaultValue = "0")
+    public int boundsBottomPermille;
+
+    /** True when there is a screenshot region worth offering to show. */
+    public boolean hasSourceRegion() {
+        return sourceImageIndex >= 0
+                && boundsRightPermille > boundsLeftPermille
+                && boundsBottomPermille > boundsTopPermille;
+    }
+
     public LineItem() {
     }
 

@@ -190,16 +190,27 @@
                         android:orientation="horizontal"
                         android:visibility="gone" />
 
+                    <!-- The way out. Everything is already saved as you go, so this
+                         confirms that and returns to the order list rather than leaving
+                         the user on a screen with no obvious exit but Back. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/saveButton"
+                        style="@style/Widget.Splitter.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/button_height_large"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:text="@string/action_save_and_close" />
+
                     <!-- SPEC 7.10.5 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_xl"
+                        android:layout_marginTop="@dimen/space_s"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/shareButton"
-                            style="@style/Widget.Splitter.Button"
+                            style="@style/Widget.Splitter.Button.Tonal"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"

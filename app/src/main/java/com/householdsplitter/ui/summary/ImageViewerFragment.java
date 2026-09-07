@@ -20,6 +20,12 @@ public class ImageViewerFragment extends Fragment {
 
     public static final String ARG_URI = "image_uri";
     public static final String ARG_POSITION = "image_position";
+    /** Optional: the region to ring, in permille, and what to call it. */
+    public static final String ARG_CAPTION = "highlight_caption";
+    public static final String ARG_LEFT = "highlight_left";
+    public static final String ARG_TOP = "highlight_top";
+    public static final String ARG_RIGHT = "highlight_right";
+    public static final String ARG_BOTTOM = "highlight_bottom";
 
     private FragmentImageViewerBinding binding;
 
@@ -49,6 +55,37 @@ public class ImageViewerFragment extends Fragment {
                 binding.image.setImageDrawable(null);
             }
         }
+        applyHighlight();
+    }
+
+    /**
+     * Rings the region this screenshot was opened for, when it was opened for one.
+     *
+     * <p>The overlay is redrawn after a layout pass rather than immediately: it maps the
+     * region through the ImageView's matrix, and that matrix is not final until the image
+     * has been measured against the view it sits in.
+     */
+    private void applyHighlight() {
+        Bundle args = getArguments();
+        if (args == null || !args.containsKey(ARG_LEFT)) {
+            return;
+        }
+        int left = args.getInt(ARG_LEFT, -1);
+        int top = args.getInt(ARG_TOP, 0);
+        int right = args.getInt(ARG_RIGHT, 0);
+        int bottom = args.getInt(ARG_BOTTOM, 0);
+        String caption = args.getString(ARG_CAPTION);
+
+        if (caption != null && !caption.isEmpty()) {
+            binding.caption.setText(caption);
+            binding.caption.setVisibility(View.VISIBLE);
+        }
+        binding.image.post(() -> {
+            if (binding == null) {
+                return;
+            }
+            binding.highlight.highlight(binding.image, left, top, right, bottom);
+        });
     }
 
     @Override

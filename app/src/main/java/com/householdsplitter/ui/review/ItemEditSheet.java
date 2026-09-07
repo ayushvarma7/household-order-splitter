@@ -24,6 +24,9 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
 
         /** SPEC 11.1: break a row of quantity N into N rows of equal price. */
         void onSplitByQuantity(LineItem item);
+
+        /** Show the screenshot this row was read from, with the row ringed. */
+        void onViewOnScreenshot(LineItem item);
     }
 
     private SheetEditItemBinding binding;
@@ -84,6 +87,17 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
             listener.onDeleted(item);
             dismiss();
         });
+
+        // Only a row the reader found has somewhere to point at. A row typed by hand, or
+        // added to close a reconciliation gap, has no region and no button.
+        boolean hasRegion = item.hasSourceRegion();
+        binding.viewOnScreenshotButton.setVisibility(hasRegion ? View.VISIBLE : View.GONE);
+        if (hasRegion) {
+            binding.viewOnScreenshotButton.setOnClickListener(v -> {
+                listener.onViewOnScreenshot(item);
+                dismiss();
+            });
+        }
 
         // SPEC 11.1. Worth offering only when there is something to split: a two-pack
         // charged as one row cannot be answered for when its halves are for two people.

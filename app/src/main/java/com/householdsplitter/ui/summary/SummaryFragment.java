@@ -151,6 +151,7 @@ public class SummaryFragment extends BaseFragment {
         });
 
         binding.payerButton.setOnClickListener(this::showPayerMenu);
+        binding.saveButton.setOnClickListener(v -> saveAndClose());
         binding.shareButton.setOnClickListener(v -> shareAsText());
         binding.exportButton.setOnClickListener(v -> exportCsv());
         binding.editAssignmentsButton.setOnClickListener(v -> navigate(R.id.assignFragment));
@@ -381,6 +382,22 @@ public class SummaryFragment extends BaseFragment {
     }
 
     /** SPEC 7.10.7: unlocking needs an explicit Reopen with a confirmation. */
+    /**
+     * Returns to the order list.
+     *
+     * <p>Nothing is written here: every answer was saved as it was given, which is what
+     * lets the draft resume after a kill (SPEC 7.9.14). The button exists because the
+     * summary otherwise ends with Share and Export and no way onward, so the only exit is
+     * Back, and after a long assign session Back is a walk through every screen behind it.
+     *
+     * <p>It pops to Home rather than navigating there, so the wizard behind it leaves the
+     * back stack too and Home does not stack up a second copy.
+     */
+    private void saveAndClose() {
+        Snackbar.make(binding.getRoot(), R.string.summary_saved, Snackbar.LENGTH_SHORT).show();
+        NavHostFragment.findNavController(this).popBackStack(R.id.homeFragment, false);
+    }
+
     private void toggleSettled() {
         OrderBundle bundle = model.bundle().getValue();
         if (bundle == null) {

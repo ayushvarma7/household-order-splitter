@@ -102,7 +102,67 @@ public class MigrationTest {
         helper.runMigrationsAndValidate(NAME, 3, true, AppDatabase.MIGRATION_2_3).close();
     }
 
-    /** Straight from 1 to 3, which is the path an early install actually takes. */
+
+    @Test
+    public void migratesThreeToFour() throws IOException {
+        helper.createDatabase(NAME, 3).close();
+        helper.runMigrationsAndValidate(NAME, 4, true, AppDatabase.MIGRATION_3_4).close();
+    }
+
+    /**
+     * A row imported before the columns existed reports no screenshot region, and -1 is
+     * what says so. Zero would name the first screenshot and put a red ring around the top
+     * left corner of it, which is worse than offering nothing: it would be a confident
+     * answer to "where did this come from?" that happens to be wrong.
+     */
+    @Test
+    public void anOlderRowReportsNoScreenshotRegion() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 3);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+
+        ContentValues order = new ContentValues();
+        order.put("id", 1L);
+        order.put("householdId", 1L);
+        order.put("label", "Weekly shop");
+        order.put("orderDate", 1L);
+        order.put("status", "DRAFT");
+        order.put("createdAt", 1L);
+        order.put("draftStep", "REVIEW");
+        database.insert("orders", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT, order);
+
+        ContentValues item = new ContentValues();
+        item.put("id", 1L);
+        item.put("orderId", 1L);
+        item.put("name", "Coffee beans");
+        item.put("rawOcrText", "Coffee beans");
+        item.put("lineTotalCents", 1299L);
+        item.put("scope", "UNASSIGNED");
+        item.put("position", 0);
+        database.insert("line_items", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                item);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 4, true,
+                AppDatabase.MIGRATION_3_4);
+
+        try (Cursor cursor = migrated.query(
+                "SELECT name, sourceImageIndex, boundsLeftPermille, boundsRightPermille "
+                        + "FROM line_items")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the row itself survives", "Coffee beans", cursor.getString(0));
+            assertEquals("no screenshot region, not screenshot zero", -1, cursor.getInt(1));
+            assertEquals(0, cursor.getInt(2));
+            assertEquals("an empty box, which isKnown() rejects", 0, cursor.getInt(3));
+        }
+        migrated.close();
+    }
+
+    /** Straight from 1 to the current version, which is the path an early install takes. */
     @Test
     public void migratesAllTheWayFromOne() throws IOException {
         SupportSQLiteDatabase database = helper.createDatabase(NAME, 1);
@@ -114,8 +174,9 @@ public class MigrationTest {
                 household);
         database.close();
 
-        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 3, true,
-                AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3);
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 4, true,
+                AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3,
+                AppDatabase.MIGRATION_3_4);
 
         try (Cursor cursor = migrated.query("SELECT name FROM households")) {
             assertTrue(cursor.moveToFirst());
@@ -166,7 +227,8 @@ public class MigrationTest {
         AppDatabase database = Room.databaseBuilder(
                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         AppDatabase.class, NAME)
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3,
+                        AppDatabase.MIGRATION_3_4)
                 .build();
         try {
             // Any query forces the open, and therefore the migration and its validation.

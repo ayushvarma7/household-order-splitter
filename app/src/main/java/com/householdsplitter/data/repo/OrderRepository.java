@@ -8,6 +8,7 @@ import com.householdsplitter.core.calc.SplitCalculator;
 import com.householdsplitter.core.money.MoneySplitter;
 import com.householdsplitter.core.calc.result.SplitResult;
 import com.householdsplitter.core.parse.model.OrderField;
+import com.householdsplitter.core.parse.model.ItemBounds;
 import com.householdsplitter.core.parse.model.ParsedItem;
 import com.householdsplitter.core.parse.model.ParsedOrder;
 import com.householdsplitter.core.parse.model.ReviewReason;
@@ -335,6 +336,9 @@ public class OrderRepository {
                 row.unitPriceText = original.unitPriceText;
                 row.scope = original.scope;
                 row.sourceSection = original.sourceSection;
+                // Each half came off the same place on the page as the row it replaces, so
+                // "show me this on the screenshot" still points somewhere true.
+                copySourceRegion(original, row);
                 // The quantity warning no longer applies, since each row is now one item.
                 row.needsReview = false;
                 row.reviewReasonsCsv = null;
@@ -662,6 +666,7 @@ public class OrderRepository {
                 item.unitPriceText = row.item.unitPriceText;
                 item.scope = row.item.scope;
                 item.sourceSection = row.item.sourceSection;
+                copySourceRegion(row.item, item);
                 item.needsReview = row.item.needsReview;
                 item.reviewReasonsCsv = row.item.reviewReasonsCsv;
                 item.position = row.item.position;
@@ -708,6 +713,15 @@ public class OrderRepository {
         imageDao.insertAll(images);
     }
 
+    /** Carries where a row was read from onto a row derived from it. */
+    private static void copySourceRegion(LineItem from, LineItem to) {
+        to.sourceImageIndex = from.sourceImageIndex;
+        to.boundsLeftPermille = from.boundsLeftPermille;
+        to.boundsTopPermille = from.boundsTopPermille;
+        to.boundsRightPermille = from.boundsRightPermille;
+        to.boundsBottomPermille = from.boundsBottomPermille;
+    }
+
     private static LineItem toLineItem(long orderId, ParsedItem parsed, int position) {
         LineItem item = new LineItem();
         item.orderId = orderId;
@@ -721,6 +735,16 @@ public class OrderRepository {
         item.needsReview = parsed.needsReview();
         item.reviewReasonsCsv = joinReasons(parsed.reviewReasons());
         item.position = position;
+
+        // Where on the screenshot this came from, so the review screen can show it.
+        ItemBounds bounds = parsed.bounds();
+        if (bounds != null && bounds.isKnown()) {
+            item.sourceImageIndex = bounds.imageIndex();
+            item.boundsLeftPermille = bounds.leftPermille();
+            item.boundsTopPermille = bounds.topPermille();
+            item.boundsRightPermille = bounds.rightPermille();
+            item.boundsBottomPermille = bounds.bottomPermille();
+        }
         return item;
     }
 

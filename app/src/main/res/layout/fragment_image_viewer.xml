@@ -20,6 +20,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Rings the row this screenshot was opened for. Sits over the image rather than
+         inside it, so the picture keeps its own scaling. -->
+    <com.householdsplitter.ui.common.SourceHighlightView
+        android:id="@+id/highlight"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/image"
+        app:layout_constraintEnd_toEndOf="@id/image"
+        app:layout_constraintStart_toStartOf="@id/image"
+        app:layout_constraintTop_toTopOf="@id/image" />
+
+    <TextView
+        android:id="@+id/caption"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/space_l"
+        android:background="@drawable/bg_banner"
+        android:backgroundTint="#CC000000"
+        android:gravity="center"
+        android:padding="@dimen/space_m"
+        android:textAppearance="@style/Text.Body"
+        android:textColor="@color/viewer_foreground"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_max="@dimen/content_max_width" />
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"

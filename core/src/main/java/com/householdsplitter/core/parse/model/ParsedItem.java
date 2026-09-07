@@ -31,6 +31,8 @@ public final class ParsedItem {
     private final String sourceSection;
     private final Set<ReviewReason> reviewReasons;
     private final int imageIndex;
+    /** Where on the screenshot this row was read from, for showing the user. */
+    private final ItemBounds bounds;
 
     private ParsedItem(Builder builder) {
         this.name = builder.name == null ? "" : builder.name;
@@ -42,6 +44,7 @@ public final class ParsedItem {
         this.sourceSection = builder.sourceSection;
         this.reviewReasons = Collections.unmodifiableSet(new LinkedHashSet<>(builder.reviewReasons));
         this.imageIndex = builder.imageIndex;
+        this.bounds = builder.bounds == null ? ItemBounds.UNKNOWN : builder.bounds;
     }
 
     public String name() {
@@ -84,6 +87,10 @@ public final class ParsedItem {
         return reviewReasons;
     }
 
+    public ItemBounds bounds() {
+        return bounds;
+    }
+
     public int imageIndex() {
         return imageIndex;
     }
@@ -98,7 +105,8 @@ public final class ParsedItem {
                 .scope(scope)
                 .sourceSection(sourceSection)
                 .reviewReasons(reviewReasons)
-                .imageIndex(imageIndex);
+                .imageIndex(imageIndex)
+                .bounds(bounds);
     }
 
     @Override
@@ -123,6 +131,7 @@ public final class ParsedItem {
         private String sourceSection;
         private final List<ReviewReason> reviewReasons = new ArrayList<>();
         private int imageIndex;
+        private ItemBounds bounds;
 
         public Builder name(String value) {
             this.name = value;
@@ -172,6 +181,11 @@ public final class ParsedItem {
                     flag(reason);
                 }
             }
+            return this;
+        }
+
+        public Builder bounds(ItemBounds value) {
+            this.bounds = value;
             return this;
         }
 

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.core.money.CurrencyFormat;
+import com.householdsplitter.core.money.QuantityBreakdown;
 import com.householdsplitter.core.parse.model.ReviewReason;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.databinding.ItemReviewRowBinding;
@@ -90,10 +91,18 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
             binding.quantityChip.setVisibility(item.quantity > 1 ? View.VISIBLE : View.GONE);
             binding.quantityChip.setText("x" + item.quantity);
 
-            // The unit price is captured (SPEC 8.3.3) but not shown. Only the amount
-            // actually billed for the row matters, and a second figure beside it invites a
-            // reader to wonder which one they are paying.
-            binding.unitPrice.setVisibility(View.GONE);
+            // The unit price read off the screenshot is captured (SPEC 8.3.3) but never
+            // shown: only the amount actually billed matters, and a second figure beside it
+            // invites the reader to wonder which one they are paying.
+            //
+            // The division of a multi-quantity row is a different thing. It is derived from
+            // the billed amount rather than read from the page, and "x2" beside $5.04
+            // otherwise leaves the reader to do the arithmetic.
+            String breakdown = QuantityBreakdown.describe(
+                    item.quantity, item.lineTotalCents, money,
+                    context.getString(com.householdsplitter.R.string.quantity_uneven));
+            binding.unitPrice.setVisibility(breakdown == null ? View.GONE : View.VISIBLE);
+            binding.unitPrice.setText(breakdown);
 
             // SPEC 7.6.4: tinted, with a warning icon whose content description says why.
             // The tint is a faint wash of the warning container, so it reads as "look at

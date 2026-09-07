@@ -18,6 +18,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.R;
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.core.money.CurrencyFormat;
+import com.householdsplitter.core.money.QuantityBreakdown;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.databinding.FragmentAssignBinding;
@@ -165,7 +166,11 @@ public class AssignFragment extends BaseFragment {
         binding.itemName.setText(item.item.name);
         binding.itemPrice.setText(money.format(item.item.lineTotalCents));
         binding.itemQuantity.setVisibility(item.item.quantity > 1 ? View.VISIBLE : View.GONE);
-        binding.itemQuantity.setText(getString(R.string.assign_quantity, item.item.quantity));
+        String perUnit = QuantityBreakdown.describe(item.item.quantity,
+                item.item.lineTotalCents, money, null);
+        binding.itemQuantity.setText(perUnit == null
+                ? getString(R.string.assign_quantity, item.item.quantity)
+                : getString(R.string.assign_quantity_each, item.item.quantity, perUnit));
 
         // SPEC 7.9.3.2: hidden on item 1.
         binding.samePreviousButton.setVisibility(position == 0 ? View.GONE : View.VISIBLE);

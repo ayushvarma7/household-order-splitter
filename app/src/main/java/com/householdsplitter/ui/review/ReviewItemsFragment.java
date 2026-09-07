@@ -18,6 +18,10 @@ import com.householdsplitter.R;
 import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.core.parse.model.Reconciliation;
 import com.householdsplitter.data.entity.LineItem;
+import com.householdsplitter.ui.summary.ImageViewerFragment;
+import com.householdsplitter.data.relation.OrderBundle;
+import com.householdsplitter.data.entity.OrderImage;
+import com.householdsplitter.core.parse.model.ItemBounds;
 import com.householdsplitter.databinding.FragmentReviewItemsBinding;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
@@ -202,6 +206,11 @@ public class ReviewItemsFragment extends BaseFragment {
                             R.plurals.split_done, rows, rows), Snackbar.LENGTH_LONG).show();
                 });
             }
+
+            @Override
+            public void onViewOnScreenshot(LineItem toShow) {
+                showOnScreenshot(toShow);
+            }
         }).show(getChildFragmentManager(), "edit-item");
     }
 
@@ -235,6 +244,42 @@ public class ReviewItemsFragment extends BaseFragment {
         Snackbar.make(binding.getRoot(), R.string.item_deleted, 6000)
                 .setAction(R.string.action_undo, v -> model.undoDelete())
                 .show();
+    }
+
+    /**
+     * Opens the screenshot this row was read from, with the row ringed.
+     *
+     * <p>The row records an index into the order's images, so the image has to still be
+     * there and still be readable: a screenshot the user has since deleted from their
+     * gallery leaves a stored URI that no longer resolves, and the honest answer then is
+     * to say so rather than open a blank screen.
+     */
+    private void showOnScreenshot(LineItem item) {
+        OrderBundle current = model.bundle().getValue();
+        if (current == null || !item.hasSourceRegion()
+                || item.sourceImageIndex >= current.images.size()) {
+            if (binding != null) {
+                Snackbar.make(binding.getRoot(), R.string.screenshot_missing,
+                        Snackbar.LENGTH_LONG).show();
+            }
+            return;
+        }
+        OrderImage image = current.images.get(item.sourceImageIndex);
+
+        Bundle args = new Bundle();
+        args.putString(ImageViewerFragment.ARG_URI, image.uri);
+        args.putInt(ImageViewerFragment.ARG_POSITION, item.sourceImageIndex);
+        args.putString(ImageViewerFragment.ARG_CAPTION, item.name);
+        // A little air around the row, so the outline reads as a highlight rather than as
+        // a box drawn tight against the glyphs.
+        ItemBounds padded = new ItemBounds(item.sourceImageIndex,
+                item.boundsLeftPermille, item.boundsTopPermille,
+                item.boundsRightPermille, item.boundsBottomPermille).padded(8);
+        args.putInt(ImageViewerFragment.ARG_LEFT, padded.leftPermille());
+        args.putInt(ImageViewerFragment.ARG_TOP, padded.topPermille());
+        args.putInt(ImageViewerFragment.ARG_RIGHT, padded.rightPermille());
+        args.putInt(ImageViewerFragment.ARG_BOTTOM, padded.bottomPermille());
+        NavHostFragment.findNavController(this).navigate(R.id.imageViewerFragment, args);
     }
 
     @Override
