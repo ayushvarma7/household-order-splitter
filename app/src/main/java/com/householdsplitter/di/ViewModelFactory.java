@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel;
 import androidx.savedstate.SavedStateRegistryOwner;
 
 import com.householdsplitter.ui.home.HomeViewModel;
+import com.householdsplitter.ui.importer.ImportViewModel;
+import com.householdsplitter.ui.parsing.ParsingViewModel;
 import com.householdsplitter.ui.setup.SetupGroupViewModel;
 import com.householdsplitter.ui.setup.SetupMembersViewModel;
 
@@ -42,6 +44,17 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         }
         if (modelClass == HomeViewModel.class) {
             return (T) new HomeViewModel(locator.householdRepository());
+        }
+        if (modelClass == ImportViewModel.class) {
+            return (T) new ImportViewModel(handle);
+        }
+        if (modelClass == ParsingViewModel.class) {
+            return (T) new ParsingViewModel(
+                    locator.orderRepository(),
+                    locator.householdRepository(),
+                    locator.receiptParser(),
+                    locator.executors(),
+                    locator.currentHouseholdId());
         }
         throw new IllegalArgumentException("No ViewModel wired for " + modelClass.getName());
     }

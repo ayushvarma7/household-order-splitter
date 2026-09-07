@@ -40,7 +40,12 @@ public class MainActivity extends AppCompatActivity {
         ServiceLocator locator = ((SplitterApp) getApplication()).serviceLocator();
         // SPEC 4.7: no database work on the main thread, not even a count.
         locator.executors().diskIO().execute(() -> {
-            boolean hasHousehold = locator.database().householdDao().countSync() > 0;
+            com.householdsplitter.data.entity.Household household =
+                    locator.database().householdDao().getHouseholdSync();
+            boolean hasHousehold = household != null;
+            if (hasHousehold) {
+                locator.currentHouseholdId(household.id);
+            }
             locator.executors().mainThread().execute(() -> {
                 if (binding == null || isFinishing()) {
                     return;

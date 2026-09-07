@@ -70,6 +70,7 @@ public final class WalmartLayoutParser {
         int medianHeight = medianHeight(cropped);
 
         classify(bands, page);
+        markAppBarFurniture(bands);
         markRatingCarousel(bands);
         propagateSections(bands);
 
@@ -151,6 +152,38 @@ public final class WalmartLayoutParser {
                 continue;
             }
             band.kind(TextBand.Kind.CONTENT);
+        }
+    }
+
+    /**
+     * The blue app bar is furniture, and so is everything sharing its rows.
+     *
+     * <p>On a real order page the bar carries the title, a back chevron and a cart that
+     * prints its own total, commonly "$0.00". That total sits in the right-hand price
+     * column (SPEC 8.3.2) and is a valid price token, so without this it opens an item
+     * block. The block is currently discarded anyway, because it has no name and SPEC 8.7.5
+     * forbids nameless rows, but relying on that is relying on an accident: one stray word
+     * beneath the bar would turn the cart into a phantom purchase. The bar is identified by
+     * its date title (SPEC 8.6.1), and its vertical extent then defines the region.
+     */
+    private void markAppBarFurniture(List<TextBand> bands) {
+        int appBarBottom = -1;
+        for (TextBand band : bands) {
+            if (band.kind() == TextBand.Kind.APP_BAR) {
+                appBarBottom = Math.max(appBarBottom, band.bottom());
+            }
+        }
+        if (appBarBottom < 0) {
+            return;
+        }
+        for (TextBand band : bands) {
+            if (band.kind() == TextBand.Kind.APP_BAR) {
+                continue;
+            }
+            // Anything whose vertical midpoint is level with the bar or above it.
+            if ((band.top() + band.bottom()) / 2 <= appBarBottom) {
+                band.kind(TextBand.Kind.CHROME);
+            }
         }
     }
 

@@ -81,6 +81,7 @@ public class SetupGroupFragment extends BaseFragment {
             if (householdId == null) {
                 return;
             }
+            locator().currentHouseholdId(householdId);
             NavOptions options = new NavOptions.Builder()
                     .setPopUpTo(R.id.setupGroupFragment, true)
                     .build();

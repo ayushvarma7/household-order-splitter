@@ -15,7 +15,7 @@ import java.util.List;
  */
 public final class Page {
 
-    private static final int WIDTH = 1080;
+    private static final int DEFAULT_WIDTH = 1080;
     private static final int DEFAULT_HEIGHT = 2400;
     private static final int LINE_HEIGHT = 40;
     private static final int LINE_STEP = 62;
@@ -26,22 +26,29 @@ public final class Page {
     private static final int PRICE_X_END = 1040;
 
     private final int imageIndex;
+    private final int width;
     private final int height;
     private final List<OcrElement> elements = new ArrayList<>();
     private int cursorY = 130;
 
-    private Page(int imageIndex, int height) {
+    private Page(int imageIndex, int width, int height) {
         this.imageIndex = imageIndex;
+        this.width = width;
         this.height = height;
     }
 
     public static Page image(int index) {
-        return new Page(index, DEFAULT_HEIGHT);
+        return new Page(index, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
     /** A longer screenshot, for fixtures that need more rows than a phone screen holds. */
     public static Page tallImage(int index, int height) {
-        return new Page(index, height);
+        return new Page(index, DEFAULT_WIDTH, height);
+    }
+
+    /** Exact dimensions, for fixtures traced off a real screenshot. */
+    public static Page sized(int index, int width, int height) {
+        return new Page(index, width, height);
     }
 
     public List<OcrElement> elements() {
@@ -64,7 +71,7 @@ public final class Page {
 
     public Page at(int y, int xLeft, int xRight, String text, int glyphHeight, int confidence) {
         elements.add(new OcrElement(text, imageIndex, xLeft, y, xRight, y + glyphHeight,
-                WIDTH, this.height, confidence));
+                this.width, this.height, confidence));
         return this;
     }
 

@@ -4,6 +4,9 @@ import android.content.Context;
 
 import com.householdsplitter.data.db.AppDatabase;
 import com.householdsplitter.data.repo.HouseholdRepository;
+import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.parse.ParserFactory;
+import com.householdsplitter.parse.ReceiptParser;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.util.AppExecutors;
 
@@ -23,7 +26,15 @@ public class ServiceLocator {
     private final AppDatabase database;
     private final SettingsStore settings;
 
+    /**
+     * The household the user is working in. There is exactly one (SPEC 1.5), so caching its
+     * id here saves threading it through every nav argument. It is set by MainActivity at
+     * launch and by S1 the moment a household is created; a fresh install leaves it at 0.
+     */
+    private volatile long currentHouseholdId;
+
     private HouseholdRepository householdRepository;
+    private OrderRepository orderRepository;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -34,6 +45,14 @@ public class ServiceLocator {
 
     public Context applicationContext() {
         return applicationContext;
+    }
+
+    public long currentHouseholdId() {
+        return currentHouseholdId;
+    }
+
+    public void currentHouseholdId(long value) {
+        this.currentHouseholdId = value;
     }
 
     public AppExecutors executors() {
@@ -57,5 +76,28 @@ public class ServiceLocator {
                     executors);
         }
         return householdRepository;
+    }
+
+    public synchronized OrderRepository orderRepository() {
+        if (orderRepository == null) {
+            orderRepository = new OrderRepository(
+                    database.orderDao(),
+                    database.orderImageDao(),
+                    database.lineItemDao(),
+                    database.participantDao(),
+                    database.assignmentDao(),
+                    database.memberDao(),
+                    executors);
+        }
+        return orderRepository;
+    }
+
+    /**
+     * SPEC 7.14.2 and 8.10.1: the parser is chosen by a setting, and both implementations
+     * satisfy the same interface. In the standard flavour the cloud option is not on the
+     * classpath at all, so this always returns the on-device one.
+     */
+    public ReceiptParser receiptParser() {
+        return ParserFactory.create(applicationContext, settings.useCloudParser());
     }
 }

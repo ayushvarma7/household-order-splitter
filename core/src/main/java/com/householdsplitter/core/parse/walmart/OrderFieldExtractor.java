@@ -15,9 +15,18 @@ import java.util.regex.Pattern;
 /** The app-bar date and the summary block. SPEC 8.6. */
 final class OrderFieldExtractor {
 
-    /** SPEC 8.6.1, e.g. "Sep 03, 2026 order". */
+    /**
+     * SPEC 8.6.1, e.g. "Sep 03, 2026 order".
+     *
+     * <p>Searched for anywhere on the band rather than anchored to the whole of it. On a
+     * real screenshot the blue app bar also carries a back chevron and a cart showing
+     * "$0.00", and those land on the same horizontal band. Anchoring the match would leave
+     * the band unclassified, and the cart total sits in the right-hand price column, so it
+     * would then be read as a line price and open an item block for a product that does
+     * not exist.
+     */
     private static final Pattern APP_BAR_DATE =
-            Pattern.compile("^([A-Za-z]{3,9}) (\\d{1,2}), (\\d{4}) order$");
+            Pattern.compile("([A-Za-z]{3,9}) (\\d{1,2}), (\\d{4}) order");
 
     private static final DateTimeFormatter SHORT_MONTH =
             DateTimeFormatter.ofPattern("MMM d yyyy", Locale.US);
@@ -78,7 +87,7 @@ final class OrderFieldExtractor {
     /** SPEC 8.6.1: parses the app-bar title into epoch millis, or null. */
     static Long orderDateMillis(String bandText) {
         Matcher matcher = APP_BAR_DATE.matcher(bandText == null ? "" : bandText.trim());
-        if (!matcher.matches()) {
+        if (!matcher.find()) {
             return null;
         }
         LocalDate date = parseDate(matcher.group(1), matcher.group(2), matcher.group(3));
