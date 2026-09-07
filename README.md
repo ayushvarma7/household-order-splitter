@@ -142,6 +142,90 @@ content description instead of the screen being one opaque canvas.
 
 ---
 
+## Finding an old order
+
+Home groups orders under month headings carrying that month's own count and total, with
+"This month" and "Last month" spelled out rather than named, because those answer the
+question without any arithmetic. The month is worked out in the device's own time zone, so a
+9pm order on the last day of a month is not filed under the next one.
+
+Search looks inside orders, not just at their labels. "Which order had the coffee beans?" is
+what a household actually asks months later, and "Weekly shop" never answers it, so the item
+names and the participants' names are searchable too. Matching is forgiving in the ways
+someone typing on a phone needs: partial words, any capitalisation, words in any order. Every
+word has to match something, though, because a result matching only half of what was typed is
+worse than no result, since you cannot tell which half was honoured.
+
+Three filters, All by default. A month whose only order is filtered out loses its heading with
+it, and "Nothing matches" is a separate state from "you have no orders", with a way back
+rather than an invitation to start something.
+
+---
+
+## Standing rules
+
+Settings, "Standing rules". "Ben is never on beer" is a fact about a household that otherwise
+gets re-entered on every order containing beer, so it can be written down once.
+
+Nothing is seeded. SPEC 7.9.13 forbids the app shipping opinions about which groceries are
+usually shared, so every keyword here was typed by the household about itself. A rule is a
+plain case-insensitive substring rather than a pattern, because someone writing "beer" should
+not have to think about regular expressions.
+
+Applying one is never silent. The assign screen names who was moved and by which keyword, and
+touching a chip by hand hands control straight back: a rule is a starting point, not a veto.
+A rule can never empty an item, which would turn a charge somebody owes into one nobody owes,
+and it can never add somebody who is not in on the order.
+
+---
+
+## Splitting a multi-quantity row
+
+A two-pack bought for two different people cannot be answered on one row, and the only
+alternative was deleting it and typing two by hand. Tap the row on the review screen and
+"Split into 2 separate rows" divides the line total through the same splitter the totals use,
+so a $5.05 two-pack becomes $2.53 and $2.52 rather than two $2.52s and a lost penny. Any
+answer already given for the row carries across to both halves.
+
+---
+
+## Backups
+
+Settings, "Automatic backups". Pick a folder once and the app keeps a week of dated JSON
+backups there, one a day, written after settling an order. A file that overwrites itself is
+not a backup, since the failure it has to survive is a bad write, so each day is its own file
+and only the app's own name pattern is ever pruned: you chose a folder, not a scratch space.
+Pruning happens only after a successful write, so a failed backup never costs an old one too.
+
+Not a scheduled job. WorkManager is outside SPEC 4.11's library budget, and a household's data
+only changes when they use the app, so there is nothing for a background wake-up to find.
+
+The backup is silent, including on failure, because it fires right after settling up. The
+status line in Settings is where an absence becomes visible, so it says plainly when nothing
+is being kept.
+
+Restore reassigns every id and rewrites the references between rows. That is what makes the
+merge of SPEC 7.14.4 work at all: the common case is restoring your own backup into the
+install it came from, where every id in the file is already taken.
+
+---
+
+## The widget
+
+A home-screen widget showing who owes whom. The question between shops is not "what did we
+spend?" but "am I square with anyone?", and answering it meant opening the app and finding the
+Spending screen.
+
+It shows the suggested transfers rather than net balances, because "Ben pays Ana $12.40" is an
+instruction and "Ben: -12.40" is a puzzle. The figures come from the same `Balances` the
+Spending screen uses, so the two cannot disagree. It redraws after settling an order or
+recording a payment, which are the only two things that can change the answer.
+
+Long-pressing the launcher icon gives two shortcuts, new order and who owes what. Only two,
+because a list of shortcuts nobody reads is worse than none.
+
+---
+
 ## Design and accessibility
 
 Spacing runs on a 4dp scale in `values/dimens.xml`, and three qualified folders override the

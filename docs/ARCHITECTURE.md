@@ -27,7 +27,7 @@ Consequence worth stating: SPEC §12.1, §12.2, §12.3 and §12.4 all run in `:c
 Application id and root package: `com.householdsplitter`. No person's name appears
 anywhere in it (PROMPT §6).
 
-### `:core` — pure Java, no `android.*`
+### `:core`, pure Java, no `android.*`
 
 ```
 com.householdsplitter.core
@@ -67,7 +67,7 @@ com.householdsplitter.core
 confidence, image index). ML Kit's `Text.Element` never crosses into `:core`, which is
 what lets §12.4 run against captured fixture element lists.
 
-### `:app` — Android
+### `:app`, Android
 
 ```
 com.householdsplitter
@@ -165,8 +165,8 @@ Table is named `orders` because `order` is reserved in SQL.
 | `statedSubtotalCents` | INTEGER | NOT NULL DEFAULT 0 |
 | `statedTotalCents` | INTEGER | NOT NULL DEFAULT 0 |
 | `createdAt` | INTEGER | NOT NULL |
-| `draftStep` | TEXT | NOT NULL DEFAULT 'IMPORT'  — proposed, see open question 1 |
-| `draftItemPosition` | INTEGER | NOT NULL DEFAULT 0 — proposed, see open question 1 |
+| `draftStep` | TEXT | NOT NULL DEFAULT 'IMPORT', proposed, see open question 1 |
+| `draftItemPosition` | INTEGER | NOT NULL DEFAULT 0, proposed, see open question 1 |
 
 A SQLite UNIQUE index permits multiple NULLs, so a plain unique index on
 `externalOrderNo` is exactly the "unique where non-null" §5.3 asks for, and it backs the
@@ -193,7 +193,7 @@ Composite PK `(orderId, memberId)`. `orderId` FK -> orders ON DELETE CASCADE,
 | `scope` | TEXT | NOT NULL, see open question 3 |
 | `sourceSection` | TEXT | NULL  §8.5.2 |
 | `needsReview` | INTEGER | NOT NULL DEFAULT 0 |
-| `reviewReasons` | TEXT | NULL — proposed, see open question 2 |
+| `reviewReasons` | TEXT | NULL, proposed, see open question 2 |
 | `position` | INTEGER | NOT NULL |
 
 Index: `(orderId, position)`.

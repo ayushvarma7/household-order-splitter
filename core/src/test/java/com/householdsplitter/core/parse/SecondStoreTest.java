@@ -29,7 +29,7 @@ import java.util.List;
  *
  * <p>That is an architectural claim, and the only way to check a claim like that is to try
  * it. This test implements a fictional second store whose pages look nothing like Walmart's
- * — prices on the left, a footer instead of a header, a different currency style — and runs
+ *, prices on the left, a footer instead of a header, a different currency style, and runs
  * its output through the real {@link SplitCalculator}.
  *
  * <p>What makes the test meaningful is what it does not contain: no cast, no branch on which
