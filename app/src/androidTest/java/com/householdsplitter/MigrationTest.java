@@ -95,7 +95,70 @@ public class MigrationTest {
         migrated.close();
     }
 
-    /** Opening the real database through Room applies the migration end to end. */
+    /** Schema 2 to 3: the delivered unit count and the standing rules table. */
+    @Test
+    public void migratesTwoToThree() throws IOException {
+        helper.createDatabase(NAME, 2).close();
+        helper.runMigrationsAndValidate(NAME, 3, true, AppDatabase.MIGRATION_2_3).close();
+    }
+
+    /** Straight from 1 to 3, which is the path an early install actually takes. */
+    @Test
+    public void migratesAllTheWayFromOne() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 1);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 3, true,
+                AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3);
+
+        try (Cursor cursor = migrated.query("SELECT name FROM households")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("Fixture Group", cursor.getString(0));
+        }
+        migrated.close();
+    }
+
+    /**
+     * The new count defaults to -1, not 0. Zero would read as "nothing was delivered" on
+     * every order imported before the column existed, and the value's whole purpose is to
+     * be absent when it is unknown.
+     */
+    @Test
+    public void theUnitCountDefaultsToUnknownNotZero() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 2);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+        ContentValues order = new ContentValues();
+        order.put("id", 1L);
+        order.put("householdId", 1L);
+        order.put("label", "Fixture order");
+        order.put("orderDate", 1L);
+        order.put("status", "DRAFT");
+        order.put("createdAt", 1L);
+        order.put("draftStep", "IMPORT");
+        database.insert("orders", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT, order);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 3, true,
+                AppDatabase.MIGRATION_2_3);
+        try (Cursor cursor = migrated.query("SELECT deliveredUnitCount FROM orders")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals(-1, cursor.getInt(0));
+        }
+        migrated.close();
+    }
+
+    /** Opening the real database through Room applies every migration end to end. */
     @Test
     public void theAppOpensAMigratedDatabase() throws IOException {
         helper.createDatabase(NAME, 1).close();
@@ -103,7 +166,7 @@ public class MigrationTest {
         AppDatabase database = Room.databaseBuilder(
                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         AppDatabase.class, NAME)
-                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
                 .build();
         try {
             // Any query forces the open, and therefore the migration and its validation.

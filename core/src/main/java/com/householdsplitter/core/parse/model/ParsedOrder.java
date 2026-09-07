@@ -20,6 +20,7 @@ public final class ParsedOrder {
     private final Set<OrderField> parsedFields;
     private final List<String> warnings;
     private final List<String> sections;
+    private final int deliveredUnitCount;
 
     private ParsedOrder(Builder builder) {
         this.label = builder.label;
@@ -33,6 +34,7 @@ public final class ParsedOrder {
                         ? EnumSet.noneOf(OrderField.class) : builder.parsedFields));
         this.warnings = Collections.unmodifiableList(new ArrayList<>(builder.warnings));
         this.sections = Collections.unmodifiableList(new ArrayList<>(builder.sections));
+        this.deliveredUnitCount = builder.deliveredUnitCount;
     }
 
     /** SPEC 8.6.2, e.g. "Sep 03 Walmart". Null when no app-bar date was found. */
@@ -72,6 +74,19 @@ public final class ParsedOrder {
         return sections;
     }
 
+    /**
+     * The number printed on "N items delivered", or -1 if no such header was seen.
+     *
+     * <p>A hint, never a check. SPEC 8.5.4 says this counts units and not rows, so a parse
+     * of eighteen rows under a header reading thirty three is correct and must not be
+     * failed against it. Its use is to help a user whose rows plainly do not add up to the
+     * bill: knowing the order mentions thirty three units suggests a missing screenshot,
+     * which is a cause worth pointing at.
+     */
+    public int deliveredUnitCount() {
+        return deliveredUnitCount;
+    }
+
     /** SPEC 8.9.1: the sum of everything that is not excluded. */
     public long itemsSubtotalCents() {
         long sum = 0L;
@@ -101,6 +116,12 @@ public final class ParsedOrder {
         private final Set<OrderField> parsedFields = EnumSet.noneOf(OrderField.class);
         private final List<String> warnings = new ArrayList<>();
         private final List<String> sections = new ArrayList<>();
+        private int deliveredUnitCount = -1;
+
+        public Builder deliveredUnitCount(int value) {
+            this.deliveredUnitCount = value;
+            return this;
+        }
 
         public Builder label(String value) {
             this.label = value;

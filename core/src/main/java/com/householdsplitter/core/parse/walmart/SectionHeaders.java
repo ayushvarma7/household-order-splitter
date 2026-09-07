@@ -27,6 +27,10 @@ final class SectionHeaders {
 
     private static final Pattern LEADING_COUNT = Pattern.compile("^\\d+\\s+");
 
+    /** Only the "N items delivered" header, which is the one that counts units. */
+    private static final Pattern DELIVERED_UNITS =
+            Pattern.compile("^(\\d+) items? delivered$");
+
     private SectionHeaders() {
     }
 
@@ -44,6 +48,28 @@ final class SectionHeaders {
 
     static boolean isHeader(String text) {
         return sectionNameOf(text) != null;
+    }
+
+    /**
+     * The unit count printed on the "N items delivered" header, or -1.
+     *
+     * <p>Returned as a hint and nothing more. SPEC 8.5.4 is emphatic that this counts units
+     * rather than rows, so it must never validate a parse, and SPEC 8.9.5 says
+     * reconciliation is always on money. What it is genuinely useful for is telling a user
+     * whose five rows do not add up to a fifty dollar bill that the order mentions thirty
+     * three units, so they have probably missed a screenshot. That is help, not validation:
+     * it points at a likely cause rather than rejecting anything.
+     */
+    static int deliveredUnitCount(String text) {
+        Matcher matcher = DELIVERED_UNITS.matcher(ChromeFilter.normalise(text));
+        if (!matcher.matches()) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (NumberFormatException notANumber) {
+            return -1;
+        }
     }
 
     /**

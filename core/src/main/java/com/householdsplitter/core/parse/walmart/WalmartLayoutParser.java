@@ -136,6 +136,10 @@ public final class WalmartLayoutParser {
             if (section != null) {
                 band.kind(TextBand.Kind.SECTION);
                 band.sectionName(section);
+                int units = SectionHeaders.deliveredUnitCount(left.isEmpty() ? full : left);
+                if (units > 0) {
+                    page.deliveredUnitCount = units;
+                }
                 continue;
             }
             // SPEC 8.6.3. Checked before chrome so a label such as

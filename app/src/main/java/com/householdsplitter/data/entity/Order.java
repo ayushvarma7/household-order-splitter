@@ -95,6 +95,17 @@ public class Order {
     public int draftItemPosition;
 
     /**
+     * The number printed on "N items delivered", or -1.
+     *
+     * <p>A hint, never a check. SPEC 8.5.4 says it counts units and not rows, and SPEC 8.9.5
+     * says reconciliation is always on money. It is kept so that a user whose rows plainly
+     * do not add up to the bill can be told the order mentions more units than they have
+     * rows, which points at a missing screenshot.
+     */
+    @ColumnInfo(defaultValue = "-1")
+    public int deliveredUnitCount = -1;
+
+    /**
      * SPEC 7.7.2: which order-level fields genuinely came off a screenshot, so the
      * "from screenshot" marker can be shown and then dropped once the user edits.
      * Stored as a comma-separated list of OrderField names.

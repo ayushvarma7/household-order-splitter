@@ -4,6 +4,7 @@ import androidx.room.TypeConverter;
 
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.data.entity.DraftStep;
+import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.data.entity.OrderStatus;
 
 /**
@@ -11,6 +12,23 @@ import com.householdsplitter.data.entity.OrderStatus;
  * never silently reinterpret existing rows.
  */
 public class Converters {
+
+    @TypeConverter
+    public static String fromRuleKind(MemberRule.Kind value) {
+        return value == null ? MemberRule.Kind.EXCLUDE.name() : value.name();
+    }
+
+    @TypeConverter
+    public static MemberRule.Kind toRuleKind(String value) {
+        if (value == null) {
+            return MemberRule.Kind.EXCLUDE;
+        }
+        try {
+            return MemberRule.Kind.valueOf(value);
+        } catch (IllegalArgumentException unknown) {
+            return MemberRule.Kind.EXCLUDE;
+        }
+    }
 
     @TypeConverter
     public static String fromScope(Scope value) {

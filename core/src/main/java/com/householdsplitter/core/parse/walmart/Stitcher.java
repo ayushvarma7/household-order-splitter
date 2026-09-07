@@ -55,6 +55,7 @@ final class Stitcher {
         String orderNo = null;
         Long dateMillis = null;
         String label = null;
+        int deliveredUnits = -1;
 
         for (PageParse page : pages) {
             for (Map.Entry<OrderField, Long> entry : page.amounts.entrySet()) {
@@ -73,6 +74,9 @@ final class Stitcher {
                 dateMillis = page.orderDateMillis;
                 label = page.label;
             }
+            if (page.deliveredUnitCount > 0) {
+                deliveredUnits = page.deliveredUnitCount;
+            }
         }
 
         ParsedAdjustments adjustments = new ParsedAdjustments(
@@ -90,7 +94,8 @@ final class Stitcher {
                 .adjustments(adjustments)
                 .externalOrderNo(orderNo)
                 .orderDateMillis(dateMillis)
-                .label(label);
+                .label(label)
+                .deliveredUnitCount(deliveredUnits);
 
         for (OrderField field : amounts.keySet()) {
             builder.markParsed(field);

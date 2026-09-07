@@ -252,6 +252,34 @@ public class WalmartLayoutParserTest {
         assertTrue("reconciliation is on money, never on the item count",
                 reconciliation.subtotalMatches());
         assertTrue(reconciliation.totalMatches());
+
+        // The count is captured, because telling a user their rows may be incomplete is
+        // useful. It is a hint and never a check: 33 units against 18 rows is correct.
+        assertEquals(33, order.deliveredUnitCount());
+    }
+
+    /** No such header means no hint, rather than a zero that reads as "none delivered". */
+    @Test
+    public void noDeliveredHeaderMeansNoHint() {
+        Page page = Page.image(0)
+                .section("16 shopped")
+                .itemStart("Bananas", "$1.97")
+                .summary("Total", "$1.97");
+        assertEquals(-1, parse(page).deliveredUnitCount());
+    }
+
+    /** The count survives stitching, whichever screenshot carried the header. */
+    @Test
+    public void theUnitCountSurvivesStitching() {
+        Page first = Page.image(0)
+                .section("33 items delivered")
+                .section("16 shopped")
+                .itemStart("Bananas", "$1.97");
+        Page second = Page.image(1)
+                .itemStart("Apples", "$3.12")
+                .summary("Total", "$5.09");
+
+        assertEquals(33, parse(first, second).deliveredUnitCount());
     }
 
     /** 12.4.9: a header repeated across two screenshots opens one section (SPEC 8.7.6). */

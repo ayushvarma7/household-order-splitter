@@ -19,6 +19,8 @@ final class PageParse {
     String externalOrderNo;
     Long orderDateMillis;
     String label;
+    /** SPEC 8.5.4: a unit count, kept only as a hint. */
+    int deliveredUnitCount = -1;
 
     PageParse(int imageIndex) {
         this.imageIndex = imageIndex;
