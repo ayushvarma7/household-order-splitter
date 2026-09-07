@@ -227,6 +227,22 @@ lets the JVM tests in `:core` construct everything directly. Used everywhere, no
 Reason: needed for backup/restore (§7.14.4) and the cloud parser (§8.10.2). The bundled
 `org.json` is stubbed out in JVM unit tests, so backup round-trip tests could not run.
 
+**4.3a The second-store seam is a named interface** (§3.5 requires that a second store be
+addable without changing the domain layer, while ruling one out in v1).
+`core.parse.LayoutParser` is that seam: it takes positioned OCR text and returns a
+`ParsedOrder`, and it is the only thing above the OCR that knows what a store's page looks
+like. `WalmartLayoutParser` implements it; `MlKitReceiptParser` takes one as a constructor
+argument rather than building a Walmart one, because the OCR step is store-independent, so
+a second store is an argument and not an edit.
+
+`SecondStoreTest` checks the claim by trying it: a fictional store with prices on the left
+and totals in a footer, run through the real `SplitCalculator`. The test contains no cast,
+no branch on which store it is, and no new type. If store knowledge is later pushed into
+the domain layer, it stops compiling.
+
+No real second store is shipped. Guessing at a layout with no screenshots to check against
+is how a parser ends up silently wrong about money.
+
 **4.3 No floating point in the money path.** `Cents` parses and formats through `long`
 and, only at the display boundary, `BigDecimal` with `NumberFormat` for §11.13. No
 `float` or `double` token appears in `core/money`, `core/calc`, or their tests.

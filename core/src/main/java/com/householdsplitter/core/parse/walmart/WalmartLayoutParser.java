@@ -1,5 +1,6 @@
 package com.householdsplitter.core.parse.walmart;
 
+import com.householdsplitter.core.parse.LayoutParser;
 import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedItem;
@@ -19,7 +20,10 @@ import java.util.List;
  * <p>SPEC 3.5: nothing above this class knows the layout is Walmart's, so a second store
  * is a second implementation of this pipeline and no change to the domain layer.
  */
-public final class WalmartLayoutParser {
+public final class WalmartLayoutParser implements LayoutParser {
+
+    /** Shown on the review screen. Nothing branches on it. */
+    public static final String STORE_NAME = "Walmart";
 
     private final ParseTuning tuning;
 
@@ -35,10 +39,16 @@ public final class WalmartLayoutParser {
         return tuning;
     }
 
+    @Override
+    public String storeName() {
+        return STORE_NAME;
+    }
+
     /**
      * @param pages one element list per screenshot, in the user's chosen order (SPEC 7.4.4,
      *              SPEC 8.7.1)
      */
+    @Override
     public ParsedOrder parse(List<List<OcrElement>> pages) {
         if (pages == null || pages.isEmpty()) {
             return ParsedOrder.empty();
