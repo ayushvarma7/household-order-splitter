@@ -421,4 +421,11 @@
     <string name="welcome_2_body">Tap the people an item was for, one item at a time. Something two of you shared is split between those two, not across everyone, which is the part a spreadsheet makes you do by hand.</string>
     <string name="welcome_3_title">Everyone owes an exact figure</string>
     <string name="welcome_3_body">Tax and fees are shared out in proportion, and the totals add up to the printed bill to the penny. It all stays on this phone: no account, no server, no sync.</string>
+
+    <!-- Removing a row that was never a real charge. -->
+    <string name="assign_remove_item">Remove this item</string>
+    <string name="assign_removed">Removed "%1$s"</string>
+    <string name="assign_remove_failed">Could not remove that row</string>
+    <string name="assign_remove_last">That is the only item left. Delete the whole order instead.</string>
+    <string name="summary_edit_items">Edit items</string>
 </resources>

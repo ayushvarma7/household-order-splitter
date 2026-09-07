@@ -5,4 +5,7 @@
     <item android:id="@+id/action_bulk" android:title="@string/bulk_open" />
     <item android:id="@+id/action_jump_to" android:title="@string/assign_jump_title" />
     <item android:id="@+id/action_all_common" android:title="@string/assign_all_common_title" />
+    <!-- The reader can invent a row from a struck-through price or a savings note, and this
+         is the screen where that gets noticed. -->
+    <item android:id="@+id/action_remove_item" android:title="@string/assign_remove_item" />
 </menu>

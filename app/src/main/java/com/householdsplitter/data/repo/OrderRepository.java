@@ -385,6 +385,55 @@ public class OrderRepository {
         });
     }
 
+    /** A deleted row and the answers that went with it, so Undo can put back both. */
+    public static final class DeletedItem {
+
+        public final LineItem item;
+        public final List<ItemAssignment> assignments;
+
+        DeletedItem(LineItem item, List<ItemAssignment> assignments) {
+            this.item = item;
+            this.assignments = assignments;
+        }
+    }
+
+    /**
+     * Deletes a row that has already been answered for, keeping enough to undo it.
+     *
+     * <p>{@link #deleteItem} is the review-screen version, where nothing is assigned yet.
+     * Past that point the row carries assignments, and deleting it cascades them away, so an
+     * Undo that restored only the row would put back an item nobody was on. That is worse
+     * than not offering Undo at all: the user would think their answer had come back.
+     */
+    public void deleteItemForUndo(long lineItemId, Callback<Result<DeletedItem>> callback) {
+        executors.diskIO().execute(() -> {
+            LineItem item = lineItemDao.getByIdSync(lineItemId);
+            if (item == null) {
+                post(callback, Result.failure("That row no longer exists"));
+                return;
+            }
+            List<ItemAssignment> assignments = assignmentDao.getForItemSync(lineItemId);
+            lineItemDao.delete(item);
+            post(callback, Result.ok(new DeletedItem(item, assignments)));
+        });
+    }
+
+    /**
+     * Puts back a row deleted by {@link #deleteItemForUndo}, answers and all.
+     *
+     * <p>The row keeps its original id, so the assignments still point at it and its
+     * position in the order is unchanged.
+     */
+    public void restoreItem(DeletedItem deleted, Callback<Result<Void>> callback) {
+        executors.diskIO().execute(() -> {
+            lineItemDao.insert(deleted.item);
+            if (deleted.assignments != null && !deleted.assignments.isEmpty()) {
+                assignmentDao.insertAll(deleted.assignments);
+            }
+            post(callback, Result.ok(null));
+        });
+    }
+
     /** SPEC 7.7: the order-level fields, each editable. */
     public void saveOrder(Order order, Callback<Result<Void>> callback) {
         executors.diskIO().execute(() -> {

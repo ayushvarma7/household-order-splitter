@@ -14,6 +14,7 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.R;
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.core.money.CurrencyFormat;
@@ -84,6 +85,10 @@ public class AssignFragment extends BaseFragment {
                                     R.plurals.assign_suggestions_applied, applied, applied),
                             com.google.android.material.snackbar.Snackbar.LENGTH_LONG).show();
                 });
+                return true;
+            }
+            if (item.getItemId() == R.id.action_remove_item) {
+                removeCurrentItem();
                 return true;
             }
             if (item.getItemId() == R.id.action_bulk) {
@@ -279,6 +284,40 @@ public class AssignFragment extends BaseFragment {
     }
 
     /** SPEC 7.9.10: confirmation naming the count. */
+    /**
+     * Removes the row on screen, with an Undo that puts back its answers too.
+     *
+     * <p>No confirmation dialog: Undo is the better answer for something reversible, and a
+     * dialog on every removal would be in the way of the case this exists for, which is
+     * clearing out rows the reader invented.
+     */
+    private void removeCurrentItem() {
+        if (model.items().size() <= 1) {
+            // Removing the last row would leave an order with nothing in it, which the
+            // summary cannot total. Deleting the order is the honest action there.
+            Snackbar.make(binding.getRoot(), R.string.assign_remove_last,
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
+        LineItemWithAssignments current = model.currentItem();
+        String name = current == null ? "" : current.item.name;
+        model.removeCurrentItem(result -> {
+            if (binding == null) {
+                return;
+            }
+            if (!result.isOk()) {
+                Snackbar.make(binding.getRoot(), R.string.assign_remove_failed,
+                        Snackbar.LENGTH_LONG).show();
+                return;
+            }
+            Snackbar.make(binding.getRoot(), getString(R.string.assign_removed, name),
+                            Snackbar.LENGTH_LONG)
+                    .setAction(R.string.action_undo, v -> model.undoRemove(restored -> {
+                    }))
+                    .show();
+        });
+    }
+
     private void confirmAssignRemaining() {
         int count = model.remainingUnassignedFromHere();
         if (count == 0) {

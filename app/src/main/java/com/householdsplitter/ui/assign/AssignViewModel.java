@@ -19,6 +19,7 @@ import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.suggest.RuleService;
 import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.util.Callback;
+import com.householdsplitter.util.Result;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -54,6 +55,8 @@ public class AssignViewModel extends ViewModel {
     private final MutableLiveData<String> ruleNote = new MutableLiveData<>(null);
 
     private long loadedForItemId = -1L;
+    /** The last row removed here, held so Undo can put it back with its answers. */
+    private OrderRepository.DeletedItem lastRemoved;
 
     public AssignViewModel(OrderRepository repository, AssignmentMemoryService memory,
                            RuleService rules, long orderId, long householdId) {
@@ -456,6 +459,43 @@ public class AssignViewModel extends ViewModel {
         index.setValue(at - 1);
         repository.updateProgress(orderId, DraftStep.ASSIGN, at - 1);
         loadSelectionForCurrent();
+    }
+
+    /**
+     * Removes the item on screen, keeping enough to undo it.
+     *
+     * <p>Wanted because the reader can invent a row: a struck-through original or a savings
+     * note read as a charge. Those are noticed while answering "who is this for?", which is
+     * the one screen that shows a single row at a time, and until now the only way out was
+     * to walk back to the review list.
+     *
+     * <p>The index is left alone. The list shrinks under it, so the next item slides into
+     * the current position, which is what the user wants after removing something that was
+     * never real. On the last row it is clamped back by {@link #items()}.
+     */
+    public void removeCurrentItem(Callback<Result<OrderRepository.DeletedItem>> onDone) {
+        LineItemWithAssignments current = currentItem();
+        if (current == null) {
+            onDone.onResult(Result.failure("Nothing to remove"));
+            return;
+        }
+        repository.deleteItemForUndo(current.item.id, result -> {
+            if (result.isOk()) {
+                lastRemoved = result.value();
+            }
+            onDone.onResult(result);
+        });
+    }
+
+    /** Puts back the row that {@link #removeCurrentItem} took out, answers and all. */
+    public void undoRemove(Callback<Boolean> onDone) {
+        OrderRepository.DeletedItem deleted = lastRemoved;
+        if (deleted == null) {
+            onDone.onResult(false);
+            return;
+        }
+        lastRemoved = null;
+        repository.restoreItem(deleted, result -> onDone.onResult(result.isOk()));
     }
 
     /** SPEC 7.9.11: jump to any item out of order. */

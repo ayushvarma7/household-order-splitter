@@ -154,6 +154,7 @@ public class SummaryFragment extends BaseFragment {
         binding.shareButton.setOnClickListener(v -> shareAsText());
         binding.exportButton.setOnClickListener(v -> exportCsv());
         binding.editAssignmentsButton.setOnClickListener(v -> navigate(R.id.assignFragment));
+        binding.editItemsButton.setOnClickListener(v -> navigate(R.id.reviewItemsFragment));
         binding.editParticipantsButton.setOnClickListener(v -> navigate(R.id.participantsFragment));
         binding.settleButton.setOnClickListener(v -> toggleSettled());
     }

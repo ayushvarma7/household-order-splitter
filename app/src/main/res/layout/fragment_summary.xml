@@ -223,6 +223,16 @@
                         android:layout_marginTop="@dimen/space_s"
                         android:text="@string/action_edit_assignments" />
 
+                    <!-- Back to the whole item list, where a row can be corrected or
+                         removed. Reachable only through Assign until now, which shows one
+                         row at a time. -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/editItemsButton"
+                        style="@style/Widget.Splitter.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/summary_edit_items" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/editParticipantsButton"
                         style="@style/Widget.Splitter.Button.Text"
