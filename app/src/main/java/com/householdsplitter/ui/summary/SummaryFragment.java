@@ -334,6 +334,8 @@ public class SummaryFragment extends BaseFragment {
         menu.setOnMenuItemClickListener(entry -> {
             model.setPayer(entry.getItemId() >= members.size()
                     ? null : members.get(entry.getItemId()).id);
+            // Who paid changes who is out of pocket, which the workbook records.
+            refreshWorkbook();
             return true;
         });
         menu.show();

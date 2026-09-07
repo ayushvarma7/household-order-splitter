@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.householdsplitter.core.analytics.SpendingAnalytics;
 import com.householdsplitter.export.WorkbookService;
 
 /** S15, spending analytics. */
@@ -12,7 +11,7 @@ public class AnalyticsViewModel extends ViewModel {
 
     private final WorkbookService workbookService;
     private final long householdId;
-    private final MutableLiveData<SpendingAnalytics.Report> report = new MutableLiveData<>();
+    private final MutableLiveData<WorkbookService.Insight> report = new MutableLiveData<>();
     private final MutableLiveData<Boolean> loading = new MutableLiveData<>(true);
 
     public AnalyticsViewModel(WorkbookService workbookService, long householdId) {
@@ -20,7 +19,7 @@ public class AnalyticsViewModel extends ViewModel {
         this.householdId = householdId;
     }
 
-    public LiveData<SpendingAnalytics.Report> report() {
+    public LiveData<WorkbookService.Insight> report() {
         return report;
     }
 

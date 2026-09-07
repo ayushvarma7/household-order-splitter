@@ -102,8 +102,12 @@ public class AssignFragment extends BaseFragment {
         }
         Bundle args = new Bundle();
         args.putLong(ParsingArgs.ARG_ORDER_ID, orderId);
+        // The summary is where the order ends, so clear the wizard behind it and leave Home
+        // underneath. Otherwise Back walks the user backwards through import, review,
+        // totals and participants, which is a route nobody wants to take by accident.
         NavOptions options = new NavOptions.Builder()
-                .setPopUpTo(R.id.assignFragment, true).build();
+                .setPopUpTo(R.id.homeFragment, false)
+                .build();
         NavHostFragment.findNavController(this).navigate(R.id.summaryFragment, args, options);
     }
 

@@ -121,6 +121,12 @@ Home overflow, "Spending". Total spent, average and largest order, how much of t
 on things everyone shared against things assigned to particular people, and a per-person
 breakdown with each member's own colour.
 
+It also answers the question a single order cannot: who is actually out of pocket. One person
+fronts each shop, and over a run of orders those advances accumulate, so "Settling up" shows
+each member's net balance and the shortest list of payments that would level everyone. The
+balances always sum to zero, which is asserted, because money appearing or vanishing there
+would be money somebody is wrongly asked for.
+
 Every figure is a sum of figures the split calculator already produced, so the analytics can
 never disagree with what somebody was actually asked to pay. Shares are integer permille for
 the same reason money is `long` cents. The bars are ordinary weighted views rather than a

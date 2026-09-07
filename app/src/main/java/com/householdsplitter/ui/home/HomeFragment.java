@@ -142,13 +142,25 @@ public class HomeFragment extends BaseFragment {
 
     /**
      * SPEC 7.3.4: a draft resumes where it stopped, and anything further along opens the
-     * read-only view.
+     * summary.
+     *
+     * <p>Only a SETTLED order opens locked. SPEC 7.3.4 routes both assigned and settled
+     * orders to the read-only view, but SPEC 7.10.7 is the rule that actually says what
+     * being locked means, and it ties that to settling: "Mark as settled sets status
+     * SETTLED and makes the order read-only". Locking an assigned order too would make the
+     * payer selector of SPEC 7.10.4 reachable only during the first pass through an order,
+     * and in practice nobody knows who is paying until afterwards. An assigned order
+     * therefore stays editable until it is settled.
      */
     private void openOrder(OrderWithMembers row) {
         Bundle args = new Bundle();
         args.putLong(ParsingArgs.ARG_ORDER_ID, row.order.id);
-        if (row.order.status != OrderStatus.DRAFT) {
+        if (row.order.status == OrderStatus.SETTLED) {
             args.putBoolean(SummaryFragment.ARG_READ_ONLY, true);
+            NavHostFragment.findNavController(this).navigate(R.id.summaryFragment, args);
+            return;
+        }
+        if (row.order.status == OrderStatus.ASSIGNED) {
             NavHostFragment.findNavController(this).navigate(R.id.summaryFragment, args);
             return;
         }

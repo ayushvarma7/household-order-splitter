@@ -13,11 +13,14 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.chip.Chip;
 import com.householdsplitter.R;
+import com.householdsplitter.core.analytics.Balances;
 import com.householdsplitter.core.analytics.SpendingAnalytics;
+import com.householdsplitter.export.WorkbookService;
 import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.databinding.FragmentAnalyticsBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMemberBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMonthBinding;
+import com.householdsplitter.databinding.ItemSettleUpBinding;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.ui.common.MemberPalette;
@@ -69,10 +72,11 @@ public class AnalyticsFragment extends BaseFragment {
         model.load();
     }
 
-    private void render(SpendingAnalytics.Report report) {
-        if (binding == null || report == null) {
+    private void render(WorkbookService.Insight insight) {
+        if (binding == null || insight == null) {
             return;
         }
+        SpendingAnalytics.Report report = insight.spending;
         boolean empty = report.isEmpty();
         binding.emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
         binding.content.setVisibility(empty ? View.GONE : View.VISIBLE);
@@ -91,6 +95,46 @@ public class AnalyticsFragment extends BaseFragment {
         renderMembers(report.members(), report.totalSpentCents());
         renderMonths(report.months());
         renderFrequentItems(report.frequentItems());
+        renderSettleUp(insight.balances);
+    }
+
+    /**
+     * Who is out of pocket, and the shortest way to level up.
+     *
+     * <p>A single order answers "what do I owe for this shop?". Over a run of orders the
+     * useful question becomes "what do I owe, all in?", because one person fronted each one
+     * and those advances accumulate.
+     */
+    private void renderSettleUp(Balances.Report balances) {
+        boolean anything = balances != null && !balances.balances().isEmpty();
+        binding.settleSection.setVisibility(anything ? View.VISIBLE : View.GONE);
+        if (!anything) {
+            return;
+        }
+        binding.settleList.removeAllViews();
+
+        if (balances.isLevel()) {
+            binding.settleLevel.setVisibility(View.VISIBLE);
+            binding.settleList.setVisibility(View.GONE);
+            binding.settleSummary.setText(R.string.settle_nothing_outstanding);
+            return;
+        }
+        binding.settleLevel.setVisibility(View.GONE);
+        binding.settleList.setVisibility(View.VISIBLE);
+        binding.settleSummary.setText(getString(R.string.settle_outstanding,
+                money.format(balances.outstandingCents())));
+
+        for (Balances.Transfer transfer : balances.transfers()) {
+            ItemSettleUpBinding row = ItemSettleUpBinding.inflate(
+                    getLayoutInflater(), binding.settleList, false);
+            row.settleLine.setText(getString(R.string.settle_owes,
+                    transfer.from().name(), transfer.to().name()));
+            row.settleAmount.setText(money.format(transfer.amountCents()));
+            row.getRoot().setContentDescription(getString(R.string.settle_owes_description,
+                    transfer.from().name(), money.format(transfer.amountCents()),
+                    transfer.to().name()));
+            binding.settleList.addView(row.getRoot());
+        }
     }
 
     /** One bar showing how much of the household's money went on things everyone shared. */

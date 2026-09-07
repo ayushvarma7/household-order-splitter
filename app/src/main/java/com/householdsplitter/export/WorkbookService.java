@@ -3,6 +3,7 @@ package com.householdsplitter.export;
 import android.content.ContentResolver;
 import android.net.Uri;
 
+import com.householdsplitter.core.analytics.Balances;
 import com.householdsplitter.core.analytics.SpendingAnalytics;
 import com.householdsplitter.core.calc.AllocationMode;
 import com.householdsplitter.core.calc.SplitCalculator;
@@ -121,20 +122,43 @@ public class WorkbookService {
         }));
     }
 
+    /** Everything the Spending screen shows, from one pass over the orders. */
+    public static final class Insight {
+
+        public final SpendingAnalytics.Report spending;
+        public final Balances.Report balances;
+
+        Insight(SpendingAnalytics.Report spending, Balances.Report balances) {
+            this.spending = spending;
+            this.balances = balances;
+        }
+    }
+
     /** The same orders the workbook covers, ready for the analytics screen. */
-    public void analyse(long householdId, Callback<SpendingAnalytics.Report> callback) {
+    public void analyse(long householdId, Callback<Insight> callback) {
         repository.allBundles(householdId, bundles -> executors.diskIO().execute(() -> {
             List<SpendingAnalytics.OrderPoint> points = new ArrayList<>();
+            List<Balances.Settlement> settlements = new ArrayList<>();
             AllocationMode mode = settings.allocationMode();
             for (OrderBundle bundle : bundles) {
                 SplitResult result = tryCalculate(bundle, mode);
-                if (result != null) {
-                    points.add(new SpendingAnalytics.OrderPoint(
-                            bundle.order.orderDate, bundle.order.label, result));
+                if (result == null) {
+                    continue;
                 }
+                points.add(new SpendingAnalytics.OrderPoint(
+                        bundle.order.orderDate, bundle.order.label, result));
+                settlements.add(new Balances.Settlement(bundle.order.payerMemberId, result));
             }
-            SpendingAnalytics.Report report = SpendingAnalytics.analyse(points);
-            executors.mainThread().execute(() -> callback.onResult(report));
+            SpendingAnalytics.Report spending = SpendingAnalytics.analyse(points);
+            Balances.Report balances;
+            try {
+                balances = Balances.of(settlements);
+            } catch (RuntimeException inconsistent) {
+                // Better no settle-up section than one that does not add up.
+                balances = Balances.of(new ArrayList<>());
+            }
+            Insight insight = new Insight(spending, balances);
+            executors.mainThread().execute(() -> callback.onResult(insight));
         }));
     }
 

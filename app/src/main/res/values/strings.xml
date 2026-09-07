@@ -254,4 +254,12 @@
     <string name="settings_workbook_none">No workbook chosen yet</string>
     <string name="settings_workbook_set">Saving to the file you chose</string>
     <string name="workbook_written">Workbook updated: %1$d sheets for %2$d orders</string>
+
+    <!-- Settle up -->
+    <string name="settle_title">Settling up</string>
+    <string name="settle_outstanding">%1$s still needs to move between you.</string>
+    <string name="settle_nothing_outstanding">Everyone is square.</string>
+    <string name="settle_level">Nothing to pay</string>
+    <string name="settle_owes">%1$s pays %2$s</string>
+    <string name="settle_owes_description">%1$s pays %2$s to %3$s</string>
 </resources>
