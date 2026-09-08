@@ -2,6 +2,8 @@ package com.householdsplitter;
 
 import android.app.Application;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.householdsplitter.di.ServiceLocator;
 
 /**
@@ -19,6 +21,9 @@ public class SplitterApp extends Application {
     public void onCreate() {
         super.onCreate();
         serviceLocator = new ServiceLocator(this);
+        // Applied here rather than in the Activity: set after a window exists and the app
+        // visibly flashes the other theme before correcting itself.
+        AppCompatDelegate.setDefaultNightMode(serviceLocator.settings().themeMode());
     }
 
     public ServiceLocator serviceLocator() {

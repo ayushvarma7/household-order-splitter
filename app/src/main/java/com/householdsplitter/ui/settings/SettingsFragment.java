@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -201,6 +202,21 @@ public class SettingsFragment extends BaseFragment {
                             : getString(R.string.settings_rules_count, count));
                 });
 
+        renderTheme();
+        binding.themeGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int mode = checkedId == R.id.themeLight
+                    ? AppCompatDelegate.MODE_NIGHT_NO
+                    : checkedId == R.id.themeDark
+                    ? AppCompatDelegate.MODE_NIGHT_YES
+                    : AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+            if (mode == settings.themeMode()) {
+                return;
+            }
+            settings.themeMode(mode);
+            // Recreates the Activity, which is how the new theme reaches every screen.
+            AppCompatDelegate.setDefaultNightMode(mode);
+        });
+
         autoBackup = locator().autoBackupService();
         binding.autoBackupChooseButton.setOnClickListener(v -> chooseBackupFolder.launch(null));
         binding.autoBackupNowButton.setOnClickListener(v -> autoBackup.backupNow(result -> {
@@ -227,6 +243,13 @@ public class SettingsFragment extends BaseFragment {
         // SPEC 7.14.6
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
+    }
+
+    private void renderTheme() {
+        int mode = settings.themeMode();
+        binding.themeGroup.check(mode == AppCompatDelegate.MODE_NIGHT_NO ? R.id.themeLight
+                : mode == AppCompatDelegate.MODE_NIGHT_YES ? R.id.themeDark
+                : R.id.themeSystem);
     }
 
     /**

@@ -429,4 +429,10 @@
     <!-- Seeing the row on the page it came from. -->
     <string name="action_view_on_screenshot">View on screenshot</string>
     <string name="screenshot_missing">That screenshot is no longer available</string>
+
+    <!-- Pinning the theme rather than following the system. -->
+    <string name="settings_theme">Appearance</string>
+    <string name="settings_theme_system">Follow the system</string>
+    <string name="settings_theme_light">Always light</string>
+    <string name="settings_theme_dark">Always dark</string>
 </resources>

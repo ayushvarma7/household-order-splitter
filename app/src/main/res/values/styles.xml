@@ -112,6 +112,16 @@
     <style name="Widget.Splitter.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="titleTextAppearance">@style/Text.ScreenTitle</item>
         <item name="android:background">@android:color/transparent</item>
+        <!--
+          The navigation icon's tint, stated rather than inherited.
+
+          The icons carry no tint of their own, so that the same drawable can be reused
+          anywhere and take its colour from where it is drawn. That leaves the toolbar
+          responsible for its own, and it does not supply one by default with this parent
+          and a transparent background: the back arrow drew white on a white surface, on
+          every screen that has one.
+        -->
+        <item name="navigationIconTint">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="Widget.Splitter.Chip" parent="Widget.Material3.Chip.Filter">

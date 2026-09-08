@@ -21,6 +21,7 @@ public class SettingsStore {
     private static final String KEY_AUTO_BACKUP_ENABLED = "auto_backup_enabled";
     private static final String KEY_AUTO_BACKUP_AT = "auto_backup_at";
     private static final String KEY_WELCOME_SEEN = "welcome_seen";
+    private static final String KEY_THEME = "theme_mode";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -128,6 +129,22 @@ public class SettingsStore {
 
     public void welcomeSeen(boolean value) {
         preferences.edit().putBoolean(KEY_WELCOME_SEEN, value).apply();
+    }
+
+    /**
+     * Light, dark, or whatever the system is doing.
+     *
+     * <p>Stored as the AppCompat constant so there is nothing to translate between here and
+     * {@code setDefaultNightMode}. Defaults to following the system, which is what the app
+     * did before the setting existed.
+     */
+    public int themeMode() {
+        return preferences.getInt(KEY_THEME,
+                androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
+
+    public void themeMode(int mode) {
+        preferences.edit().putInt(KEY_THEME, mode).apply();
     }
 
     public Locale locale() {
