@@ -2,14 +2,16 @@
 
 # Order Splitter
 
-**Splits a Walmart grocery order between the people you live with, and tells each person exactly what they owe.**
+### Reads your Walmart order from a screenshot and works out what each person owes
 
-Screenshot the order page, share it into the app, say who each item was for, and get per-person totals that add up to the printed bill to the penny.
+**One person pays for the shop. Everyone owes a different amount, because half the items were not for everyone.**
+
+Share the order screenshot into the app. It reads every item and the price you were actually charged, you tap who each one was for, and it hands back per-person totals that add up to the printed bill to the penny. Entirely on your phone, with no account and no network permission.
 
 <p>
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-b07219?style=for-the-badge&logo=openjdk&logoColor=white" />
-  <img alt="Kotlin source files: zero" src="https://img.shields.io/badge/Kotlin_files-0-6A3FC0?style=for-the-badge" />
-  <img alt="minSdk 26" src="https://img.shields.io/badge/minSdk-26-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img alt="Android, minSdk 26" src="https://img.shields.io/badge/Android-minSdk_26-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img alt="Offline, no network permission" src="https://img.shields.io/badge/Offline-no_network_permission-6A3FC0?style=for-the-badge" />
 </p>
 <p>
   <img alt="204 JVM tests, 135 instrumented" src="https://img.shields.io/badge/tests-204_JVM_%2B_135_instrumented-1F6B4A?style=flat-square" />
@@ -23,11 +25,23 @@ Screenshot the order page, share it into the app, say who each item was for, and
 <br />
 
 <div align="center">
-  <img src="docs/screenshots/07-home.png" width="230" alt="Orders grouped by month" />
-  <img src="docs/screenshots/09-spending.png" width="230" alt="Who owes whom" />
-  <img src="docs/screenshots/08-home-search.png" width="230" alt="Searching inside orders" />
-  <img src="docs/screenshots/12-home-dark.png" width="230" alt="Dark mode" />
+  <img src="docs/screenshots/07-home.png" width="215" alt="Orders grouped by month" />
+  <img src="docs/screenshots/13-review.png" width="215" alt="The parsed item list, ready to correct" />
+  <img src="docs/screenshots/09-spending.png" width="215" alt="Who owes whom" />
+  <img src="docs/screenshots/12-home-dark.png" width="215" alt="Dark mode" />
 </div>
+
+---
+
+## You can always see where a charge came from
+
+<div align="center">
+  <img src="docs/screenshots/14-red-box.png" width="330" alt="A line item ringed in red on the screenshot it was read from" />
+</div>
+
+A reader that silently gets something wrong is worse than no reader. So every row records the screenshot it came from and the exact box it occupied, and any row will show you: tap it, choose **View on screenshot**, and the original page opens with that row ringed and everything else dimmed.
+
+It answers the question you actually have about a name the reader mangled or a price that looks off, which is "which one is this?". The box is stored in permille of the image rather than pixels, so it lands correctly whatever size the picture is displayed at.
 
 ---
 
@@ -232,6 +246,21 @@ An order is calculated in a fixed order, because each step's rounding depends on
 6. The result carries the computed total and its delta against the total printed on the bill. A mismatch is reported, never silently corrected.
 
 A person's total may land a cent away from a spreadsheet that used floating point. That is expected and correct. What may not vary is the sum: the members' totals always add up to the pre-tax total plus every adjustment, and that is asserted in code.
+
+</details>
+
+<details>
+<summary><b>Finding an old order months later</b></summary>
+
+<br />
+
+<div align="center">
+  <img src="docs/screenshots/08-home-search.png" width="300" alt="Searching inside orders by item name" />
+</div>
+
+Orders sit under month headings carrying that month's own count and total, with "This month" and "Last month" spelled out rather than named, because those answer the question without arithmetic. The month is worked out in the device's own time zone, so a 9pm order on the last day of a month is not filed under the next one.
+
+Search looks inside orders, not just at their labels. "Which order had the coffee beans?" is what a household actually asks months later, and "Weekly shop" never answers it, so item names and participants' names are searchable too. Matching is forgiving in the ways someone typing on a phone needs: partial words, any capitalisation, words in any order. Every word has to match something, though, because a result matching only half of what was typed is worse than no result, since you cannot tell which half was honoured.
 
 </details>
 
