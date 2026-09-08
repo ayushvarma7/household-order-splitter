@@ -41,6 +41,28 @@ import java.util.List;
 @LargeTest
 public class OnDeviceParsingTest {
 
+
+    /**
+     * True when the order-page fixtures are present.
+     *
+     * <p>They are screenshots of a real Walmart order, so they are not committed: page three
+     * carries a card's last four digits, the order number and a scannable barcode of it.
+     * Drop your own captures into {@code app/src/androidTest/assets} as
+     * {@code order-page-1.png} and so on to run these, and see the readme.
+     *
+     * <p>Skipped rather than failed when they are absent. A red test for a file the
+     * repository deliberately does not ship would train everyone to ignore it.
+     */
+    private static boolean fixturesPresent() {
+        try {
+            InstrumentationRegistry.getInstrumentation().getContext()
+                    .getAssets().open("order-page-1.png").close();
+            return true;
+        } catch (java.io.IOException absent) {
+            return false;
+        }
+    }
+
     private static Uri copyAsset(String name) throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Context testContext = InstrumentationRegistry.getInstrumentation().getContext();
@@ -57,6 +79,8 @@ public class OnDeviceParsingTest {
     }
 
     private static ParsedOrder parseAll() throws Exception {
+        org.junit.Assume.assumeTrue(
+                "order-page fixtures are not committed; see the readme", fixturesPresent());
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         List<Uri> images = new ArrayList<>(Arrays.asList(
                 copyAsset("order-page-1.png"),
@@ -82,6 +106,7 @@ public class OnDeviceParsingTest {
      * screen precisely so a misread letter is a two-second fix rather than a wrong total.
      */
     @Test
+    // Needs the uncommitted order-page fixtures; see fixturesPresent().
     public void readsEveryRowWithItsFullName() throws Exception {
         ParsedOrder order = parseAll();
 

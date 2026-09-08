@@ -10,3 +10,7 @@
 local.properties
 /core/build
 /app/build
+
+# The order-page fixtures are screenshots of a real order: page three carries a card
+# last four, the order number and a barcode. Keep them local, see the readme.
+app/src/androidTest/assets/order-page-*.png

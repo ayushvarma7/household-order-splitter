@@ -56,7 +56,31 @@ public class ShareIntentFlowTest {
     }
 
     /** Copies a test asset somewhere the app's own FileProvider can serve it from. */
+
+    /**
+     * True when the order-page fixtures are present.
+     *
+     * <p>They are screenshots of a real Walmart order, so they are not committed: page three
+     * carries a card's last four digits, the order number and a scannable barcode of it.
+     * Drop your own captures into {@code app/src/androidTest/assets} as
+     * {@code order-page-1.png} and so on to run these, and see the readme.
+     *
+     * <p>Skipped rather than failed when they are absent. A red test for a file the
+     * repository deliberately does not ship would train everyone to ignore it.
+     */
+    private static boolean fixturesPresent() {
+        try {
+            InstrumentationRegistry.getInstrumentation().getContext()
+                    .getAssets().open("order-page-1.png").close();
+            return true;
+        } catch (java.io.IOException absent) {
+            return false;
+        }
+    }
+
     private static Uri sharedImage(String assetName) throws Exception {
+        org.junit.Assume.assumeTrue(
+                "order-page fixtures are not committed; see the readme", fixturesPresent());
         Context target = InstrumentationRegistry.getInstrumentation().getTargetContext();
         Context test = InstrumentationRegistry.getInstrumentation().getContext();
         File directory = new File(target.getCacheDir(), "captures");

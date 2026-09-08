@@ -169,7 +169,13 @@ adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 ```
 
-The instrumented set includes the happy path from a share intent through parsing to a computed summary, and an on-device parse of three real order screenshots that also proves text recognition works with no network permission at all.
+The instrumented set includes the happy path from a share intent through parsing to a computed summary.
+
+**The on-device OCR tests need fixtures that are not committed.** They parse screenshots of a real Walmart order, and page three of that order carries a card's last four digits, the order number and a scannable barcode of it, so those images stay off a public repository. Those tests skip themselves when the files are absent, rather than failing, because a red test for a file the repository deliberately does not ship would train everyone to ignore it.
+
+To run them, put your own Walmart order screenshots in `app/src/androidTest/assets` named `order-page-1.png`, `order-page-2.png` and `order-page-3.png`, in the order they should be read. That path is gitignored.
+
+Everything else runs without them, including the whole of `:core`, where the layout parser is tested against fixtures traced off real screenshots as text plus bounding boxes. Those traced fixtures use a placeholder order number and card digits for the same reason.
 
 Note that `connectedAndroidTest` uninstalls the app when it finishes, which takes your data with it. That is the test runner, not a bug.
 

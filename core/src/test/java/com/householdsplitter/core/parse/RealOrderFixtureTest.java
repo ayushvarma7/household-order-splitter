@@ -20,7 +20,11 @@ import java.util.List;
  * Three real Walmart screenshots from one order, traced element by element.
  *
  * <p>Every string below is exactly what is printed on the screenshots, and every box is
- * placed where it appears on a 899 x 1959 capture. This is the fixture SPEC 12.4 asks for:
+ * placed where it appears on a 899 x 1959 capture, with two exceptions: the order number
+ * and the card's last four digits are replaced with placeholders, because this file is
+ * committed and those identify a real order and a real card. Neither value changes what is
+ * being tested, which is that the chrome filter drops the payment line and that the order
+ * number is captured from wherever it appears. This is the fixture SPEC 12.4 asks for:
  * text plus bounding boxes, no images and no network.
  *
  * <p>The point of this test is that structural extraction is exact, not approximate. Given
