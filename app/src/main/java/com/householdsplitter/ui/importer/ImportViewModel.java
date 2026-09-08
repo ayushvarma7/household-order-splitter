@@ -16,6 +16,16 @@ public class ImportViewModel extends ViewModel {
     private static final String KEY_URIS = "selected_uris";
 
     private final SavedStateHandle handle;
+
+    /**
+     * Where a photo being taken right now will land.
+     *
+     * <p>Held here rather than on the fragment because the camera is the classic case for
+     * SPEC 11.14: it is memory-hungry, so Android kills the host process behind it more
+     * often than anywhere else in the app. A fragment field does not survive that, and the
+     * result was silent: the user took the photo, came back, and it was simply not there.
+     */
+    private static final String KEY_PENDING_CAPTURE = "pending_capture_uri";
     private final MutableLiveData<List<String>> uris = new MutableLiveData<>(new ArrayList<>());
 
     public ImportViewModel(SavedStateHandle handle) {
@@ -72,5 +82,14 @@ public class ImportViewModel extends ViewModel {
     private void publish(List<String> next) {
         uris.setValue(next);
         handle.set(KEY_URIS, new ArrayList<>(next));
+    }
+
+    /** The capture in flight, or null. Survives process death. */
+    public String pendingCaptureUri() {
+        return handle.get(KEY_PENDING_CAPTURE);
+    }
+
+    public void pendingCaptureUri(String uri) {
+        handle.set(KEY_PENDING_CAPTURE, uri);
     }
 }

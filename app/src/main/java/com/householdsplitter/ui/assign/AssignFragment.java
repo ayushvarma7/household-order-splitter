@@ -191,9 +191,11 @@ public class AssignFragment extends BaseFragment {
 
         // A standing rule changed who is on this item. Saying so is the whole point: the
         // user can see it and put the person back with one tap.
-        String ruleNote = model.ruleNote().getValue();
-        binding.ruleNote.setVisibility(ruleNote == null ? View.GONE : View.VISIBLE);
-        binding.ruleNote.setText(ruleNote);
+        AssignViewModel.RuleNote note = model.ruleNote().getValue();
+        binding.ruleNote.setVisibility(note == null ? View.GONE : View.VISIBLE);
+        if (note != null) {
+            binding.ruleNote.setText(ruleNoteText(note));
+        }
         binding.ruleNote.setTextColor(
                 StateColors.content(requireContext(), StateColors.State.WARNING));
 
@@ -296,6 +298,18 @@ public class AssignFragment extends BaseFragment {
      * dialog on every removal would be in the way of the case this exists for, which is
      * clearing out rows the reader invented.
      */
+    /** The rule note as a sentence, assembled from the string resources. */
+    private String ruleNoteText(AssignViewModel.RuleNote note) {
+        boolean off = !note.removed().isEmpty();
+        boolean on = !note.added().isEmpty();
+        if (off && on) {
+            return getString(R.string.rules_note_both, note.removed(), note.added());
+        }
+        return off
+                ? getString(R.string.rules_note_off, note.removed())
+                : getString(R.string.rules_note_on, note.added());
+    }
+
     private void removeCurrentItem() {
         if (model.items().size() <= 1) {
             // Removing the last row would leave an order with nothing in it, which the

@@ -132,10 +132,11 @@ public class AssignRulesTest {
 
         onMain(model::selectEveryone);
 
-        String note = model.ruleNote().getValue();
+        AssignViewModel.RuleNote note = model.ruleNote().getValue();
         assertNotNull("the note is what makes the rule visible", note);
-        assertTrue(note, note.contains("Ben"));
-        assertTrue(note, note.contains("beer"));
+        assertTrue(note.removed(), note.removed().contains("Ben"));
+        assertTrue("and which rule did it", note.removed().contains("beer"));
+        assertTrue("nobody was added", note.added().isEmpty());
     }
 
     /** A rule is a starting point, not a veto: putting Ben back must stick. */
@@ -194,9 +195,10 @@ public class AssignRulesTest {
         assertNotNull(selection);
         assertEquals(1, selection.size());
         assertTrue(selection.containsKey(chenId));
-        String note = model.ruleNote().getValue();
+        AssignViewModel.RuleNote note = model.ruleNote().getValue();
         assertNotNull(note);
-        assertTrue(note, note.contains("Chen"));
+        assertTrue(note.added(), note.added().contains("Chen"));
+        assertTrue("nobody was removed", note.removed().isEmpty());
     }
 
     /** SPEC 7.8.5: a rule cannot put somebody on an order they are not in on. */

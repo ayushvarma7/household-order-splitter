@@ -395,7 +395,14 @@ public class SummaryFragment extends BaseFragment {
      */
     private void saveAndClose() {
         Snackbar.make(binding.getRoot(), R.string.summary_saved, Snackbar.LENGTH_SHORT).show();
-        NavHostFragment.findNavController(this).popBackStack(R.id.homeFragment, false);
+        androidx.navigation.NavController controller = NavHostFragment.findNavController(this);
+        // Popping is right when Home is behind us, which it is on every path that reaches a
+        // summary. If it somehow is not, popBackStack returns false and does nothing at all,
+        // and a button that silently does nothing is worse than one that takes a longer
+        // route, so navigate instead.
+        if (!controller.popBackStack(R.id.homeFragment, false)) {
+            controller.navigate(R.id.homeFragment);
+        }
     }
 
     private void toggleSettled() {

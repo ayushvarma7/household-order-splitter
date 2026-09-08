@@ -40,11 +40,15 @@ public class ImportFragment extends BaseFragment {
 
     private ActivityResultLauncher<PickVisualMediaRequest> pickMultiple;
     private ActivityResultLauncher<Uri> takePicture;
-    private Uri pendingCameraUri;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Resolved here, not in onViewCreated, because both callbacks below use it. Results
+        // are delivered at STARTED, which is after the view exists, so the old ordering
+        // happened to work; depending on that is not the same as it being safe.
+        model = viewModel(ImportViewModel.class);
 
         // SPEC 7.4.3
         pickMultiple = registerForActivityResult(
@@ -57,10 +61,14 @@ public class ImportFragment extends BaseFragment {
 
         takePicture = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(), saved -> {
-                    if (Boolean.TRUE.equals(saved) && pendingCameraUri != null) {
-                        model.add(java.util.Collections.singletonList(pendingCameraUri));
+                    // Read back from saved state rather than a field: if the process was
+                    // killed while the camera was in front, the field would be gone and
+                    // the photo would vanish without a word.
+                    String pending = model.pendingCaptureUri();
+                    if (Boolean.TRUE.equals(saved) && pending != null) {
+                        model.add(java.util.Collections.singletonList(Uri.parse(pending)));
                     }
-                    pendingCameraUri = null;
+                    model.pendingCaptureUri(null);
                 });
     }
 
@@ -75,8 +83,6 @@ public class ImportFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        model = viewModel(ImportViewModel.class);
-
         Insets.padTop(binding.toolbar);
         Insets.padBottom(binding.footer);
 
@@ -190,9 +196,10 @@ public class ImportFragment extends BaseFragment {
             return;
         }
         File file = new File(directory, "capture-" + System.currentTimeMillis() + ".jpg");
-        pendingCameraUri = androidx.core.content.FileProvider.getUriForFile(
+        Uri target = androidx.core.content.FileProvider.getUriForFile(
                 requireContext(), requireContext().getPackageName() + ".fileprovider", file);
-        takePicture.launch(pendingCameraUri);
+        model.pendingCaptureUri(target.toString());
+        takePicture.launch(target);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class AssignViewModel extends ViewModel {
      * What a standing rule just did, in words, or null. A rule quietly changing who pays
      * for something would be worse than having no rules, so every application says so.
      */
-    private final MutableLiveData<String> ruleNote = new MutableLiveData<>(null);
+    private final MutableLiveData<RuleNote> ruleNote = new MutableLiveData<>(null);
 
     private long loadedForItemId = -1L;
     /** The last row removed here, held so Undo can put it back with its answers. */
@@ -74,7 +74,7 @@ public class AssignViewModel extends ViewModel {
         });
     }
 
-    public LiveData<String> ruleNote() {
+    public LiveData<RuleNote> ruleNote() {
         return ruleNote;
     }
 
@@ -314,22 +314,41 @@ public class AssignViewModel extends ViewModel {
     }
 
     /**
-     * Names the people and the keyword that moved them. "A rule did this" would leave the
-     * user hunting through settings to find out which one.
+     * Who a rule moved, and by which keyword. "A rule did this" would leave the user
+     * hunting through settings to find out which one.
+     *
+     * <p>The two lists are reported separately rather than as a finished sentence. SPEC 4.5
+     * keeps presentation out of the ViewModel, and a sentence built here is a sentence that
+     * cannot be translated: the wording belongs in the string resources.
      */
-    private String describe(StandingRules.Outcome outcome, String itemName) {
+    public static final class RuleNote {
+
+        private final String removed;
+        private final String added;
+
+        RuleNote(String removed, String added) {
+            this.removed = removed;
+            this.added = added;
+        }
+
+        /** Names and keywords of anybody a rule took off, or empty. */
+        public String removed() {
+            return removed;
+        }
+
+        /** Names and keywords of anybody a rule put on, or empty. */
+        public String added() {
+            return added;
+        }
+    }
+
+    private RuleNote describe(StandingRules.Outcome outcome, String itemName) {
         String off = namesWithKeyword(outcome.removed(), itemName, MemberRule.Kind.EXCLUDE);
         String on = namesWithKeyword(outcome.added(), itemName, MemberRule.Kind.INCLUDE);
-        if (!off.isEmpty() && !on.isEmpty()) {
-            return off + " taken off and " + on + " added by your standing rules";
+        if (off.isEmpty() && on.isEmpty()) {
+            return null;
         }
-        if (!off.isEmpty()) {
-            return off + " taken off by your standing rules";
-        }
-        if (!on.isEmpty()) {
-            return on + " added by your standing rules";
-        }
-        return null;
+        return new RuleNote(off, on);
     }
 
     private String namesWithKeyword(List<Long> memberIds, String itemName, MemberRule.Kind kind) {

@@ -20,6 +20,7 @@ import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.databinding.FragmentSetupMembersBinding;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
+import com.householdsplitter.widget.BalancesWidgetProvider;
 
 /**
  * S2, member setup, and S13, the same list reached later from Home. SPEC 7.2 and 7.13.
@@ -162,8 +163,11 @@ public class SetupMembersFragment extends BaseFragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.dialog_rename_member)
                 .setView(content)
-                .setPositiveButton(R.string.action_save, (dialog, which) -> model.renameMember(
-                        member.id, field.getText() == null ? "" : field.getText().toString()))
+                .setPositiveButton(R.string.action_save, (dialog, which) -> {
+                    model.renameMember(member.id,
+                            field.getText() == null ? "" : field.getText().toString());
+                    refreshWidget();
+                })
                 .setNegativeButton(R.string.action_cancel, null)
                 .show();
     }
@@ -181,10 +185,22 @@ public class SetupMembersFragment extends BaseFragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.action_rename_group)
                 .setView(content)
-                .setPositiveButton(R.string.action_save, (dialog, which) -> model.renameGroup(
-                        field.getText() == null ? "" : field.getText().toString()))
+                .setPositiveButton(R.string.action_save, (dialog, which) -> {
+                    model.renameGroup(
+                            field.getText() == null ? "" : field.getText().toString());
+                    refreshWidget();
+                })
                 .setNegativeButton(R.string.action_cancel, null)
                 .show();
+    }
+
+    /**
+     * The widget prints the group name and its members' names, so a rename leaves it stale
+     * until the next settle-up. It redraws itself from the database, so this only has to
+     * say that something changed.
+     */
+    private void refreshWidget() {
+        BalancesWidgetProvider.refresh(requireContext().getApplicationContext());
     }
 
     /** SPEC 7.2.8: immediate removal with no history, a confirmation and archive with it. */
