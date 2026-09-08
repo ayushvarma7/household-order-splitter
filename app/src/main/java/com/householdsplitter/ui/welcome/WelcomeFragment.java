@@ -61,7 +61,7 @@ public class WelcomeFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Insets.padTop(binding.skipButton);
+        Insets.marginTop(binding.skipButton);
         Insets.padBottom(binding.footer);
 
         binding.pager.setAdapter(new WelcomeAdapter(PAGES));

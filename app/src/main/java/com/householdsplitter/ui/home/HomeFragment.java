@@ -74,7 +74,7 @@ public class HomeFragment extends BaseFragment {
         model = viewModel(HomeViewModel.class);
 
         Insets.padTop(binding.toolbar);
-        Insets.padBottom(binding.newOrderFab);
+        Insets.marginBottom(binding.newOrderFab);
         exportService = new ExportService(locator().orderRepository(), locator().settings(),
                 locator().executors(), requireContext().getContentResolver());
         CurrencyFormat money = new CurrencyFormat(locator().settings().currencySymbol(),
