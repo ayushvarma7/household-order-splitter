@@ -65,4 +65,7 @@
 
     <!-- The introduction's page dots. -->
     <dimen name="welcome_dot">8dp</dimen>
+
+    <!-- The store chip is outlined, not filled, so its border carries the identity. -->
+    <dimen name="store_pill_stroke">1dp</dimen>
 </resources>

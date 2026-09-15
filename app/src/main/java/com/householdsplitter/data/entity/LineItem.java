@@ -3,6 +3,8 @@ package com.householdsplitter.data.entity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
+
+import com.householdsplitter.core.quality.ItemOrigin;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
@@ -94,6 +96,41 @@ public class LineItem {
     public int boundsBottomPermille;
 
     /** True when there is a screenshot region worth offering to show. */
+    /**
+     * Where this row came from, so the reader is only ever judged on its own output.
+     *
+     * <p>Defaults to PARSED because every row that existed before this column did was
+     * produced by the reader: hand-added rows were not distinguishable then, which is
+     * precisely the gap this closes.
+     */
+    @NonNull
+    @ColumnInfo(defaultValue = "PARSED")
+    public ItemOrigin origin = ItemOrigin.PARSED;
+
+    /**
+     * What the reader originally called this row, kept so that "did the user change it?"
+     * stays a comparison rather than a sticky flag.
+     *
+     * <p>A flag set on first edit would count a row the user changed and changed back as a
+     * parser failure forever. Holding the original means the answer is recomputed from
+     * what is actually there, and a row edited back to what the reader said counts as
+     * correct again, because it is.
+     */
+    @Nullable
+    public String parsedName;
+
+    @ColumnInfo(defaultValue = "0")
+    public long parsedCents;
+
+    /** True when the reader produced this row and it still says what the reader said. */
+    public boolean matchesWhatWasRead() {
+        if (origin != ItemOrigin.PARSED) {
+            return false;
+        }
+        String original = parsedName == null ? "" : parsedName;
+        return lineTotalCents == parsedCents && original.equals(name == null ? "" : name);
+    }
+
     public boolean hasSourceRegion() {
         return sourceImageIndex >= 0
                 && boundsRightPermille > boundsLeftPermille

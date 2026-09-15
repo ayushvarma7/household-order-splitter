@@ -109,6 +109,116 @@ public class MigrationTest {
         helper.runMigrationsAndValidate(NAME, 4, true, AppDatabase.MIGRATION_3_4).close();
     }
 
+    @Test
+    public void migratesFiveToSix() throws IOException {
+        helper.createDatabase(NAME, 5).close();
+        helper.runMigrationsAndValidate(NAME, 6, true, AppDatabase.MIGRATION_5_6).close();
+    }
+
+    /**
+     * A row imported before the reader was being measured is not counted as read correctly.
+     *
+     * <p>It has an empty snapshot, so nothing is known about whether anyone edited it. The
+     * honest answer is to leave it out of the score rather than assume in the parser's
+     * favour, which is the one direction a measurement of the parser must not round in.
+     */
+    @Test
+    public void anOlderRowIsNotCountedAsReadCorrectly() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 5);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+
+        ContentValues order = new ContentValues();
+        order.put("id", 1L);
+        order.put("householdId", 1L);
+        order.put("label", "Weekly shop");
+        order.put("orderDate", 1L);
+        order.put("status", "DRAFT");
+        order.put("createdAt", 1L);
+        order.put("draftStep", "REVIEW");
+        order.put("store", "WALMART");
+        database.insert("orders", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT, order);
+
+        ContentValues item = new ContentValues();
+        item.put("id", 1L);
+        item.put("orderId", 1L);
+        item.put("name", "Coffee beans");
+        item.put("rawOcrText", "Coffee beans");
+        item.put("lineTotalCents", 1299L);
+        item.put("scope", "UNASSIGNED");
+        item.put("position", 0);
+        database.insert("line_items", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                item);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 6, true,
+                AppDatabase.MIGRATION_5_6);
+
+        try (Cursor cursor = migrated.query(
+                "SELECT name, origin, parsedName, parsedCents FROM line_items")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the row itself survives", "Coffee beans", cursor.getString(0));
+            assertEquals("it was the reader's output", "PARSED", cursor.getString(1));
+            assertEquals("but nothing is known about what the reader said",
+                    null, cursor.getString(2));
+            assertEquals(0L, cursor.getLong(3));
+        }
+        try (Cursor cursor = migrated.query("SELECT COUNT(*) FROM discarded_rows")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the new table exists and is empty", 0, cursor.getInt(0));
+        }
+        migrated.close();
+    }
+
+    @Test
+    public void migratesFourToFive() throws IOException {
+        helper.createDatabase(NAME, 4).close();
+        helper.runMigrationsAndValidate(NAME, 5, true, AppDatabase.MIGRATION_4_5).close();
+    }
+
+    /**
+     * An order that predates the store column reports Walmart, because that is what it is.
+     *
+     * <p>Walmart was the only layout the app could read before this column existed, so the
+     * default is a statement of fact rather than a fallback. Leaving it null and showing no
+     * chip would be worse: it would suggest the store is unknown when it is known exactly.
+     */
+    @Test
+    public void anOlderOrderReportsWalmart() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 4);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+
+        ContentValues order = new ContentValues();
+        order.put("id", 1L);
+        order.put("householdId", 1L);
+        order.put("label", "Sep 03 Walmart");
+        order.put("orderDate", 1L);
+        order.put("status", "DRAFT");
+        order.put("createdAt", 1L);
+        order.put("draftStep", "REVIEW");
+        database.insert("orders", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT, order);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 5, true,
+                AppDatabase.MIGRATION_4_5);
+
+        try (Cursor cursor = migrated.query("SELECT label, store FROM orders")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the order itself survives", "Sep 03 Walmart", cursor.getString(0));
+            assertEquals("WALMART", cursor.getString(1));
+        }
+        migrated.close();
+    }
+
     /**
      * A row imported before the columns existed reports no screenshot region, and -1 is
      * what says so. Zero would name the first screenshot and put a red ring around the top
@@ -227,8 +337,9 @@ public class MigrationTest {
         AppDatabase database = Room.databaseBuilder(
                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
                         AppDatabase.class, NAME)
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3,
-                        AppDatabase.MIGRATION_3_4)
+                // The app's own list, not a copy of it, so a migration added to the app
+                // cannot leave this test walking a chain that no longer exists.
+                .addMigrations(AppDatabase.migrations())
                 .build();
         try {
             // Any query forces the open, and therefore the migration and its validation.

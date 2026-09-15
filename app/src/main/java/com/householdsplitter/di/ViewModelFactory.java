@@ -10,6 +10,7 @@ import androidx.savedstate.SavedStateRegistryOwner;
 
 import com.householdsplitter.ui.home.HomeViewModel;
 import com.householdsplitter.ui.importer.ImportViewModel;
+import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 import com.householdsplitter.ui.parsing.ParsingViewModel;
 import com.householdsplitter.ui.participants.ParticipantsViewModel;
@@ -66,10 +67,14 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
             return (T) new ImportViewModel(handle);
         }
         if (modelClass == ParsingViewModel.class) {
+            // The store arrives as a nav argument from the picker, so the parser is built
+            // for this import rather than shared across every order in the session.
+            StoreKind store = StoreKind.fromName(handle.get(ParsingArgs.ARG_STORE));
             return (T) new ParsingViewModel(
                     locator.orderRepository(),
                     locator.householdRepository(),
-                    locator.receiptParser(),
+                    locator.receiptParser(store),
+                    store,
                     locator.executors(),
                     locator.currentHouseholdId(),
                     handle.contains(ParsingArgs.ARG_ORDER_ID)

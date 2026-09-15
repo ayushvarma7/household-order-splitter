@@ -67,4 +67,9 @@ public interface LineItemDao {
 
     @Query("UPDATE line_items SET scope = :scope WHERE id = :itemId")
     void updateScope(long itemId, Scope scope);
+
+    /** Every row in the household, for judging how the reader did. */
+    @Query("SELECT * FROM line_items "
+            + "WHERE orderId IN (SELECT id FROM orders WHERE householdId = :householdId)")
+    List<LineItem> allForHouseholdSync(long householdId);
 }

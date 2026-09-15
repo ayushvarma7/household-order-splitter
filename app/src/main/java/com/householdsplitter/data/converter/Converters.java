@@ -3,6 +3,8 @@ package com.householdsplitter.data.converter;
 import androidx.room.TypeConverter;
 
 import com.householdsplitter.core.calc.Scope;
+import com.householdsplitter.core.parse.StoreKind;
+import com.householdsplitter.core.quality.ItemOrigin;
 import com.householdsplitter.data.entity.DraftStep;
 import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.data.entity.OrderStatus;
@@ -78,6 +80,42 @@ public class Converters {
             return DraftStep.valueOf(value);
         } catch (IllegalArgumentException unknown) {
             return DraftStep.IMPORT;
+        }
+    }
+
+    /**
+     * Walmart is the fallback for an unreadable value, because every order that predates
+     * this column was a Walmart order.
+     */
+    @TypeConverter
+    public static String fromStoreKind(StoreKind value) {
+        return value == null ? StoreKind.WALMART.name() : value.name();
+    }
+
+    @TypeConverter
+    public static StoreKind toStoreKind(String value) {
+        return StoreKind.fromName(value);
+    }
+
+    /**
+     * PARSED is the fallback, because every row that predates this column was produced by
+     * the reader. Reading an unknown value as MANUAL would credit the reader for rows it
+     * never had to get right.
+     */
+    @TypeConverter
+    public static String fromItemOrigin(ItemOrigin value) {
+        return value == null ? ItemOrigin.PARSED.name() : value.name();
+    }
+
+    @TypeConverter
+    public static ItemOrigin toItemOrigin(String value) {
+        if (value == null) {
+            return ItemOrigin.PARSED;
+        }
+        try {
+            return ItemOrigin.valueOf(value);
+        } catch (IllegalArgumentException unknown) {
+            return ItemOrigin.PARSED;
         }
     }
 }

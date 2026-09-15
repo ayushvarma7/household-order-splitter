@@ -21,6 +21,7 @@ import com.householdsplitter.databinding.ItemOrderBinding;
 import com.householdsplitter.databinding.ItemOrderHeaderBinding;
 import com.householdsplitter.ui.common.MemberPalette;
 import com.householdsplitter.ui.common.StateColors;
+import com.householdsplitter.ui.common.StorePill;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
@@ -146,6 +147,9 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
             binding.orderDate.setText(new SimpleDateFormat("d MMM yyyy", Locale.getDefault())
                     .format(new java.util.Date(row.order.orderDate)));
             binding.orderTotal.setText(money.format(row.order.statedTotalCents));
+
+            // Outlined, so store identity never reads as a state. See StorePill.
+            StorePill.apply(binding.storeChip, row.order.store);
 
             // Not colour alone: the pill carries its own word.
             binding.statusChip.setText(statusLabel(row.order.status));

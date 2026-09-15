@@ -128,4 +128,22 @@
     <color name="widget_body">#FF1C1B1F</color>
 
     <color name="welcome_dot_inactive">#33000000</color>
+
+    <!--
+      Store identity. Blue for Walmart, green for Amazon Fresh, as asked for.
+
+      These are darker and more saturated than they look like they should be, and that is
+      deliberate: the store chip is drawn outlined, with a coloured border and a coloured
+      label on the card surface, while the status chip beside it is drawn filled with a pale
+      container colour. Separating the two by treatment rather than by hue is what makes it
+      safe to use green here at all. A pale green fill would sit 10 units of CIEDE2000 from
+      success_container and read as "settled"; measured against the filled status
+      containers, these clear 44. Amazon's own tan header colour was the worst option
+      tested, 3.4 from warning_container, which is to say indistinguishable from a warning.
+
+      Contrast against the card surface is 7.0:1 for Walmart and 5.8:1 for Amazon Fresh.
+    -->
+    <color name="store_walmart">#00539C</color>
+    <color name="store_amazon_fresh">#3D6B00</color>
+
 </resources>

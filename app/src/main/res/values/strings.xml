@@ -435,4 +435,18 @@
     <string name="settings_theme_system">Follow the system</string>
     <string name="settings_theme_light">Always light</string>
     <string name="settings_theme_dark">Always dark</string>
+
+    <!-- Store identity -->
+    <string name="store_pill_description">Ordered from %1$s</string>
+    <string name="store_picker_title">Which store is this order from?</string>
+    <string name="store_picker_subtitle">Each store prints its receipt differently, so this picks how the screenshots are read.</string>
+    <string name="store_walmart">Walmart</string>
+    <string name="store_amazon_fresh">Amazon Fresh</string>
+    <string name="store_last_used">Last used</string>
+
+    <!-- Parser quality report, reached by a deliberate gesture on the About line -->
+    <string name="parser_report_title">How the reader is doing</string>
+    <string name="parser_report_subtitle">Measured by what you changed afterwards. A row you left alone is a row it got right.</string>
+    <string name="parser_report_share">Share this report</string>
+    <string name="parser_report_revealed">Parser report unlocked. Tap About again to open it.</string>
 </resources>

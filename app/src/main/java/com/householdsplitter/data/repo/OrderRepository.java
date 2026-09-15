@@ -10,6 +10,10 @@ import com.householdsplitter.core.calc.result.SplitResult;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ItemBounds;
 import com.householdsplitter.core.parse.model.ParsedItem;
+import com.householdsplitter.core.quality.ItemOrigin;
+import com.householdsplitter.data.dao.DiscardedRowDao;
+import com.householdsplitter.data.entity.DiscardedRow;
+import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.core.parse.model.ParsedOrder;
 import com.householdsplitter.core.parse.model.ReviewReason;
 import com.householdsplitter.data.dao.AssignmentDao;
@@ -48,17 +52,20 @@ public class OrderRepository {
     private final ParticipantDao participantDao;
     private final AssignmentDao assignmentDao;
     private final MemberDao memberDao;
+    private final DiscardedRowDao discardedRowDao;
     private final AppExecutors executors;
 
     public OrderRepository(OrderDao orderDao, OrderImageDao imageDao, LineItemDao lineItemDao,
                            ParticipantDao participantDao, AssignmentDao assignmentDao,
-                           MemberDao memberDao, AppExecutors executors) {
+                           MemberDao memberDao, DiscardedRowDao discardedRowDao,
+                           AppExecutors executors) {
         this.orderDao = orderDao;
         this.imageDao = imageDao;
         this.lineItemDao = lineItemDao;
         this.participantDao = participantDao;
         this.assignmentDao = assignmentDao;
         this.memberDao = memberDao;
+        this.discardedRowDao = discardedRowDao;
         this.executors = executors;
     }
 
@@ -95,9 +102,15 @@ public class OrderRepository {
      */
     public void createFromParse(long householdId, ParsedOrder parsed, List<String> imageUris,
                                 Callback<Result<Long>> callback) {
+        createFromParse(householdId, StoreKind.WALMART, parsed, imageUris, callback);
+    }
+
+    public void createFromParse(long householdId, StoreKind store, ParsedOrder parsed,
+                                List<String> imageUris, Callback<Result<Long>> callback) {
         executors.diskIO().execute(() -> {
             Order order = new Order();
             order.householdId = householdId;
+            order.store = store == null ? StoreKind.WALMART : store;
             order.createdAt = System.currentTimeMillis();
             order.orderDate = parsed.orderDateMillis() == null
                     ? order.createdAt : parsed.orderDateMillis();
@@ -242,7 +255,18 @@ public class OrderRepository {
 
     /** SPEC 7.5.4: "Enter manually" creates an empty order and jumps straight to S6. */
     public void createEmpty(long householdId, Callback<Result<Long>> callback) {
-        createFromParse(householdId, ParsedOrder.empty(), new ArrayList<>(), callback);
+        createEmpty(householdId, StoreKind.WALMART, callback);
+    }
+
+    /**
+     * A hand-entered order still records the store the user picked on the way in.
+     *
+     * <p>Nothing was parsed, so the store explains nothing about how the rows were read.
+     * It is kept anyway because the orders list groups and labels by store, and an order
+     * typed in by hand is no less a Walmart or an Amazon Fresh order than a scanned one.
+     */
+    public void createEmpty(long householdId, StoreKind store, Callback<Result<Long>> callback) {
+        createFromParse(householdId, store, ParsedOrder.empty(), new ArrayList<>(), callback);
     }
 
     public void addImages(long orderId, List<String> imageUris, Callback<Result<Void>> callback) {
@@ -278,6 +302,9 @@ public class OrderRepository {
             item.scope = Scope.UNASSIGNED;
             item.needsReview = true;
             item.reviewReasonsCsv = ReviewReason.MANUALLY_ADDED.name();
+            // The reader never produced this row. If it was on a screenshot, that is a
+            // charge it missed, which is the quiet kind of failure worth counting.
+            item.origin = ItemOrigin.MANUAL;
             item.position = lineItemDao.maxPositionSync(orderId) + 1;
             post(callback, Result.ok(lineItemDao.insert(item)));
         });
@@ -329,6 +356,9 @@ public class OrderRepository {
             for (int i = 0; i < parts.length; i++) {
                 LineItem row = new LineItem();
                 row.orderId = original.orderId;
+                // Not PARSED: the reader read the original row correctly and the user chose
+                // to break it up. Judging these would penalise the parser for a feature.
+                row.origin = ItemOrigin.SPLIT;
                 row.name = original.name;
                 row.rawOcrText = original.rawOcrText;
                 row.quantity = 1;
@@ -377,13 +407,44 @@ public class OrderRepository {
     /** SPEC 7.6.8: swipe to delete, with an Undo snackbar, so this must be reversible. */
     public void deleteItem(LineItem item, Callback<Result<Void>> callback) {
         executors.diskIO().execute(() -> {
+            recordDiscard(item);
             lineItemDao.delete(item);
             post(callback, Result.ok(null));
         });
     }
 
+    /**
+     * Notes that the reader produced a row nobody wanted.
+     *
+     * <p>Only for a row the reader produced. A hand-typed row the user then thought better
+     * of says nothing about the parser, and a split part says nothing either.
+     */
+    private void recordDiscard(LineItem item) {
+        if (item == null || item.origin != ItemOrigin.PARSED) {
+            return;
+        }
+        Order order = orderDao.getByIdSync(item.orderId);
+        DiscardedRow row = new DiscardedRow();
+        row.orderId = item.orderId;
+        row.store = order == null ? StoreKind.WALMART : order.store;
+        row.name = item.parsedName == null || item.parsedName.isEmpty()
+                ? (item.name == null ? "" : item.name) : item.parsedName;
+        row.lineTotalCents = item.parsedCents != 0L ? item.parsedCents : item.lineTotalCents;
+        row.lineItemId = item.id;
+        row.discardedAt = System.currentTimeMillis();
+        discardedRowDao.insert(row);
+    }
+
+    /** Undo puts the row back, so it was never a discard. */
+    private void eraseDiscard(LineItem item) {
+        if (item != null) {
+            discardedRowDao.deleteFor(item.orderId, item.id);
+        }
+    }
+
     public void restoreItem(LineItem item, Callback<Result<Void>> callback) {
         executors.diskIO().execute(() -> {
+            eraseDiscard(item);
             lineItemDao.insert(item);
             post(callback, Result.ok(null));
         });
@@ -417,6 +478,7 @@ public class OrderRepository {
                 return;
             }
             List<ItemAssignment> assignments = assignmentDao.getForItemSync(lineItemId);
+            recordDiscard(item);
             lineItemDao.delete(item);
             post(callback, Result.ok(new DeletedItem(item, assignments)));
         });
@@ -430,6 +492,7 @@ public class OrderRepository {
      */
     public void restoreItem(DeletedItem deleted, Callback<Result<Void>> callback) {
         executors.diskIO().execute(() -> {
+            eraseDiscard(deleted.item);
             lineItemDao.insert(deleted.item);
             if (deleted.assignments != null && !deleted.assignments.isEmpty()) {
                 assignmentDao.insertAll(deleted.assignments);
@@ -735,6 +798,12 @@ public class OrderRepository {
         item.needsReview = parsed.needsReview();
         item.reviewReasonsCsv = joinReasons(parsed.reviewReasons());
         item.position = position;
+
+        // What the reader said, kept so that any later difference is a measured correction
+        // rather than a flag somebody remembered to set.
+        item.origin = ItemOrigin.PARSED;
+        item.parsedName = parsed.name();
+        item.parsedCents = parsed.lineTotalCents();
 
         // Where on the screenshot this came from, so the review screen can show it.
         ItemBounds bounds = parsed.bounds();

@@ -8,7 +8,9 @@ import com.householdsplitter.data.db.AppDatabase;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.data.repo.SettlementRepository;
+import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.parse.ParserFactory;
+import com.householdsplitter.quality.ParserQualityService;
 import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.suggest.RuleService;
 import com.householdsplitter.parse.ReceiptParser;
@@ -99,6 +101,7 @@ public class ServiceLocator {
                     database.participantDao(),
                     database.assignmentDao(),
                     database.memberDao(),
+                    database.discardedRowDao(),
                     executors);
         }
         return orderRepository;
@@ -155,7 +158,26 @@ public class ServiceLocator {
      * satisfy the same interface. In the standard flavour the cloud option is not on the
      * classpath at all, so this always returns the on-device one.
      */
+    /**
+     * Built on demand. It holds no state, and the report it produces is recomputed from the
+     * database every time rather than cached, so there is nothing to keep alive.
+     */
+    public ParserQualityService parserQualityService() {
+        return new ParserQualityService(database.orderDao(), database.lineItemDao(),
+                database.discardedRowDao(), executors());
+    }
+
     public ReceiptParser receiptParser() {
-        return ParserFactory.create(applicationContext, settings.useCloudParser());
+        return receiptParser(StoreKind.WALMART);
+    }
+
+    /**
+     * The reader for one store's pages.
+     *
+     * <p>Built per parse rather than held as a singleton, because the store is chosen per
+     * order. A cached parser would read the second order with the first order's vocabulary.
+     */
+    public ReceiptParser receiptParser(StoreKind store) {
+        return ParserFactory.create(applicationContext, settings.useCloudParser(), store);
     }
 }

@@ -3,6 +3,8 @@ package com.householdsplitter.data.entity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
+
+import com.householdsplitter.core.parse.StoreKind;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
@@ -56,6 +58,19 @@ public class Order {
 
     @NonNull
     public OrderStatus status = OrderStatus.DRAFT;
+
+    /**
+     * Which store's pages this order was read from.
+     *
+     * <p>Recorded rather than inferred, and it defaults to Walmart because every order that
+     * existed before this column did was a Walmart order. Two things need it: the orders
+     * list, which shows the store so a household can tell two same-day orders apart, and a
+     * re-parse, which must use the vocabulary the order was read with rather than whichever
+     * store happens to be the default later.
+     */
+    @NonNull
+    @ColumnInfo(defaultValue = "WALMART")
+    public StoreKind store = StoreKind.WALMART;
 
     /** SPEC 7.10.4: who fronted the money. */
     @Nullable

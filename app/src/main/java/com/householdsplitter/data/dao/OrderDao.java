@@ -68,4 +68,8 @@ public interface OrderDao {
 
     @Query("UPDATE orders SET label = :label WHERE id = :orderId")
     void rename(long orderId, String label);
+
+    /** Plain rows, for working out which store each order came from. */
+    @Query("SELECT * FROM orders WHERE householdId = :householdId")
+    List<Order> getAllSync(long householdId);
 }

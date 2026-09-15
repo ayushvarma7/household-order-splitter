@@ -16,6 +16,8 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.householdsplitter.core.parse.StoreKind;
+import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.R;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.core.calc.SplitCalculator;
@@ -199,8 +201,21 @@ public class HomeFragment extends BaseFragment {
         }
     }
 
+    /**
+     * The store is chosen before the screenshots are taken, not after.
+     *
+     * <p>It selects the column geometry the parser measures with, so it has to be known at
+     * parse time. It is also the moment the user already knows the answer, because they are
+     * about to open that store's app to screenshot the order.
+     */
     private void startNewOrder() {
-        NavHostFragment.findNavController(this).navigate(R.id.importFragment);
+        SettingsStore settings = locator().settings();
+        StorePickerSheet.withLastUsed(settings.lastStore(), store -> {
+            settings.lastStore(store);
+            Bundle args = new Bundle();
+            args.putString(ParsingArgs.ARG_STORE, store.name());
+            NavHostFragment.findNavController(this).navigate(R.id.importFragment, args);
+        }).show(getParentFragmentManager(), "store_picker");
     }
 
     /**

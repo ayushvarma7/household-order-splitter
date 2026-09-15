@@ -21,6 +21,8 @@ import com.householdsplitter.data.dao.OrderImageDao;
 import com.householdsplitter.data.dao.ParticipantDao;
 import com.householdsplitter.data.dao.SettlementDao;
 import com.householdsplitter.data.entity.AssignmentMemory;
+import com.householdsplitter.data.entity.DiscardedRow;
+import com.householdsplitter.data.dao.DiscardedRowDao;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.ItemAssignment;
 import com.householdsplitter.data.entity.LineItem;
@@ -52,9 +54,10 @@ import com.householdsplitter.data.entity.SettlementPayment;
                 ItemAssignment.class,
                 AssignmentMemory.class,
                 SettlementPayment.class,
-                MemberRule.class
+                MemberRule.class,
+                DiscardedRow.class
         },
-        version = 4,
+        version = 6,
         exportSchema = true)
 @TypeConverters(Converters.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -81,6 +84,8 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract MemberRuleDao memberRuleDao();
 
+    public abstract DiscardedRowDao discardedRowDao();
+
     /**
      * Adds the settlement payment history.
      *
@@ -89,6 +94,21 @@ public abstract class AppDatabase extends RoomDatabase {
      * of grocery orders. The statements mirror what Room generates for the entity, and the
      * schema exported to app/schemas is the check on that.
      */
+    /**
+     * Every migration, in one place, used by the app and by the migration tests alike.
+     *
+     * <p>Stated once because the alternative rots. The test that opens a version one
+     * database and walks it all the way up used to repeat this list, and repeating it means
+     * a migration added to the app but not to the test leaves the test passing against a
+     * chain that no longer exists. Sharing the array makes forgetting impossible instead of
+     * unlikely.
+     */
+    public static Migration[] migrations() {
+        return new Migration[]{
+                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6
+        };
+    }
+
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
@@ -156,6 +176,59 @@ public abstract class AppDatabase extends RoomDatabase {
      * region, which is honest. Orders imported before this migration were never measured,
      * and inventing a box for them would put a red ring around the wrong part of the page.
      */
+    /**
+     * Records which store an order came from, so the orders list can say and a re-parse can
+     * use the right vocabulary.
+     *
+     * <p>Every row that exists at this point was read from Walmart, because Walmart was the
+     * only layout the app could read, so the default is not a guess: it is what those orders
+     * are. Writing it as a column default rather than an UPDATE means an older row reports
+     * its store correctly even if this migration is the last thing to touch it.
+     */
+    public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `orders` ADD COLUMN `store` "
+                    + "TEXT NOT NULL DEFAULT 'WALMART'");
+        }
+    };
+
+    /**
+     * Records how the reader actually did, judged by what the user changed afterwards.
+     *
+     * <p>Three columns and one table, and no stored percentages. The rate is computed from
+     * these on demand, because a rate written into a row goes stale the moment anyone edits
+     * an item and then disagrees with the data it claims to summarise.
+     *
+     * <p>{@code parsedName} and {@code parsedCents} hold what the reader said, so "did the
+     * user change this?" stays a comparison. Existing rows get an empty snapshot and are
+     * therefore not counted as read correctly: nothing is known about whether they were
+     * edited, and inventing a favourable answer for the reader is the one direction this
+     * must not round in.
+     */
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `origin` "
+                    + "TEXT NOT NULL DEFAULT 'PARSED'");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `parsedName` TEXT");
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `parsedCents` "
+                    + "INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `discarded_rows` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                    + "`orderId` INTEGER NOT NULL, "
+                    + "`store` TEXT NOT NULL DEFAULT 'WALMART', "
+                    + "`name` TEXT NOT NULL, "
+                    + "`lineTotalCents` INTEGER NOT NULL, "
+                    + "`lineItemId` INTEGER NOT NULL, "
+                    + "`discardedAt` INTEGER NOT NULL, "
+                    + "FOREIGN KEY(`orderId`) REFERENCES `orders`(`id`) "
+                    + "ON UPDATE NO ACTION ON DELETE CASCADE)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_discarded_rows_orderId` "
+                    + "ON `discarded_rows` (`orderId`)");
+        }
+    };
+
     public static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
@@ -181,7 +254,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
                 // No destructive fallback anywhere: losing a household's history to a
                 // schema change is not an acceptable outcome for data nobody can recreate.
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(migrations())
                 .build();
     }
 

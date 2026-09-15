@@ -1,6 +1,8 @@
 package com.householdsplitter.prefs;
 
 import android.content.Context;
+
+import com.householdsplitter.core.parse.StoreKind;
 import android.content.SharedPreferences;
 
 import com.householdsplitter.core.calc.AllocationMode;
@@ -22,6 +24,7 @@ public class SettingsStore {
     private static final String KEY_AUTO_BACKUP_AT = "auto_backup_at";
     private static final String KEY_WELCOME_SEEN = "welcome_seen";
     private static final String KEY_THEME = "theme_mode";
+    private static final String KEY_LAST_STORE = "last_store";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -162,5 +165,22 @@ public class SettingsStore {
     /** SPEC 7.14.5: wipe leaves the preferences at their defaults too. */
     public void clear() {
         preferences.edit().clear().apply();
+    }
+
+    /**
+     * The store picked for the previous order, offered first next time.
+     *
+     * <p>A convenience, not a decision: the picker still appears and the user still
+     * chooses. Remembering it is what keeps the extra tap cheap for a household that
+     * orders from the same store every week, without ever parsing an order as a store
+     * nobody selected.
+     */
+    public StoreKind lastStore() {
+        return StoreKind.fromName(preferences.getString(KEY_LAST_STORE, null));
+    }
+
+    public void lastStore(StoreKind store) {
+        preferences.edit().putString(KEY_LAST_STORE,
+                (store == null ? StoreKind.WALMART : store).name()).apply();
     }
 }

@@ -10,6 +10,7 @@ import com.householdsplitter.core.parse.model.ParsedOrder;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.parse.ReceiptParser;
 import com.householdsplitter.util.AppExecutors;
 import com.householdsplitter.util.Result;
@@ -35,6 +36,7 @@ public class ParsingViewModel extends ViewModel {
 
     private final OrderRepository orderRepository;
     private final ReceiptParser parser;
+    private final StoreKind store;
     private final AppExecutors executors;
     private final long householdId;
 
@@ -55,8 +57,9 @@ public class ParsingViewModel extends ViewModel {
      *                        (SPEC 8.1.3).
      */
     public ParsingViewModel(OrderRepository orderRepository, HouseholdRepository householdRepository,
-                            ReceiptParser parser, AppExecutors executors, long householdId,
-                            long existingOrderId) {
+                            ReceiptParser parser, StoreKind store, AppExecutors executors,
+                            long householdId, long existingOrderId) {
+        this.store = store == null ? StoreKind.WALMART : store;
         this.orderRepository = orderRepository;
         this.parser = parser;
         this.executors = executors;
@@ -156,7 +159,8 @@ public class ParsingViewModel extends ViewModel {
                     });
             return;
         }
-        orderRepository.createFromParse(householdId, parsed, uris, (Result<Long> result) -> {
+        orderRepository.createFromParse(householdId, store, parsed, uris,
+                (Result<Long> result) -> {
             if (result.isOk()) {
                 orderCreated.setValue(result.value());
             } else {
@@ -167,7 +171,7 @@ public class ParsingViewModel extends ViewModel {
 
     /** SPEC 7.5.4: an empty order that goes straight to the review screen. */
     public void enterManually() {
-        orderRepository.createEmpty(householdId, (Result<Long> result) -> {
+        orderRepository.createEmpty(householdId, store, (Result<Long> result) -> {
             if (result.isOk()) {
                 orderCreated.setValue(result.value());
             } else {

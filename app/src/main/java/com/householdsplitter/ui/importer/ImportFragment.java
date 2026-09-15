@@ -153,6 +153,11 @@ public class ImportFragment extends BaseFragment {
         binding.continueButton.setOnClickListener(v -> {
             Bundle args = new Bundle();
             args.putStringArrayList(ParsingArgs.ARG_URIS, new ArrayList<>(model.current()));
+            // The store the picker chose travels with the import, so the parsing screen
+            // builds the reader for this order rather than for whichever store is default.
+            if (getArguments() != null && getArguments().getString(ParsingArgs.ARG_STORE) != null) {
+                args.putString(ParsingArgs.ARG_STORE, getArguments().getString(ParsingArgs.ARG_STORE));
+            }
             // Carried through when the user came here to add to an order that already
             // exists, rather than to start a new one (SPEC 8.1.3).
             long existingOrderId = getArguments() == null

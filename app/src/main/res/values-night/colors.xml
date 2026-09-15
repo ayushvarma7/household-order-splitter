@@ -90,4 +90,9 @@
     <color name="widget_body">#FFE6E0E9</color>
 
     <color name="welcome_dot_inactive">#33FFFFFF</color>
+
+    <!-- The same two identities, lightened for the dark card: 10.1:1 and 10.3:1. -->
+    <color name="store_walmart">#A6C8FF</color>
+    <color name="store_amazon_fresh">#A9D673</color>
+
 </resources>

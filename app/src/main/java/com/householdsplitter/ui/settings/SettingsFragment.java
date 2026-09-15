@@ -17,6 +17,8 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.BuildConfig;
+import android.widget.Toast;
+
 import com.householdsplitter.R;
 import com.householdsplitter.backup.AutoBackupService;
 import com.householdsplitter.backup.BackupService;
@@ -32,6 +34,9 @@ import com.householdsplitter.ui.common.StateColors;
 
 /** S14. SPEC 7.14. */
 public class SettingsFragment extends BaseFragment {
+
+    /** Seven, which is Android's own gesture for revealing developer options. */
+    private static final int TAPS_TO_REVEAL = 7;
 
     private FragmentSettingsBinding binding;
     private SettingsStore settings;
@@ -241,6 +246,7 @@ public class SettingsFragment extends BaseFragment {
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
         // SPEC 7.14.6
+        bindParserReportGesture();
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
     }
@@ -441,5 +447,40 @@ public class SettingsFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    /**
+     * The parser report, behind a deliberate gesture rather than a button.
+     *
+     * <p>Hidden rather than locked, and the distinction is the answer to whether this needs
+     * a password. There is no account here, no server and no second device: the data never
+     * leaves the phone, and the phone already has a lock screen. A password would be a new
+     * secret to store and lose in exchange for protection that is already in place. What
+     * this actually needs is to stay out of the way of a housemate who opened the app to
+     * find out what they owe, and seven taps on the About line does that.
+     */
+    private void bindParserReportGesture() {
+        final int[] taps = {0};
+        binding.aboutText.setOnClickListener(v -> {
+            taps[0]++;
+            if (taps[0] == TAPS_TO_REVEAL) {
+                Toast.makeText(requireContext(), R.string.parser_report_revealed,
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (taps[0] > TAPS_TO_REVEAL) {
+                showParserReport();
+            }
+        });
+    }
+
+    private void showParserReport() {
+        locator().parserQualityService().report(locator().currentHouseholdId(), report -> {
+            if (!isAdded()) {
+                return;
+            }
+            ParserReportSheet.of(report, locator().settings().currencySymbol())
+                    .show(getChildFragmentManager(), "parser-report");
+        });
     }
 }
