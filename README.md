@@ -2,7 +2,7 @@
 
 # Order Splitter
 
-### Reads your Walmart order from a screenshot and works out what each person owes
+### Reads your Walmart or Amazon Fresh order from a screenshot and works out what each person owes
 
 **One person pays for the shop. Everyone owes a different amount, because half the items were not for everyone.**
 
@@ -10,13 +10,14 @@ Share the order screenshot into the app. It reads every item and the price you w
 
 <p>
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-b07219?style=for-the-badge&logo=openjdk&logoColor=white" />
-  <img alt="Android, minSdk 26" src="https://img.shields.io/badge/Android-minSdk_26-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
+  <img alt="Android, minSdk 24" src="https://img.shields.io/badge/Android-minSdk_24-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
   <img alt="Offline, no network permission" src="https://img.shields.io/badge/Offline-no_network_permission-6A3FC0?style=for-the-badge" />
 </p>
 <p>
-  <img alt="204 JVM tests, 135 instrumented" src="https://img.shields.io/badge/tests-204_JVM_%2B_135_instrumented-1F6B4A?style=flat-square" />
+  <img alt="239 JVM tests, 147 instrumented" src="https://img.shields.io/badge/tests-239_JVM_%2B_147_instrumented-1F6B4A?style=flat-square" />
+  <img alt="Two stores" src="https://img.shields.io/badge/stores-Walmart_%2B_Amazon_Fresh-6A3FC0?style=flat-square" />
   <img alt="No INTERNET permission" src="https://img.shields.io/badge/INTERNET_permission-none-BA1A1A?style=flat-square" />
-  <img alt="Room schema version 4" src="https://img.shields.io/badge/migrations-4_versions,_hand_written-615B71?style=flat-square" />
+  <img alt="Room schema version 7" src="https://img.shields.io/badge/migrations-7_versions,_hand_written-615B71?style=flat-square" />
   <img alt="Offline" src="https://img.shields.io/badge/data-stays_on_device-1F6B4A?style=flat-square" />
 </p>
 
@@ -25,9 +26,9 @@ Share the order screenshot into the app. It reads every item and the price you w
 <br />
 
 <div align="center">
-  <img src="docs/screenshots/07-home.png" width="215" alt="Orders grouped by month" />
+  <img src="docs/screenshots/20-home-orders.png" width="215" alt="Orders grouped by month, tagged by shop" />
   <img src="docs/screenshots/13-review.png" width="215" alt="The parsed item list, ready to correct" />
-  <img src="docs/screenshots/09-spending.png" width="215" alt="Who owes whom" />
+  <img src="docs/screenshots/23-parser-report.png" width="215" alt="How well the reader is doing" />
   <img src="docs/screenshots/12-home-dark.png" width="215" alt="Dark mode" />
 </div>
 
@@ -42,6 +43,57 @@ Share the order screenshot into the app. It reads every item and the price you w
 A reader that silently gets something wrong is worse than no reader. So every row records the screenshot it came from and the exact box it occupied, and any row will show you: tap it, choose **View on screenshot**, and the original page opens with that row ringed and everything else dimmed.
 
 It answers the question you actually have about a name the reader mangled or a price that looks off, which is "which one is this?". The box is stored in permille of the image rather than pixels, so it lands correctly whatever size the picture is displayed at.
+
+---
+
+## Two stores, one pipeline
+
+<div align="center">
+  <img src="docs/screenshots/16-store-picker.png" width="215" alt="Choosing which shop the order came from" />
+  <img src="docs/screenshots/20-home-orders.png" width="215" alt="Orders tagged with the shop they came from" />
+</div>
+
+Walmart and Amazon Fresh print an order page differently enough that one reader cannot do
+both, and similarly enough that guessing which is which is a bad idea. What distinguishes
+them is the wording of the summary block, which is the most fragile part of either reader,
+so a detector would rest the choice of parser on the least reliable evidence on the page.
+
+So the app asks, once, before you take the screenshots. One tap, on the shop you used last
+time.
+
+The cost of guessing wrong is not a crash. Handed Amazon's summary page, the Walmart reader
+reads no order total at all and invents $38.93 of charge nobody bought, which is a
+plausible order that is quietly wrong. That case is a test, not an argument:
+`theWalmartReaderMisreadsAnAmazonPage`.
+
+Underneath, a store is two small things: the words it prints (`StoreVocabulary`) and where
+it prints them (`ParseTuning`). The pipeline that turns positioned text into an order is
+shared. `AmazonFreshLayoutParser` is four lines long.
+
+---
+
+## It keeps score of its own reading
+
+<div align="center">
+  <img src="docs/screenshots/23-parser-report.png" width="330" alt="The reader's accuracy, broken down by shop" />
+</div>
+
+There is no labelled test set for a household's real orders and there never will be. But
+the review screen is one: you read every row before the money is split, so a row you left
+alone is a row the reader got right, judged by the only person who can see both the
+screenshot and the truth. Ordinary use becomes a measurement at no cost to you.
+
+Four outcomes, and the last two are reported separately on purpose. An **invented** charge
+is visible, sitting in the list with a price somebody notices. A **missed** one is not: the
+order simply comes up short. Folding them into one number would let a reader that fails
+quietly hide behind one that fails loudly.
+
+When you do type a row in by hand, the app re-reads the screenshots and works out why it
+was missed, naming the stage that lost it rather than just counting it. The first thing it
+decides is whether there was a bug at all: a cash item, or a page nobody captured, is not
+the reader's fault and is not counted as one.
+
+Settings, then **How the reader is doing**.
 
 ---
 
@@ -340,7 +392,7 @@ Dark mode is chosen rather than flipped. The member palette in particular is sea
 
 **No scheduled jobs.** Backups run on the hook the workbook already uses rather than through WorkManager, because a household's data only changes when they use the app, so there is nothing for a background wake-up to find.
 
-**The second store is a seam, not a feature.** `LayoutParser` is the only thing above the OCR that knows what a store's page looks like, and a test proves a different store's layout flows through the domain layer unchanged. No second store ships: guessing at a layout with no real screenshots to check against is how a parser ends up silently wrong about money.
+**The second store split the seam in two.** `LayoutParser` was the right boundary at the wrong granularity: it let Amazon Fresh be added without touching the domain layer, but it would have meant a second copy of the whole pipeline, duplicating the money path so a bug fixed in one copy stayed live in the other. So the pipeline moved down into `ReceiptLayoutParser` and a store became two much smaller things: the words it prints (`StoreVocabulary`) and where it prints them (`ParseTuning`). The 204 existing Walmart tests passing unchanged across that move is the evidence it was a refactor and not a rewrite. Every figure in the Amazon calibration was measured off real order pages, and the reason to trust them is that the same permille values fell out of three different capture widths.
 
 **Ten member colours in a fixed order.** A household of four uses the first four and never sees the rest, so the opening slots are separated hardest. Ten slots plus a text-contrast floor cannot clear the all-pairs colour-vision floor, which is a property of the constraints rather than of the search. It is acceptable only because colour is never the sole channel: an avatar carries initials, a bar carries a name.
 
@@ -356,7 +408,7 @@ words that store prints, which can be reviewed as a diff and tested without a de
 
 Everything stays on the device. There is no account, no server and no sync.
 
-The default build has no network permission at all, so it cannot send anything anywhere even in principle. Screenshots are never copied into the app: only their URIs are stored, held with a persistable permission so they still open after a restart. Household names, member names and every order live in a local Room database and go nowhere else.
+The app has no network permission at all, so it cannot send anything anywhere even in principle. Not merely unrequested: the manifest actively removes it, because ML Kit's own manifest declares `INTERNET` for its unbundled variant and a merged manifest would otherwise inherit it. The shipped APK contains no occurrence of the string `INTERNET`, which is checkable with `aapt2` rather than taken on trust. The full policy is in [docs/PRIVACY.md](docs/PRIVACY.md). Screenshots are never copied into the app: only their URIs are stored, held with a persistable permission so they still open after a restart. Household names, member names and every order live in a local Room database and go nowhere else.
 
 A fresh install contains no household, no members, no orders and no knowledge of any grocery item. Assignment suggestions come only from assignments you have confirmed yourself in this household. There is no shipped list of which products are "usually shared".
 

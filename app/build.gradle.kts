@@ -28,7 +28,11 @@ android {
 
     defaultConfig {
         applicationId = "com.householdsplitter"
-        minSdk = 26                       // SPEC 4.9
+        // Android 7.0 Nougat and up. SPEC 4.9 said 26; 24 reaches phones two years older
+        // at no cost to the code, because nothing here needed an API 26 feature except
+        // java.time, which is desugared, and an adaptive launcher icon, which now has a
+        // rendered fallback for launchers that cannot read one.
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -91,6 +95,12 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17   // SPEC 4.1
         targetCompatibility = JavaVersion.VERSION_17
+        // java.time is an API 26 library. The parser, the month grouping on the home
+        // screen and the backup rotation all use it, and rewriting them against Calendar
+        // to reach older phones would mean touching the dated logic in the money path for
+        // reasons that have nothing to do with money. Desugaring backports the real
+        // classes instead, so the code below API 26 is the same code.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     sourceSets {
@@ -105,6 +115,8 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+
     implementation(project(":core"))
 
     implementation(libs.androidx.core)

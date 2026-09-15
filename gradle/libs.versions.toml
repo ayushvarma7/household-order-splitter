@@ -10,6 +10,7 @@ splashscreen = "1.0.1"
 espresso = "3.7.0"
 fragment = "1.8.5"
 gson = "2.11.0"
+desugar = "2.1.5"
 junit = "4.13.2"
 lifecycle = "2.8.7"
 material = "1.12.0"
@@ -25,6 +26,8 @@ testRunner = "1.7.0"
 viewpager2 = "1.1.0"
 
 [libraries]
+# Backports java.time so the app can run below API 26 without changing a line of it.
+desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }

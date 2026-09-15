@@ -24,6 +24,7 @@ import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.ui.common.StorePill;
 
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -61,12 +62,16 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
                         return false;
                     }
                     if (a.type == HomeRow.TYPE_HEADER) {
-                        return a.heading == b.heading
+                        // Objects.equals, not ==. A month heading is built at runtime, so
+                        // two rows reading "September 2026" are different String objects
+                        // and == called them different content, rebinding every header on
+                        // every diff. Found by lint once it could finally run.
+                        return Objects.equals(a.heading, b.heading)
                                 && a.orderCount == b.orderCount
                                 && a.totalCents == b.totalCents;
                     }
-                    return a.order.order.label.equals(b.order.order.label)
-                            && a.order.order.status == b.order.order.status
+                    return Objects.equals(a.order.order.label, b.order.order.label)
+                            && Objects.equals(a.order.order.status, b.order.order.status)
                             && a.order.order.statedTotalCents == b.order.order.statedTotalCents
                             && a.order.order.orderDate == b.order.order.orderDate
                             && a.order.participants.size() == b.order.participants.size();

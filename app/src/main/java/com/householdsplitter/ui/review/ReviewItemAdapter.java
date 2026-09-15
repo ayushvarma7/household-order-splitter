@@ -17,6 +17,8 @@ import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.databinding.ItemReviewRowBinding;
 import com.householdsplitter.ui.common.StateColors;
 
+import java.util.Objects;
+
 /** SPEC 7.6.3 and 7.6.4. */
 public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.RowViewHolder> {
 
@@ -42,11 +44,13 @@ public class ReviewItemAdapter extends ListAdapter<LineItem, ReviewItemAdapter.R
 
                 @Override
                 public boolean areContentsTheSame(@NonNull LineItem a, @NonNull LineItem b) {
-                    return a.name.equals(b.name)
+                    // Objects.equals throughout, so a null name or scope on a
+                    // half-built row compares rather than throws inside a diff.
+                    return Objects.equals(a.name, b.name)
                             && a.lineTotalCents == b.lineTotalCents
                             && a.quantity == b.quantity
                             && a.needsReview == b.needsReview
-                            && a.scope == b.scope
+                            && Objects.equals(a.scope, b.scope)
                             && a.position == b.position;
                 }
             };

@@ -72,6 +72,10 @@ public class ParserReportSheet extends BottomSheetDialogFragment {
 
     private String render(ParserQualityService.Report value) {
         StringBuilder out = new StringBuilder();
+        // Said once rather than under every store. Repeating it wrapped each line twice
+        // over and made a short report look like a wall.
+        out.append("invented = a charge nobody bought, visible\n");
+        out.append("missed   = a charge never found, quiet\n\n");
         appendScorecard(out, "ALL STORES", value.overall);
 
         for (Map.Entry<StoreKind, ParserScorecard> entry : value.byStore.entrySet()) {
@@ -114,15 +118,13 @@ public class ParserReportSheet extends BottomSheetDialogFragment {
             out.append("  nothing judged yet\n");
             return;
         }
-        out.append("  left as read   ").append(percent(card.accuracyPermille()))
-                .append("   (").append(card.keptAsRead()).append(" of ")
+        out.append("  left as read  ").append(percent(card.accuracyPermille()))
+                .append("  (").append(card.keptAsRead()).append(" of ")
                 .append(card.judged()).append(" rows)\n");
-        out.append("  by value       ").append(percent(card.valueAccuracyPermille())).append('\n');
-        out.append("  corrected      ").append(card.corrected()).append('\n');
-        out.append("  invented       ").append(card.removed())
-                .append("   (visible: a charge nobody bought)\n");
-        out.append("  missed         ").append(card.addedByHand())
-                .append("   (quiet: the order just comes up short)\n");
+        out.append("  by value      ").append(percent(card.valueAccuracyPermille())).append('\n');
+        out.append("  corrected     ").append(card.corrected()).append('\n');
+        out.append("  invented      ").append(card.removed()).append('\n');
+        out.append("  missed        ").append(card.addedByHand()).append('\n');
     }
 
     private void appendList(StringBuilder out, String heading, int count) {
