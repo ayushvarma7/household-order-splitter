@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModel;
 import com.householdsplitter.core.parse.model.ParsedAdjustments;
 import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.Reconciliation;
+import com.householdsplitter.core.quality.ItemOrigin;
 import com.householdsplitter.data.entity.LineItem;
+import com.householdsplitter.quality.MissDiagnosisService;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.repo.OrderRepository;
@@ -24,7 +26,16 @@ public class ReviewItemsViewModel extends ViewModel {
     private final LiveData<OrderBundle> bundle;
     private final MutableLiveData<LineItem> lastDeleted = new MutableLiveData<>();
 
+    /** Optional: without it, rows are still recorded as hand-typed, just not diagnosed. */
+    private final MissDiagnosisService diagnosis;
+
     public ReviewItemsViewModel(OrderRepository repository, long orderId) {
+        this(repository, null, orderId);
+    }
+
+    public ReviewItemsViewModel(OrderRepository repository, MissDiagnosisService diagnosis,
+                                long orderId) {
+        this.diagnosis = diagnosis;
         this.repository = repository;
         this.orderId = orderId;
         this.bundle = repository.observeBundle(orderId);
@@ -90,7 +101,14 @@ public class ReviewItemsViewModel extends ViewModel {
     }
 
     public void save(LineItem item) {
+        final boolean isNewAndTypedByHand = item.id == 0L && item.origin == ItemOrigin.MANUAL;
         repository.saveItem(item, result -> {
+            // Asked now rather than later: the screenshots are referenced by URI, and a URI
+            // stops resolving once the picture leaves the gallery. This is the moment they
+            // are certainly readable.
+            if (isNewAndTypedByHand && diagnosis != null && item.id != 0L) {
+                diagnosis.diagnose(item.id);
+            }
         });
     }
 
@@ -159,6 +177,9 @@ public class ReviewItemsViewModel extends ViewModel {
     public LineItem newBlankItem() {
         LineItem item = new LineItem();
         item.orderId = orderId;
+        // Typed by a person, so the reader is not judged on it and, if the text turns out
+        // to be on a screenshot after all, it is a charge the reader missed.
+        item.origin = ItemOrigin.MANUAL;
         return item;
     }
 }

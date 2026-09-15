@@ -10,6 +10,7 @@ import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.data.repo.SettlementRepository;
 import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.parse.ParserFactory;
+import com.householdsplitter.quality.MissDiagnosisService;
 import com.householdsplitter.quality.ParserQualityService;
 import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.suggest.RuleService;
@@ -162,6 +163,15 @@ public class ServiceLocator {
      * Built on demand. It holds no state, and the report it produces is recomputed from the
      * database every time rather than cached, so there is nothing to keep alive.
      */
+    /**
+     * Re-reads an order's screenshots to explain a row the reader missed. Built on demand:
+     * it opens an ML Kit recogniser per diagnosis and closes it again.
+     */
+    public MissDiagnosisService missDiagnosisService() {
+        return new MissDiagnosisService(applicationContext, database.orderDao(),
+                database.orderImageDao(), database.lineItemDao(), executors());
+    }
+
     public ParserQualityService parserQualityService() {
         return new ParserQualityService(database.orderDao(), database.lineItemDao(),
                 database.discardedRowDao(), executors());

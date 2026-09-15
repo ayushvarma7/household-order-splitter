@@ -122,6 +122,18 @@ public class LineItem {
     @ColumnInfo(defaultValue = "0")
     public long parsedCents;
 
+    /**
+     * Why the reader missed this row, worked out by re-reading the screenshots when the
+     * user typed it in. Null until diagnosed, and null forever on a row the reader found.
+     *
+     * <p>Recorded at the moment of the manual add rather than derived later, because the
+     * screenshots are referenced by URI rather than copied, and a URI dies when the user
+     * deletes the picture from their gallery. The one moment it is certainly readable is
+     * while the user is still standing in front of the order.
+     */
+    @Nullable
+    public String missVerdict;
+
     /** True when the reader produced this row and it still says what the reader said. */
     public boolean matchesWhatWasRead() {
         if (origin != ItemOrigin.PARSED) {

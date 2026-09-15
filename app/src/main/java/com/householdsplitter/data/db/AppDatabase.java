@@ -57,7 +57,7 @@ import com.householdsplitter.data.entity.SettlementPayment;
                 MemberRule.class,
                 DiscardedRow.class
         },
-        version = 6,
+        version = 7,
         exportSchema = true)
 @TypeConverters(Converters.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -105,9 +105,24 @@ public abstract class AppDatabase extends RoomDatabase {
      */
     public static Migration[] migrations() {
         return new Migration[]{
-                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6
+                MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
+                MIGRATION_6_7
         };
     }
+
+    /**
+     * Why a hand-typed row was missed, once the screenshots have been re-read.
+     *
+     * <p>Nullable and empty for every existing row, which is correct: those rows were added
+     * before anything was re-read, so nothing is known about them and nothing should be
+     * claimed.
+     */
+    public static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `line_items` ADD COLUMN `missVerdict` TEXT");
+        }
+    };
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override

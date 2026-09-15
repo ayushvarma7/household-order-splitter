@@ -290,6 +290,8 @@ public class OrderRepository {
     public void addDifferenceItem(long orderId, long cents, String name,
                                   Callback<Result<Long>> callback) {
         executors.diskIO().execute(() -> {
+            // Booked by hand, by definition: it exists precisely because the rows the
+            // reader produced did not add up to the bill.
             if (cents == 0L) {
                 post(callback, Result.failure("Nothing to add"));
                 return;
@@ -299,6 +301,7 @@ public class OrderRepository {
             item.name = name;
             item.rawOcrText = "";
             item.lineTotalCents = cents;
+            item.origin = ItemOrigin.MANUAL;
             item.scope = Scope.UNASSIGNED;
             item.needsReview = true;
             item.reviewReasonsCsv = ReviewReason.MANUALLY_ADDED.name();
@@ -315,7 +318,9 @@ public class OrderRepository {
         executors.diskIO().execute(() -> {
             if (item.id == 0L) {
                 item.position = lineItemDao.maxPositionSync(item.orderId) + 1;
-                lineItemDao.insert(item);
+                // Set on the caller's own object, so a newly added row can be looked up
+                // again without a second query.
+                item.id = lineItemDao.insert(item);
             } else {
                 lineItemDao.update(item);
             }

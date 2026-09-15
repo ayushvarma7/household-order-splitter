@@ -110,6 +110,12 @@ public class MigrationTest {
     }
 
     @Test
+    public void migratesSixToSeven() throws IOException {
+        helper.createDatabase(NAME, 6).close();
+        helper.runMigrationsAndValidate(NAME, 7, true, AppDatabase.MIGRATION_6_7).close();
+    }
+
+    @Test
     public void migratesFiveToSix() throws IOException {
         helper.createDatabase(NAME, 5).close();
         helper.runMigrationsAndValidate(NAME, 6, true, AppDatabase.MIGRATION_5_6).close();

@@ -59,12 +59,25 @@ public class ReceiptLayoutParser implements LayoutParser {
      */
     @Override
     public ParsedOrder parse(List<List<OcrElement>> pages) {
+        return parse(pages, null);
+    }
+
+    /**
+     * The same parse, recording what became of every band.
+     *
+     * <p>The trace changes nothing. That is the point of doing it this way rather than
+     * writing a separate diagnostic pass: what gets explained has to be the parser that
+     * actually ran, or the explanation drifts from the behaviour it claims to describe.
+     *
+     * @param trace filled in as the parse proceeds, or null to skip recording
+     */
+    public ParsedOrder parse(List<List<OcrElement>> pages, ParseTrace trace) {
         if (pages == null || pages.isEmpty()) {
             return ParsedOrder.empty();
         }
         List<PageParse> parsed = new ArrayList<>(pages.size());
         for (int index = 0; index < pages.size(); index++) {
-            parsed.add(parsePage(pages.get(index), index));
+            parsed.add(parsePage(pages.get(index), index, trace));
         }
         return Stitcher.merge(parsed, tuning);
     }
@@ -74,13 +87,14 @@ public class ReceiptLayoutParser implements LayoutParser {
         return parse(Collections.singletonList(elements));
     }
 
-    private PageParse parsePage(List<OcrElement> raw, int imageIndex) {
+    private PageParse parsePage(List<OcrElement> raw, int imageIndex, ParseTrace trace) {
         PageParse page = new PageParse(imageIndex);
         if (raw == null || raw.isEmpty()) {
             return page;
         }
 
         List<OcrElement> cropped = crop(raw);
+        recordCropped(raw, cropped, imageIndex, trace);
         if (cropped.isEmpty()) {
             return page;
         }
@@ -98,7 +112,69 @@ public class ReceiptLayoutParser implements LayoutParser {
 
         page.items.addAll(new BlockAssembler(vocabulary).assemble(bands, itemsEnd));
         extractOrderFields(bands, page);
+        recordBands(bands, itemsEnd, imageIndex, trace);
         return page;
+    }
+
+    /** Text the margin crop threw away, which is where a clipped row goes. */
+    private void recordCropped(List<OcrElement> raw, List<OcrElement> kept, int imageIndex,
+                               ParseTrace trace) {
+        if (trace == null || raw.size() == kept.size()) {
+            return;
+        }
+        java.util.Set<OcrElement> survived = java.util.Collections.newSetFromMap(
+                new java.util.IdentityHashMap<OcrElement, Boolean>());
+        survived.addAll(kept);
+        for (OcrElement element : raw) {
+            if (!survived.contains(element)) {
+                trace.addCropped(imageIndex, element.text());
+            }
+        }
+    }
+
+    /**
+     * How far each band got, read off the state the parse has already settled.
+     *
+     * <p>Recorded after the fact rather than as decisions are taken, so no stage of the
+     * parse has to carry a reporting concern and none of them can behave differently
+     * because a trace is present.
+     */
+    private void recordBands(List<TextBand> bands, int itemsEnd, int imageIndex,
+                             ParseTrace trace) {
+        if (trace == null) {
+            return;
+        }
+        for (int i = 0; i < bands.size(); i++) {
+            TextBand band = bands.get(i);
+            String text = band.text();
+            if (text.isEmpty()) {
+                continue;
+            }
+            trace.addBand(imageIndex, band.topPermille(), text,
+                    band.leftText(tuning.nameZoneEndPermille), stageOf(band, i, itemsEnd));
+        }
+    }
+
+    private ParseTrace.Stage stageOf(TextBand band, int index, int itemsEnd) {
+        if (band.topPermille() < tuning.headerZonePermille) {
+            return ParseTrace.Stage.INSIDE_THE_HEADER;
+        }
+        if (index >= itemsEnd) {
+            return ParseTrace.Stage.PAST_THE_ITEM_REGION;
+        }
+        if (band.kind() == TextBand.Kind.CHROME) {
+            return ParseTrace.Stage.FILTERED_AS_CHROME;
+        }
+        if (band.kind() == TextBand.Kind.SECTION) {
+            return ParseTrace.Stage.READ_AS_A_SECTION_HEADER;
+        }
+        if (band.kind() == TextBand.Kind.SUMMARY) {
+            return ParseTrace.Stage.READ_AS_A_SUMMARY_LINE;
+        }
+        if (!band.hasLinePrice()) {
+            return ParseTrace.Stage.NO_PRICE_IN_THE_COLUMN;
+        }
+        return ParseTrace.Stage.ELIGIBLE;
     }
 
     /**

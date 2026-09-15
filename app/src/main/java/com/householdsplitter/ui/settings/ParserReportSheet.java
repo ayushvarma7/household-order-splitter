@@ -11,6 +11,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.householdsplitter.R;
 import com.householdsplitter.core.parse.StoreKind;
+import com.householdsplitter.core.quality.MissDiagnosis;
 import com.householdsplitter.core.quality.ParserScorecard;
 import com.householdsplitter.data.entity.DiscardedRow;
 import com.householdsplitter.data.entity.LineItem;
@@ -83,6 +84,9 @@ public class ParserReportSheet extends BottomSheetDialogFragment {
         for (LineItem item : value.addedByHand) {
             out.append("  ").append(money(item.lineTotalCents)).append("  ")
                     .append(item.name).append('\n');
+            // The verdict is the whole point: not that a row was missed, but which stage
+            // lost it, because each one points at a single pattern list or constant.
+            out.append("       ").append(verdictOf(item)).append('\n');
         }
 
         appendList(out, "INVENTED, deleted by a person", value.discarded.size());
@@ -123,6 +127,24 @@ public class ParserReportSheet extends BottomSheetDialogFragment {
 
     private void appendList(StringBuilder out, String heading, int count) {
         out.append('\n').append(heading).append(": ").append(count).append('\n');
+    }
+
+    /**
+     * What re-reading the screenshots concluded about this row.
+     *
+     * <p>"Not on any screenshot" is not a failure and says so plainly, because a cash item
+     * or a page nobody captured is not the reader's fault and should not read like one.
+     */
+    private String verdictOf(LineItem item) {
+        if (item.missVerdict == null) {
+            return "not diagnosed (the screenshots could not be re-read)";
+        }
+        try {
+            MissDiagnosis.Verdict verdict = MissDiagnosis.Verdict.valueOf(item.missVerdict);
+            return (verdict.isParserFault() ? "FAULT: " : "not a fault: ") + verdict.message();
+        } catch (IllegalArgumentException unknown) {
+            return item.missVerdict;
+        }
     }
 
     /** Permille to one decimal place, without ever holding the rate as a double. */

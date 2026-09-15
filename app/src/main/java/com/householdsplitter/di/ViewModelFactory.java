@@ -85,7 +85,8 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
                 ? handle.<Long>get(ParsingArgs.ARG_ORDER_ID) : 0L;
 
         if (modelClass == ReviewItemsViewModel.class) {
-            return (T) new ReviewItemsViewModel(locator.orderRepository(), orderId);
+            return (T) new ReviewItemsViewModel(locator.orderRepository(),
+                    locator.missDiagnosisService(), orderId);
         }
         if (modelClass == OrderDetailsViewModel.class) {
             return (T) new OrderDetailsViewModel(locator.orderRepository(), orderId);
