@@ -1,4 +1,4 @@
-package com.householdsplitter.core.parse.walmart;
+package com.householdsplitter.core.parse.layout;
 
 import com.householdsplitter.core.parse.model.ParsedItem;
 import com.householdsplitter.core.parse.model.ReviewReason;
@@ -14,7 +14,8 @@ final class ConfidenceRules {
 
     static void apply(ParsedItem.Builder builder, String name, int quantity, long lineTotalCents,
                       int lowestConfidencePercent, boolean strikeThroughResolved,
-                      String sectionName, ParseTuning tuning) {
+                      String sectionName, StoreVocabulary vocabulary) {
+        ParseTuning tuning = vocabulary.tuning();
         if (lowestConfidencePercent >= 0 && lowestConfidencePercent < tuning.minConfidencePercent) {
             builder.flag(ReviewReason.LOW_CONFIDENCE);
         }
@@ -30,7 +31,7 @@ final class ConfidenceRules {
         // rather than an exception worth interrupting the user about. The same goes for a
         // unit price such as "$3.94/lb" printed on the left: it is never the line total and
         // never worth a warning.
-        if (SectionHeaders.isExcludedSection(sectionName)) {
+        if (vocabulary.isExcludedSection(sectionName)) {
             builder.flag(ReviewReason.EXCLUDED_SECTION);
         }
         if (Math.abs(lineTotalCents) > tuning.priceOutlierCents) {

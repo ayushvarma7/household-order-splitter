@@ -4,9 +4,10 @@ import android.content.Context;
 import android.net.Uri;
 
 import com.householdsplitter.core.parse.LayoutParser;
+import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.model.ParsedOrder;
-import com.householdsplitter.core.parse.walmart.ParseTuning;
+import com.householdsplitter.core.parse.layout.ParseTuning;
 import com.householdsplitter.core.parse.walmart.WalmartLayoutParser;
 import com.householdsplitter.ocr.MlKitTextSource;
 
@@ -31,9 +32,20 @@ public class MlKitReceiptParser implements ReceiptParser {
     private final MlKitTextSource textSource;
     private final LayoutParser layoutParser;
 
-    /** The only store supported in v1 (SPEC 3.5). */
+    /** Defaults to Walmart, which is the store every order predating the picker used. */
     public MlKitReceiptParser(Context context) {
-        this(context, ParseTuning.defaults());
+        this(context, StoreKind.WALMART);
+    }
+
+    /**
+     * The store the user chose before importing.
+     *
+     * <p>OCR is store-independent, since it reads whatever text is on the screen. What the
+     * store selects is the vocabulary and the column geometry underneath, which is why this
+     * is the only place in the app module that mentions a store at all.
+     */
+    public MlKitReceiptParser(Context context, StoreKind store) {
+        this(context, store.vocabulary().tuning().maxImageDimensionPx, store.layoutParser());
     }
 
     public MlKitReceiptParser(Context context, ParseTuning tuning) {

@@ -1,4 +1,4 @@
-package com.householdsplitter.core.parse.walmart;
+package com.householdsplitter.core.parse.layout;
 
 import com.householdsplitter.core.money.Cents;
 import com.householdsplitter.core.parse.model.OcrElement;
@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /** Recognising and classifying money tokens. SPEC 8.3.1 to 8.3.3. */
-final class PriceTokens {
+public final class PriceTokens {
 
     /** SPEC 8.3.1, verbatim, plus an optional leading minus for refunded rows. */
     private static final Pattern PRICE_TOKEN =
@@ -127,7 +127,7 @@ final class PriceTokens {
         return element.text().trim();
     }
 
-    static long toCents(String text) {
+    public static long toCents(String text) {
         return Cents.parse(text);
     }
 

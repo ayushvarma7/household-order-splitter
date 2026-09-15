@@ -1,5 +1,7 @@
 package com.householdsplitter.core.parse.walmart;
 
+import com.householdsplitter.core.parse.layout.PriceTokens;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

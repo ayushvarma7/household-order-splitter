@@ -1,4 +1,4 @@
-package com.householdsplitter.core.parse.walmart;
+package com.householdsplitter.core.parse.layout;
 
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedItem;

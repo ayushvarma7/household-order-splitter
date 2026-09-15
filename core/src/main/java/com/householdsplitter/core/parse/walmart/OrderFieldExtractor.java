@@ -1,13 +1,11 @@
 package com.householdsplitter.core.parse.walmart;
 
-import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.model.OrderField;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,25 +115,4 @@ final class OrderFieldExtractor {
         }
     }
 
-    /**
-     * SPEC 8.6.4: the charged amount is the right-most one on the band, so a struck-through
-     * original beside it never wins.
-     *
-     * @return the amount in cents, or null when the band carries none
-     */
-    static Long amountOnBand(TextBand band) {
-        List<OcrElement> elements = band.elements();
-        int index = PriceTokens.lastAmountIndex(elements, 0);
-        if (index < 0) {
-            return null;
-        }
-        if (PriceTokens.countAmounts(elements) > 1) {
-            band.strikeThroughResolved(true);
-        }
-        try {
-            return PriceTokens.toCents(elements.get(index).text());
-        } catch (NumberFormatException notAnAmount) {
-            return null;
-        }
-    }
 }

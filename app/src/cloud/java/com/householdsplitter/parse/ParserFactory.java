@@ -2,6 +2,8 @@ package com.householdsplitter.parse;
 
 import android.content.Context;
 
+import com.householdsplitter.core.parse.StoreKind;
+
 import com.householdsplitter.BuildConfig;
 
 /**
@@ -26,9 +28,13 @@ public final class ParserFactory {
     }
 
     public static ReceiptParser create(Context context, boolean preferCloud) {
+        return create(context, preferCloud, StoreKind.WALMART);
+    }
+
+    public static ReceiptParser create(Context context, boolean preferCloud, StoreKind store) {
         if (preferCloud && isCloudAvailable()) {
             return new LlmReceiptParser(context, BuildConfig.LLM_API_KEY);
         }
-        return new MlKitReceiptParser(context);
+        return new MlKitReceiptParser(context, store);
     }
 }

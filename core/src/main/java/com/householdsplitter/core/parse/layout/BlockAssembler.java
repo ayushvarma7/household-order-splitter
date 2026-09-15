@@ -1,4 +1,4 @@
-package com.householdsplitter.core.parse.walmart;
+package com.householdsplitter.core.parse.layout;
 
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.core.parse.model.ItemBounds;
@@ -25,20 +25,23 @@ import java.util.regex.Pattern;
  */
 final class BlockAssembler {
 
-    private static final Pattern QTY = Pattern.compile("(?i)^qty:? (\\d+)$");
-    private static final Pattern MULTIPACK = Pattern.compile("(?i)^multipack quantity:? ?(\\d+)$");
     private static final Pattern SIZE_FRAGMENT =
             Pattern.compile("(?i)^[\\d.]+ ?(fl ?[o0]z|[o0]z|lb|lbs|ct|pk|gal|qt|g|kg|ml|l)\\.?$");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
-    private BlockAssembler() {
+    private final StoreVocabulary vocabulary;
+    private final ParseTuning tuning;
+
+    BlockAssembler(StoreVocabulary vocabulary) {
+        this.vocabulary = vocabulary;
+        this.tuning = vocabulary.tuning();
     }
 
     /**
      * @param bands          classified bands for one screenshot, ordered top to bottom
      * @param itemsEndIndex  the first band that belongs to the payment or summary region
      */
-    static List<ParsedItem> assemble(List<TextBand> bands, int itemsEndIndex, ParseTuning tuning) {
+    List<ParsedItem> assemble(List<TextBand> bands, int itemsEndIndex) {
         List<ParsedItem> items = new ArrayList<>();
 
         int lastOpened = -1;
@@ -50,7 +53,7 @@ final class BlockAssembler {
             // A discounted row prints its original price struck through on the band below
             // the charged one, right-aligned in the same column. That is a second price
             // band, and treating it as a second item invents a charge nobody paid.
-            if (isStruckOriginal(bands, i, lastOpened, itemsEndIndex, tuning)) {
+            if (isStruckOriginal(bands, i, lastOpened, itemsEndIndex)) {
                 continue;
             }
 
@@ -67,13 +70,13 @@ final class BlockAssembler {
                 // A struck-through original does not end the block either: the lines below
                 // it, the quantity and the savings note, still belong to this item.
                 if (next.hasLinePrice()
-                        && !isStruckOriginal(bands, j, i, itemsEndIndex, tuning)) {
+                        && !isStruckOriginal(bands, j, i, itemsEndIndex)) {
                     end = j;
                     break;
                 }
             }
 
-            ParsedItem item = buildItem(bands, i, end, tuning);
+            ParsedItem item = buildItem(bands, i, end);
             if (item != null) {
                 items.add(item);
                 lastOpened = i;
@@ -110,9 +113,8 @@ final class BlockAssembler {
      * worth avoiding: an invented row is visible in a list the user reads, a missing one is
      * a total that is quietly short.
      */
-    private static boolean isStruckOriginal(List<TextBand> bands, int candidateIndex,
-                                            int openIndex, int itemsEndIndex,
-                                            ParseTuning tuning) {
+    private boolean isStruckOriginal(List<TextBand> bands, int candidateIndex,
+                                            int openIndex, int itemsEndIndex) {
         if (openIndex < 0 || candidateIndex <= openIndex) {
             return false;
         }
@@ -137,13 +139,13 @@ final class BlockAssembler {
 
         // Nothing between the two bands, nor on the candidate itself, may be a product name.
         for (int index = openIndex + 1; index <= candidateIndex; index++) {
-            if (hasOwnName(bands.get(index), tuning)) {
+            if (hasOwnName(bands.get(index))) {
                 return false;
             }
         }
 
         // The row has to say how much came off, and the figure has to match.
-        long savings = savingsCentsInCard(bands, openIndex, itemsEndIndex, tuning);
+        long savings = savingsCentsInCard(bands, openIndex, itemsEndIndex);
         return savings >= 0 && candidateCents - chargedCents == savings;
     }
 
@@ -151,16 +153,15 @@ final class BlockAssembler {
      * True when a band contributes text to a product name: anything in the name column that
      * is not a unit price, a quantity, a multipack count or price commentary.
      */
-    private static boolean hasOwnName(TextBand band, ParseTuning tuning) {
+    private boolean hasOwnName(TextBand band) {
         if (band.kind() != TextBand.Kind.CONTENT) {
             return false;
         }
-        for (String line : nameZoneLines(band, tuning)) {
-            if (QTY.matcher(line).matches()
-                    || MULTIPACK.matcher(line).matches()
+        for (String line : nameZoneLines(band)) {
+            if (vocabulary.quantityIn(line) > 0
                     || PriceTokens.isBareUnitPriceLine(line)
-                    || RowAnnotations.isPriceCommentary(line)
-                    || ChromeFilter.isChrome(line)) {
+                    || vocabulary.isRowMetadata(line)
+                    || vocabulary.isChrome(line)) {
                 continue;
             }
             return true;
@@ -172,8 +173,8 @@ final class BlockAssembler {
      * The savings amount printed anywhere in the item card that opened at
      * {@code openIndex}, in cents, or -1 when the card prints none.
      */
-    private static long savingsCentsInCard(List<TextBand> bands, int openIndex,
-                                           int itemsEndIndex, ParseTuning tuning) {
+    private long savingsCentsInCard(List<TextBand> bands, int openIndex,
+                                           int itemsEndIndex) {
         for (int index = openIndex; index < itemsEndIndex; index++) {
             TextBand band = bands.get(index);
             if (band.kind() == TextBand.Kind.SECTION || band.kind() == TextBand.Kind.SUMMARY) {
@@ -183,26 +184,26 @@ final class BlockAssembler {
             if (index > openIndex && band.kind() == TextBand.Kind.CHROME) {
                 return -1L;
             }
-            for (String line : nameZoneLines(band, tuning)) {
-                long savings = RowAnnotations.savingsCentsIn(line);
+            for (String line : nameZoneLines(band)) {
+                long savings = vocabulary.savingsCentsIn(line);
                 if (savings >= 0) {
                     return savings;
                 }
             }
             // A second product name means the card is over.
-            if (index > openIndex && hasOwnNameIgnoringSavings(band, tuning)) {
+            if (index > openIndex && hasOwnNameIgnoringSavings(band)) {
                 return -1L;
             }
         }
         return -1L;
     }
 
-    private static boolean hasOwnNameIgnoringSavings(TextBand band, ParseTuning tuning) {
-        return hasOwnName(band, tuning);
+    private boolean hasOwnNameIgnoringSavings(TextBand band) {
+        return hasOwnName(band);
     }
 
     /** The band's text, split per line, restricted to the name column. */
-    private static List<String> nameZoneLines(TextBand band, ParseTuning tuning) {
+    private List<String> nameZoneLines(TextBand band) {
         List<String> lines = new ArrayList<>();
         StringBuilder line = new StringBuilder();
         List<OcrElement> elements = band.elements();
@@ -211,7 +212,7 @@ final class BlockAssembler {
             if (element == band.linePrice()) {
                 continue;
             }
-            if (!inNameZone(element, tuning)) {
+            if (!inNameZone(element)) {
                 continue;
             }
             if (line.length() > 0) {
@@ -231,7 +232,7 @@ final class BlockAssembler {
      * thumbnail, and ML Kit reads the packaging inside it, so a bag of apples offers up
      * "GALA APPLES" as though it were part of the name.
      */
-    private static boolean inNameZone(OcrElement element, ParseTuning tuning) {
+    private boolean inNameZone(OcrElement element) {
         int centre = element.centerXPermille();
         return centre >= tuning.nameZoneStartPermille
                 && centre < tuning.nameZoneEndPermille;
@@ -243,7 +244,7 @@ final class BlockAssembler {
      * <p>Every element of every band in the block counts, including the thumbnail, because
      * the point is to show the user the row as they saw it rather than just its text.
      */
-    private static ItemBounds measure(List<TextBand> bands, int startIndex, int endIndex) {
+    private ItemBounds measure(List<TextBand> bands, int startIndex, int endIndex) {
         int left = Integer.MAX_VALUE, top = Integer.MAX_VALUE;
         int right = Integer.MIN_VALUE, bottom = Integer.MIN_VALUE;
         int imageIndex = -1;
@@ -273,8 +274,7 @@ final class BlockAssembler {
                 (right * 1000) / width, (bottom * 1000) / height);
     }
 
-    private static ParsedItem buildItem(List<TextBand> bands, int startIndex, int endIndex,
-                                        ParseTuning tuning) {
+    private ParsedItem buildItem(List<TextBand> bands, int startIndex, int endIndex) {
         TextBand priceBand = bands.get(startIndex);
         long lineTotalCents;
         try {
@@ -289,7 +289,7 @@ final class BlockAssembler {
         // drops its tail: "Cheese Snack, 9 oz Bag, 12" loses the "12", and
         // "Finely Shredded Cheese, 8 oz" loses the "8 oz". The real boundary is the price
         // column, and this block's own line price marks exactly where that starts.
-        final int nameBoundaryPx = nameBoundary(priceBand, tuning);
+        final int nameBoundaryPx = nameBoundary(priceBand);
 
         List<String> nameLines = new ArrayList<>();
         List<String> rawLines = new ArrayList<>();
@@ -348,12 +348,9 @@ final class BlockAssembler {
         // SPEC 8.3.7 and 8.3.8: strip the metadata lines, keeping the quantity.
         List<String> kept = new ArrayList<>();
         for (String candidate : nameLines) {
-            Matcher qty = QTY.matcher(candidate);
-            if (qty.matches()) {
-                quantity = Math.max(1, Integer.parseInt(qty.group(1)));
-                continue;
-            }
-            if (MULTIPACK.matcher(candidate).matches()) {
+            int printedQuantity = vocabulary.quantityIn(candidate);
+            if (printedQuantity > 0) {
+                quantity = printedQuantity;
                 continue;
             }
             if (PriceTokens.isBareUnitPriceLine(candidate)) {
@@ -364,7 +361,7 @@ final class BlockAssembler {
             }
             // "$1.20 from savings" and "Ordered price $13.97" describe the price, they are
             // not part of what the thing is called. Both stay in rawOcrText.
-            if (RowAnnotations.isPriceCommentary(candidate)) {
+            if (vocabulary.isRowMetadata(candidate)) {
                 continue;
             }
             kept.add(candidate);
@@ -382,7 +379,7 @@ final class BlockAssembler {
             // would quietly lose a charge: the totals would come out short with nothing to
             // point at. So the row is kept, named as unread, and flagged. SPEC 7.6.9 then
             // refuses to leave the review screen until the user has typed what it was.
-            if (isNearEdge(priceBand, tuning)) {
+            if (isNearEdge(priceBand)) {
                 return null;
             }
             name = com.householdsplitter.core.parse.model.ParsedItem.NAME_NOT_READ;
@@ -397,18 +394,18 @@ final class BlockAssembler {
                 .sourceSection(priceBand.sectionName())
                 .imageIndex(priceBand.imageIndex())
                 .bounds(measure(bands, startIndex, endIndex))
-                .scope(SectionHeaders.isExcludedSection(priceBand.sectionName())
+                .scope(vocabulary.isExcludedSection(priceBand.sectionName())
                         ? Scope.EXCLUDED : Scope.UNASSIGNED);
 
         ConfidenceRules.apply(builder, name, quantity, lineTotalCents, lowestConfidence,
-                priceBand.strikeThroughResolved(), priceBand.sectionName(), tuning);
+                priceBand.strikeThroughResolved(), priceBand.sectionName(), vocabulary);
         if (nameMissing) {
             builder.flag(com.householdsplitter.core.parse.model.ReviewReason.NAME_NOT_READ);
         }
         return builder.build();
     }
 
-    private static boolean isNearEdge(TextBand band, ParseTuning tuning) {
+    private boolean isNearEdge(TextBand band) {
         int top = band.topPermille();
         int cropTop = tuning.headerZonePermille;
         int cropBottom = 1000 - tuning.bottomCropPermille;
@@ -416,7 +413,7 @@ final class BlockAssembler {
                 || top >= cropBottom - tuning.edgeZonePermille;
     }
 
-    private static int centerX(OcrElement element) {
+    private int centerX(OcrElement element) {
         return (element.left() + element.right()) / 2;
     }
 
@@ -424,7 +421,7 @@ final class BlockAssembler {
      * Where the name column ends: just left of this block's line price, with a small gutter.
      * Falls back to the tuning fraction when the price sits somewhere unexpected.
      */
-    private static int nameBoundary(TextBand priceBand, ParseTuning tuning) {
+    private int nameBoundary(TextBand priceBand) {
         OcrElement price = priceBand.linePrice();
         int imageWidth = price.imageWidth();
         int fractionBoundary = (imageWidth * tuning.nameZoneEndPermille) / 1000;
@@ -438,7 +435,7 @@ final class BlockAssembler {
      * Walmart repeats the pack size on its own metadata line under a name that already
      * ends in it.
      */
-    private static List<String> dropRedundantSizeFragments(List<String> lines) {
+    private List<String> dropRedundantSizeFragments(List<String> lines) {
         List<String> result = new ArrayList<>(lines);
         for (int i = result.size() - 1; i >= 0; i--) {
             String candidate = result.get(i).trim();

@@ -1,4 +1,4 @@
-package com.householdsplitter.core.parse.walmart;
+package com.householdsplitter.core.parse.layout;
 
 /**
  * Every geometric and threshold constant the Walmart parser uses, in one place.
@@ -89,8 +89,64 @@ public final class ParseTuning {
         this.edgeZonePermille = builder.edgeZonePermille;
     }
 
+    /** Walmart's calibration, and the historical default. */
     public static ParseTuning defaults() {
+        return walmart();
+    }
+
+    /**
+     * Walmart's calibration, measured on 899 x 1959 captures.
+     *
+     * <p>The builder's own initial values are Walmart's for historical reasons, so this
+     * states them again rather than relying on that. A second store arriving is exactly
+     * when an implicit default stops being harmless.
+     */
+    public static ParseTuning walmart() {
         return builder().build();
+    }
+
+    /**
+     * Amazon Fresh's calibration, measured on real order pages at three capture widths
+     * (921, 1079 and 1080 pixels).
+     *
+     * <p>Every number here came off the pixels rather than off an estimate, and the reason
+     * to trust them is that the same permille figures fell out of all three widths: name
+     * text begins at 177 to 179 permille on every page, the quantity line at 178, and the
+     * price column at 877. That is the resolution independence SPEC 11.9 asks for,
+     * confirmed rather than assumed.
+     *
+     * <p>Where it differs from Walmart, and why:
+     *
+     * <ul>
+     *   <li>The name column starts much further left, 177 against Walmart's 290, because
+     *       Amazon's product thumbnail is smaller. It occupies 43 to 140 permille, so 160
+     *       clears the image without reaching the text. Without a left edge here ML Kit
+     *       reads the packaging in the thumbnail into the product name.
+     *   <li>The name column runs much further right. Amazon wraps long titles across four
+     *       or five lines and indents a weight note under them; the widest text measured
+     *       reached 733 permille, against Walmart's 650 limit. Cutting at Walmart's
+     *       boundary would truncate names.
+     *   <li>The price column is further right and narrower, 877 to 960 permille.
+     *   <li>The bottom crop is much deeper, 90 against 30. Amazon keeps a five-icon
+     *       navigation bar pinned over the page, and on a capture where the list runs to
+     *       the bottom of the screen those icons land on the same horizontal band as the
+     *       last row's text, merging chrome into content.
+     * </ul>
+     *
+     * <p>The name and price zones meet at 800 rather than leaving a gap between them. Zone
+     * membership is decided on an element's centre, so a gap is a band of positions that
+     * belongs to neither column, and Amazon puts a struck-through delivery fee centred at
+     * 792 permille. It is read correctly regardless, because the charged amount is the
+     * right-most on the band rather than the one in a particular zone, but a dead zone
+     * between the columns is a trap worth not setting.
+     */
+    public static ParseTuning amazonFresh() {
+        return builder()
+                .bottomCropPermille(90)
+                .nameZoneStartPermille(160)
+                .nameZoneEndPermille(800)
+                .linePriceZoneStartPermille(800)
+                .build();
     }
 
     public static Builder builder() {

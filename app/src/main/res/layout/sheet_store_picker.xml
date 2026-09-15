@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Asks which store an order came from, before any screenshot is taken.
+
+  Before rather than after on purpose: the store selects the column geometry the parser
+  measures with, so it has to be known at parse time, not corrected afterwards.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/space_l"
+    android:paddingTop="@dimen/space_l"
+    android:paddingEnd="@dimen/space_l"
+    android:paddingBottom="@dimen/space_l">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/store_picker_title"
+        android:textAppearance="@style/Text.ScreenTitle" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_xs"
+        android:text="@string/store_picker_subtitle"
+        android:textAppearance="@style/Text.Caption" />
+
+    <LinearLayout
+        android:id="@+id/storeOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:orientation="vertical" />
+</LinearLayout>

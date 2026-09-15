@@ -1,5 +1,7 @@
 package com.householdsplitter.core.parse.walmart;
 
+import com.householdsplitter.core.parse.layout.Normalise;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,13 +74,7 @@ final class ChromeFilter {
 
     /** Lowercase, collapse whitespace, drop trailing punctuation. */
     static String normalise(String text) {
-        if (text == null) {
-            return "";
-        }
-        String value = text.toLowerCase().trim();
-        value = value.replaceAll("\\s+", " ");
-        value = value.replaceAll("[\\.,;:•·]+$", "");
-        return value.trim();
+        return Normalise.text(text);
     }
 
     static boolean isChrome(String text) {

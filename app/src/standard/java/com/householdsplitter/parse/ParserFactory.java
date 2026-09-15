@@ -2,6 +2,8 @@ package com.householdsplitter.parse;
 
 import android.content.Context;
 
+import com.householdsplitter.core.parse.StoreKind;
+
 /**
  * SPEC 4.10: the default flavour has no network permission and no cloud parser on its
  * classpath at all, so there is nothing to accidentally enable. The Settings toggle reads
@@ -21,6 +23,10 @@ public final class ParserFactory {
     }
 
     public static ReceiptParser create(Context context, boolean preferCloud) {
-        return new MlKitReceiptParser(context);
+        return create(context, preferCloud, StoreKind.WALMART);
+    }
+
+    public static ReceiptParser create(Context context, boolean preferCloud, StoreKind store) {
+        return new MlKitReceiptParser(context, store);
     }
 }

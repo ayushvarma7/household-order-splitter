@@ -44,17 +44,30 @@ com.householdsplitter.core
 │   └── NoParticipantsException.java, UnassignedItemsException   §6.4.1, §7.10.6
 ├── parse/
 │   ├── ReceiptParser.java          interface, §8.1 / §8.10.1
+│   ├── LayoutParser.java           the second-store seam, §3.5
+│   ├── StoreKind.java              WALMART | AMAZON_FRESH; chosen by the user, never guessed
 │   ├── model/  ParsedOrder, ParsedItem, ParsedAdjustments, OcrElement, ReviewReason
-│   ├── walmart/
-│   │   ├── WalmartLayoutParser     drives the pipeline over a List<OcrElement>
+│   ├── layout/                     store-agnostic: the shape of the job
+│   │   ├── ReceiptLayoutParser     drives the pipeline over a List<OcrElement>
+│   │   ├── StoreVocabulary         what a store prints, in words
+│   │   ├── ParseTuning             where a store prints it: walmart() and amazonFresh()
 │   │   ├── PriceTokens             §8.3.1 – §8.3.3   line price vs unit price
 │   │   ├── BlockAssembler          §8.3.4 – §8.3.10  the row-grouping algorithm
-│   │   ├── ChromeFilter            §8.4  incl. carousel §8.4.8 and timer §8.4.7
-│   │   ├── SectionHeaders          §8.5  incl. the unit-count trap §8.5.4
-│   │   ├── OrderFieldExtractor     §8.6  incl. struck-through §8.6.4, Total vs Subtotal §8.6.8
+│   │   ├── BandBuilder, TextBand   grouping elements by vertical overlap
+│   │   ├── BandAmounts             §8.6.4  the right-most amount on a band is the charge
 │   │   ├── Stitcher                §8.7  dedupe, edge fragments, summary preference
 │   │   ├── ConfidenceRules         §8.8
-│   │   └── ParseTuning             every geometric fraction as a named constant §8.2.3, §11.9
+│   │   └── Normalise               the one text-tidying rule every vocabulary matches on
+│   ├── walmart/                    Walmart's wording only
+│   │   ├── WalmartVocabulary       implements StoreVocabulary
+│   │   ├── WalmartLayoutParser     ReceiptLayoutParser + WalmartVocabulary
+│   │   ├── ChromeFilter            §8.4  incl. carousel §8.4.8 and timer §8.4.7
+│   │   ├── SectionHeaders          §8.5  incl. the unit-count trap §8.5.4
+│   │   ├── OrderFieldExtractor     §8.6  Total vs Subtotal §8.6.8
+│   │   └── RowAnnotations          proves a struck-through original arithmetically
+│   ├── amazon/                     Amazon Fresh's wording only
+│   │   ├── AmazonFreshVocabulary   implements StoreVocabulary
+│   │   └── AmazonFreshLayoutParser ReceiptLayoutParser + AmazonFreshVocabulary
 │   └── Reconciler.java             §8.9  advisory only, never a gate
 ├── suggest/
 │   └── NameNormalizer.java         §9.1
@@ -85,7 +98,7 @@ com.householdsplitter
 │                                   AssignmentRepository, ExportRepository, SettingsRepository
 ├── prefs/SettingsStore.java        §7.14.1 – §7.14.3, §7.14.6
 ├── ocr/MlKitTextSource.java        §8.2.1  the only ML Kit-aware class
-├── parse/MlKitReceiptParser.java   glue: Uri -> bitmap -> OcrElement -> WalmartLayoutParser
+├── parse/MlKitReceiptParser.java   glue: Uri -> bitmap -> OcrElement -> LayoutParser
 ├── suggest/AssignmentMemoryService.java   §9.2 – §9.5
 ├── backup/BackupService.java       §7.14.4, §7.14.5
 └── ui/
@@ -240,8 +253,43 @@ and totals in a footer, run through the real `SplitCalculator`. The test contain
 no branch on which store it is, and no new type. If store knowledge is later pushed into
 the domain layer, it stops compiling.
 
-No real second store is shipped. Guessing at a layout with no screenshots to check against
-is how a parser ends up silently wrong about money.
+**4.3b Amazon Fresh is the second store, and it split the seam in two.** The interface was
+the right boundary but the wrong granularity: `LayoutParser` let a second store be added
+without touching the domain layer, yet it would have meant a second copy of the whole
+pipeline, duplicating the money path so that a bug fixed in one copy stayed live in the
+other. So the pipeline moved down into `parse/layout/ReceiptLayoutParser` and what a store
+actually owns became two much smaller things: `StoreVocabulary` for the wording it prints
+and `ParseTuning` for where it prints it. `AmazonFreshLayoutParser` is four lines.
+
+The 204 Walmart tests passing unchanged across that move is the evidence it was a
+refactor and not a rewrite.
+
+Every figure in `ParseTuning.amazonFresh()` was measured off real order pages rather than
+estimated, and the reason to trust them is that the same permille values fell out of three
+different capture widths (921, 1079 and 1080 pixels): name text starts at 177 to 179 permille
+on every page, the quantity line at 178, the price column at 877. That is §11.9's
+resolution independence confirmed rather than assumed.
+
+Two things about Amazon needed real screenshots to get right, and neither could have been
+guessed:
+
+- Its summary labels are all different ("Item(s) Subtotal", "Grand Total", "Estimated tax
+  to be collected"), and it prints a line, "Total before tax", that looks like a total and
+  is not a charge. Reading the labels is not cosmetic: they feed `Reconciler`, which is the
+  only arithmetic check on a parse.
+- The end of the item region has to be anchored on the "Order summary" heading, not on the
+  first summary label the parser happens to recognise. Amazon prints "Item(s) Subtotal"
+  *above* "Delivery Fee", so anchoring on the first recognised label leaves the subtotal
+  inside the item region with $38.93 in the price column, where it opens a block and bills
+  the household for a product called "Item(s) Subtotal".
+
+`AmazonFreshFixtureTest.theWalmartReaderMisreadsAnAmazonPage` is the case for asking the
+user which store it is instead of detecting it. Given Amazon's summary page, the Walmart
+reader does not throw or produce obvious nonsense: it reads no order total at all and
+invents $38.93 of charge nobody bought. A detector that got this wrong would silently build
+that same order, and the two layouts are genuinely hard to tell apart cheaply, since what
+distinguishes them is the summary wording, which is the most fragile part of either
+vocabulary. Told the store, a vocabulary is free to be strict.
 
 **4.3 No floating point in the money path.** `Cents` parses and formats through `long`
 and, only at the display boundary, `BigDecimal` with `NumberFormat` for §11.13. No
