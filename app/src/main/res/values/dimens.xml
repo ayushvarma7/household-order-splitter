@@ -68,4 +68,8 @@
 
     <!-- The store chip is outlined, not filled, so its border carries the identity. -->
     <dimen name="store_pill_stroke">1dp</dimen>
+
+    <!-- Material caps a navigation drawer at 320dp. Left to wrap_content it grew to 84%
+         of a 1080px screen, which stops being a drawer and becomes a page. -->
+    <dimen name="drawer_width">300dp</dimen>
 </resources>

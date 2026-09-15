@@ -66,8 +66,16 @@ public class ServiceLocator {
         return currentHouseholdId;
     }
 
+    /**
+     * Sets the group being looked at, and remembers it across restarts.
+     *
+     * <p>The field stays because everything reads it on the main thread and a preference
+     * read per call would be silly. Writing through means the choice is not lost when the
+     * process is, which is the difference between switching groups and merely filtering.
+     */
     public void currentHouseholdId(long value) {
         this.currentHouseholdId = value;
+        settings.currentHouseholdId(value);
     }
 
     public AppExecutors executors() {

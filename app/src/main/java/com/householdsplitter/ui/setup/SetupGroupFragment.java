@@ -26,6 +26,26 @@ import com.householdsplitter.ui.common.Insets;
  */
 public class SetupGroupFragment extends BaseFragment {
 
+    /**
+     * True when this screen is making an additional group rather than the first one.
+     *
+     * <p>The same screen does both jobs, because naming a group and then adding people to
+     * it is the same work whether or not one already exists. What changes is the wording:
+     * a first run explains what the app is, a second group does not need telling again.
+     */
+    public static final String ARG_ANOTHER_GROUP = "another_group";
+
+    public static Bundle argsForAnotherGroup() {
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_ANOTHER_GROUP, true);
+        return args;
+    }
+
+    private boolean isAnotherGroup() {
+        return getArguments() != null && getArguments().getBoolean(ARG_ANOTHER_GROUP, false);
+    }
+
+
     private FragmentSetupGroupBinding binding;
     private SetupGroupViewModel model;
 
@@ -72,6 +92,10 @@ public class SetupGroupFragment extends BaseFragment {
                 binding.continueButton.setEnabled(Boolean.TRUE.equals(enabled)));
 
         binding.continueButton.setOnClickListener(v -> model.onContinue());
+
+        if (isAnotherGroup()) {
+            binding.setupIntro.setText(R.string.setup_group_intro_another);
+        }
 
         model.error().observe(getViewLifecycleOwner(), message -> {
             if (message != null) {

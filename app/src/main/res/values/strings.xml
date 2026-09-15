@@ -449,4 +449,14 @@
     <string name="settings_parser_report_open">Open the report</string>
     <string name="settings_parser_report_summary">%1$s of rows read correctly, across %2$d judged</string>
     <string name="settings_parser_report_empty">Nothing judged yet. Import an order and review it.</string>
+
+    <!-- Navigation drawer -->
+    <string name="drawer_open">Open menu</string>
+    <string name="drawer_groups">Groups</string>
+    <string name="drawer_new_group">New group</string>
+    <string name="drawer_rules">Standing rules</string>
+    <string name="drawer_current_group">Current group</string>
+    <string name="drawer_people_count">%1$d people</string>
+    <string name="drawer_switched">Now showing %1$s</string>
+    <string name="setup_group_intro_another">Name this group. Its orders and people are kept separate from your other groups.</string>
 </resources>

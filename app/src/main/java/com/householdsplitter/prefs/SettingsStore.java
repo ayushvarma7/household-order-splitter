@@ -24,6 +24,7 @@ public class SettingsStore {
     private static final String KEY_WELCOME_SEEN = "welcome_seen";
     private static final String KEY_THEME = "theme_mode";
     private static final String KEY_LAST_STORE = "last_store";
+    private static final String KEY_CURRENT_HOUSEHOLD = "current_household";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -172,5 +173,20 @@ public class SettingsStore {
     public void lastStore(StoreKind store) {
         preferences.edit().putString(KEY_LAST_STORE,
                 (store == null ? StoreKind.WALMART : store).name()).apply();
+    }
+
+    /**
+     * Which group the user was last looking at.
+     *
+     * <p>Zero means "not chosen", which is what every existing install reports and what
+     * sends the app back to its previous behaviour of opening whichever group exists.
+     * Only somebody who has actually switched groups ever has a value here.
+     */
+    public long currentHouseholdId() {
+        return preferences.getLong(KEY_CURRENT_HOUSEHOLD, 0L);
+    }
+
+    public void currentHouseholdId(long householdId) {
+        preferences.edit().putLong(KEY_CURRENT_HOUSEHOLD, householdId).apply();
     }
 }

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.R;
+import com.householdsplitter.ui.MainActivity;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.core.calc.SplitCalculator;
 import com.householdsplitter.core.calc.result.SplitResult;
@@ -154,28 +155,16 @@ public class HomeFragment extends BaseFragment {
         binding.newOrderFab.setOnClickListener(v -> startNewOrder());
         binding.emptyStateButton.setOnClickListener(v -> startNewOrder());
 
-        binding.toolbar.inflateMenu(R.menu.menu_home);
-        binding.toolbar.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.action_analytics) {
-                NavHostFragment.findNavController(this).navigate(R.id.analyticsFragment);
-                return true;
+        // A hamburger rather than an overflow. Everything that used to hide behind the
+        // three dots now lives in the drawer alongside the group switcher, because "which
+        // group am I in" and "what else can I do" are the same question at the top level,
+        // and an overflow menu cannot answer the first one at all.
+        binding.toolbar.setNavigationIcon(R.drawable.ic_menu);
+        binding.toolbar.setNavigationContentDescription(R.string.drawer_open);
+        binding.toolbar.setNavigationOnClickListener(v -> {
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).openDrawer();
             }
-            if (id == R.id.action_members) {
-                Bundle args = new Bundle();
-                args.putBoolean(SetupMembersFragment.ARG_MANAGE_MODE, true);
-                NavHostFragment.findNavController(this).navigate(R.id.setupMembersFragment, args);
-                return true;
-            }
-            if (id == R.id.action_settings) {
-                NavHostFragment.findNavController(this).navigate(R.id.settingsFragment);
-                return true;
-            }
-            if (id == R.id.action_export_all) {
-                NavHostFragment.findNavController(this).navigate(R.id.settingsFragment);
-                return true;
-            }
-            return false;
         });
     }
 

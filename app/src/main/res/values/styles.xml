@@ -158,4 +158,17 @@
         <item name="android:textAppearance">@style/TextAppearance.Material3.BodyMedium</item>
         <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
+
+    <!-- A row in the navigation drawer. Margin, never padding, on the height, per the
+         layout rule the toolbars had to learn the hard way on a Pixel 8. -->
+    <style name="Widget.Splitter.DrawerItem" parent="">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_l</item>
+        <item name="android:paddingEnd">@dimen/space_l</item>
+        <item name="android:drawablePadding">@dimen/space_m</item>
+        <item name="android:textAppearance">@style/Text.Body</item>
+        <item name="android:drawableTint">?attr/colorOnSurfaceVariant</item>
+    </style>
 </resources>
