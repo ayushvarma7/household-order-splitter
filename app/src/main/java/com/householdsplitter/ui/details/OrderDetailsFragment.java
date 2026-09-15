@@ -148,6 +148,10 @@ public class OrderDetailsFragment extends BaseFragment {
         // SPEC 7.7.2
         refreshMarkers();
         bound = true;
+        // Rendered here rather than left to the field watchers. They only fire when an
+        // amount actually changes, so an order whose figures are all zero, which is every
+        // hand-created order, would otherwise never draw the strip at all.
+        refreshReconciliation();
     }
 
     private String marker(OrderField field) {
