@@ -17,8 +17,9 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.BuildConfig;
-import android.widget.Toast;
 
+import com.householdsplitter.core.quality.ParserScorecard;
+import java.util.Locale;
 import com.householdsplitter.R;
 import com.householdsplitter.backup.AutoBackupService;
 import com.householdsplitter.backup.BackupService;
@@ -33,9 +34,6 @@ import com.householdsplitter.ui.common.StateColors;
 
 /** S14. SPEC 7.14. */
 public class SettingsFragment extends BaseFragment {
-
-    /** Seven, which is Android's own gesture for revealing developer options. */
-    private static final int TAPS_TO_REVEAL = 7;
 
     private FragmentSettingsBinding binding;
     private SettingsStore settings;
@@ -234,7 +232,7 @@ public class SettingsFragment extends BaseFragment {
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
         // SPEC 7.14.6
-        bindParserReportGesture();
+        bindParserReport();
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
     }
@@ -438,27 +436,30 @@ public class SettingsFragment extends BaseFragment {
     }
 
     /**
-     * The parser report, behind a deliberate gesture rather than a button.
+     * The reader's own report, opened on purpose and not otherwise.
      *
-     * <p>Hidden rather than locked, and the distinction is the answer to whether this needs
-     * a password. There is no account here, no server and no second device: the data never
-     * leaves the phone, and the phone already has a lock screen. A password would be a new
-     * secret to store and lose in exchange for protection that is already in place. What
-     * this actually needs is to stay out of the way of a housemate who opened the app to
-     * find out what they owe, and seven taps on the About line does that.
+     * <p>This was a hidden gesture, seven taps on the About line, on the theory that a
+     * housemate opening the app to find out what they owe should not be shown the parser's
+     * accuracy. That was the right goal and the wrong mechanism: eight taps on unstyled
+     * caption text with no ripple and no affordance is not discoverable by the person who
+     * asked for it either. A card that states the headline figure and opens the detail on
+     * request is still only ever read deliberately, and can actually be found.
+     *
+     * <p>No password, and none is needed. There is no account here, no server and no
+     * second device; the data never leaves the phone, which already has a lock screen.
      */
-    private void bindParserReportGesture() {
-        final int[] taps = {0};
-        binding.aboutText.setOnClickListener(v -> {
-            taps[0]++;
-            if (taps[0] == TAPS_TO_REVEAL) {
-                Toast.makeText(requireContext(), R.string.parser_report_revealed,
-                        Toast.LENGTH_SHORT).show();
+    private void bindParserReport() {
+        binding.parserReportButton.setOnClickListener(v -> showParserReport());
+        locator().parserQualityService().report(locator().currentHouseholdId(), report -> {
+            if (!isAdded() || binding == null) {
                 return;
             }
-            if (taps[0] > TAPS_TO_REVEAL) {
-                showParserReport();
-            }
+            int permille = report.overall.accuracyPermille();
+            binding.parserReportSummary.setText(permille == ParserScorecard.UNKNOWN
+                    ? getString(R.string.settings_parser_report_empty)
+                    : getString(R.string.settings_parser_report_summary,
+                            String.format(Locale.US, "%d.%d%%", permille / 10, permille % 10),
+                            report.overall.judged()));
         });
     }
 

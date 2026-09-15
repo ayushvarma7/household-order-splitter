@@ -444,5 +444,9 @@
     <string name="parser_report_title">How the reader is doing</string>
     <string name="parser_report_subtitle">Measured by what you changed afterwards. A row you left alone is a row it got right.</string>
     <string name="parser_report_share">Share this report</string>
-    <string name="parser_report_revealed">Parser report unlocked. Tap About again to open it.</string>
+
+    <string name="settings_parser_report">How the reader is doing</string>
+    <string name="settings_parser_report_open">Open the report</string>
+    <string name="settings_parser_report_summary">%1$s of rows read correctly, across %2$d judged</string>
+    <string name="settings_parser_report_empty">Nothing judged yet. Import an order and review it.</string>
 </resources>
