@@ -122,14 +122,28 @@ com.householdsplitter
 Each `ui/<screen>/` package holds exactly `XFragment`, `XViewModel`, and its adapters.
 Fragments hold no money math (§4.5).
 
-### Source sets and flavours
+### Source sets
 
-`:app` gets two product flavours, per §4.10:
+One build variant. §4.10 was originally satisfied with two product flavours, a default
+`standard` with no network and a `cloud` one carrying `LlmReceiptParser`, the optional
+parser of §8.10. The cloud flavour has been removed.
 
-- `standard` (default): no `INTERNET` permission, no `LlmReceiptParser` on the classpath.
-- `cloud`: adds `INTERNET`, and `src/cloud/java/.../parse/LlmReceiptParser.java` (§8.10).
-  The key comes from `local.properties` into `BuildConfig`; `local.properties` is
-  already in `.gitignore`.
+It was never built and never had a key, so in practice the app had a whole second source
+set, a second manifest and a parser to keep in step with `ParsedOrder` and later with
+`StoreKind`, which by then it was not. It was also the only file in the tree that could
+open a socket, in an app whose single loudest claim is that it cannot, and the only reason
+the repository referred to a model provider at all.
+
+The escape hatch it represented has been overtaken by events. When a second store arrived,
+what read it was a new `StoreVocabulary` and column positions measured off real pages:
+checkable, testable, offline, and reviewable as a diff. A model reading a receipt is none
+of those.
+
+`src/main` now strips `INTERNET` and `ACCESS_NETWORK_STATE` with `tools:node="remove"`,
+rather than merely not asking for them. ML Kit's own manifest declares `INTERNET` so its
+unbundled variant can fetch models, and a merged manifest would inherit it. The shipped
+APK contains no occurrence of the string `INTERNET` at all, which is checkable with
+`aapt2` and is the difference between a guarantee and an intention.
 
 ---
 
@@ -237,7 +251,7 @@ repositories. A `ServiceLocator` held by the `Application`, plus one
 lets the JVM tests in `:core` construct everything directly. Used everywhere, not mixed.
 
 **4.2 JSON library: Gson** (§4.11 allows one).
-Reason: needed for backup/restore (§7.14.4) and the cloud parser (§8.10.2). The bundled
+Reason: needed for backup and restore (§7.14.4). The bundled
 `org.json` is stubbed out in JVM unit tests, so backup round-trip tests could not run.
 
 **4.3a The second-store seam is a named interface** (§3.5 requires that a second store be

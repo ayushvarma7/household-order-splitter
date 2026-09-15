@@ -15,7 +15,6 @@ public class SettingsStore {
 
     private static final String FILE = "settings";
     private static final String KEY_ALLOCATION = "allocation_mode";
-    private static final String KEY_PARSER = "parser_cloud";
     private static final String KEY_CURRENCY = "currency_symbol";
     private static final String KEY_WORKBOOK_URI = "workbook_uri";
     private static final String KEY_WORKBOOK_AUTO = "workbook_auto";
@@ -50,15 +49,6 @@ public class SettingsStore {
     }
 
     /** SPEC 7.14.2: on-device by default. */
-    public boolean useCloudParser() {
-        return preferences.getBoolean(KEY_PARSER, false);
-    }
-
-    public void useCloudParser(boolean value) {
-        preferences.edit().putBoolean(KEY_PARSER, value).apply();
-    }
-
-    /** SPEC 7.14.3: defaults to the device locale's symbol. */
     public String currencySymbol() {
         return preferences.getString(KEY_CURRENCY, defaultCurrencySymbol);
     }

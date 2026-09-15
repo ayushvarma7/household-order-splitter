@@ -26,7 +26,6 @@ import com.householdsplitter.core.calc.AllocationMode;
 import com.householdsplitter.databinding.FragmentSettingsBinding;
 import com.householdsplitter.export.ExportService;
 import com.householdsplitter.export.WorkbookService;
-import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
@@ -146,17 +145,6 @@ public class SettingsFragment extends BaseFragment {
         binding.allocationGroup.setOnCheckedChangeListener((group, checkedId) ->
                 settings.allocationMode(checkedId == R.id.allocationEqual
                         ? AllocationMode.EQUAL : AllocationMode.PROPORTIONAL));
-
-        // SPEC 7.14.2 and 8.10.3: without a key the cloud option disables itself and says why.
-        boolean cloudAvailable = ParserFactory.isCloudAvailable();
-        binding.parserCloud.setEnabled(cloudAvailable);
-        binding.parserCloud.setChecked(cloudAvailable && settings.useCloudParser());
-        binding.parserOnDevice.setChecked(!binding.parserCloud.isChecked());
-        binding.parserNote.setText(cloudAvailable
-                ? getString(R.string.settings_parser_cloud_available)
-                : ParserFactory.unavailableReason());
-        binding.parserGroup.setOnCheckedChangeListener((group, checkedId) ->
-                settings.useCloudParser(checkedId == R.id.parserCloud));
 
         // SPEC 7.14.3
         binding.currencyInput.setText(settings.currencySymbol());

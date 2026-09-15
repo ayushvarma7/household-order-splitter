@@ -167,10 +167,6 @@
     <string name="settings_allocation">Tax and fees</string>
     <string name="settings_allocation_proportional">Split in proportion to what each person spent</string>
     <string name="settings_allocation_equal">Split equally between everyone</string>
-    <string name="settings_parser">Reading screenshots</string>
-    <string name="settings_parser_on_device">On this device</string>
-    <string name="settings_parser_cloud">In the cloud</string>
-    <string name="settings_parser_cloud_available">The cloud reader sends your screenshots to a model to be read.</string>
     <string name="settings_currency">Currency</string>
     <string name="settings_currency_symbol">Symbol</string>
     <string name="settings_data">Your data</string>

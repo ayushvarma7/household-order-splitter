@@ -188,6 +188,6 @@ public class ServiceLocator {
      * order. A cached parser would read the second order with the first order's vocabulary.
      */
     public ReceiptParser receiptParser(StoreKind store) {
-        return ParserFactory.create(applicationContext, settings.useCloudParser(), store);
+        return ParserFactory.create(applicationContext, store);
     }
 }

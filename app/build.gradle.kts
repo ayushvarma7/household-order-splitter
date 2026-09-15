@@ -1,20 +1,10 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
 }
 
-// SPEC 8.10.3: the optional cloud parser's key is read from local.properties into
-// BuildConfig. It is never hardcoded and never committed; absent a key the Settings
-// option disables itself with an explanation.
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
-}
-val llmApiKey: String = localProperties.getProperty("llm.api.key", "")
-
+// One build variant and one reader. SPEC 8.10's optional cloud parser was removed: it was
+// never built, had no key, and was the only thing in the tree that could open a socket, in
+// an app whose entire claim is that it cannot.
 android {
     namespace = "com.householdsplitter"
     compileSdk = 36
@@ -32,23 +22,6 @@ android {
                 // Checked into version control so schema changes are reviewable.
                 arguments += mapOf("room.schemaLocation" to "$projectDir/schemas")
             }
-        }
-    }
-
-    // SPEC 4.10: no INTERNET permission in the default build. The cloud parser lives in
-    // its own flavour, along with the only source file that can reach the network.
-    flavorDimensions += "parser"
-    productFlavors {
-        create("standard") {
-            dimension = "parser"
-            isDefault = true
-            buildConfigField("String", "LLM_API_KEY", "\"\"")
-            buildConfigField("boolean", "CLOUD_PARSER_BUILD", "false")
-        }
-        create("cloud") {
-            dimension = "parser"
-            buildConfigField("String", "LLM_API_KEY", "\"$llmApiKey\"")
-            buildConfigField("boolean", "CLOUD_PARSER_BUILD", "true")
         }
     }
 

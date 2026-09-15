@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      SPEC 4.10 and PROMPT hard rule 8: the default build declares no INTERNET permission.
-      The optional cloud parser adds it in the `cloud` flavour manifest and nowhere else.
-      SPEC 1.5: the app is offline, single-user and single-device.
+      SPEC 4.10 and PROMPT hard rule 8: this app declares no network permission at all.
+      SPEC 1.5: offline, single-user, single-device.
+
+      Removed rather than merely not requested. ML Kit's own manifest declares INTERNET so
+      that its unbundled variant can download models, and a merged manifest would inherit
+      it. This build uses the bundled text recogniser, whose model ships inside the APK, so
+      recognition works with no network whatever. Stripping the permission here is what
+      makes the claim in the README and on the Settings screen literally true of the
+      shipped manifest rather than true of our own intentions.
+
+      Verify it by dumping the built APK's manifest with aapt2 and grepping for
+      permission: the shipped app declares none at all.
     -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <application
         android:name=".SplitterApp"

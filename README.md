@@ -155,15 +155,13 @@ Requires **JDK 17 or newer**. The JDK bundled with Android Studio works.
 
 ```bash
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
-./gradlew :app:installStandardDebug
+./gradlew :app:installDebug
 ```
 
-Two product flavours:
-
-| Flavour | Parser | Network |
-|---|---|---|
-| **`standard`** (default) | on-device ML Kit | no `INTERNET` permission at all |
-| `cloud` | optional LLM parser, opt-in in Settings | declares `INTERNET` |
+One build, one reader, no network permission. The manifest actively removes `INTERNET`
+rather than just not asking for it, because ML Kit's own manifest declares it and a merged
+manifest would otherwise inherit it. The shipped APK contains no occurrence of the string
+`INTERNET`.
 
 <details>
 <summary><b>Running the tests</b></summary>
@@ -172,7 +170,7 @@ Two product flavours:
 
 ```bash
 ./gradlew :core:test                                # 204 JVM tests, no device needed
-./gradlew :app:connectedStandardDebugAndroidTest    # 135 on a device or emulator
+./gradlew :app:connectedAndroidTest    # 135 on a device or emulator
 ```
 
 Turn device animations off first, which is Espresso's documented setup step. With them on, `closeSoftKeyboard` intermittently throws instead of typing:
@@ -346,7 +344,11 @@ Dark mode is chosen rather than flipped. The member palette in particular is sea
 
 **Ten member colours in a fixed order.** A household of four uses the first four and never sees the rest, so the opening slots are separated hardest. Ten slots plus a text-contrast floor cannot clear the all-pairs colour-vision floor, which is a property of the constraints rather than of the search. It is acceptable only because colour is never the sole channel: an avatar carries initials, a bar carries a name.
 
-**The optional cloud parser is absent from the default build.** The `standard` flavour declares no `INTERNET` permission and does not contain the cloud parser at all, so there is nothing to enable by accident. To use it, build the `cloud` flavour and add `llm.api.key=...` to `local.properties`, which is gitignored so the key is never committed. Its output goes through the same review screen as the on-device reader, and is never trusted more than it.
+**There is no cloud parser and no network code.** An optional LLM parser used to live in a
+separate build flavour. It was removed: it was never built, never had a key, and was the
+only file in the project that could open a socket, in an app whose whole point is that it
+cannot. Reading a new store is now a matter of measured column positions and a list of the
+words that store prints, which can be reviewed as a diff and tested without a device.
 
 </details>
 
