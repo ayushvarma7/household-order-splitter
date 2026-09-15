@@ -97,7 +97,7 @@ public final class AmazonFreshVocabulary implements StoreVocabulary {
             Pattern.compile("^payment method$")
     ));
 
-    /** "Order #: 111-4327758-4907453". The colon is Amazon's; Walmart prints none. */
+    /** "Order #: 111-0000000-0000000". The colon is Amazon's; Walmart prints none. */
     private static final Pattern ORDER_NUMBER =
             Pattern.compile("^order ?#:? ?([0-9][0-9 -]{5,})$");
 
