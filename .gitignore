@@ -18,3 +18,8 @@ app/src/androidTest/assets/order-page-*.png
 # Working directory for fixture captures and backups. Amazon Fresh order pages land
 # here and two of them carry a card last four, so this must never be committable.
 /scratchpad/
+
+# Release signing. Generated locally, never committed.
+/keystore.properties
+*.jks
+*.keystore
