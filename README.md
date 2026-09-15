@@ -72,6 +72,31 @@ shared. `AmazonFreshLayoutParser` is four lines long.
 
 ---
 
+## Six colour schemes, and none of them can lie to you
+
+<div align="center">
+  <img src="docs/screenshots/24-themes.png" width="215" alt="Six colour schemes" />
+  <img src="docs/screenshots/16-store-picker.png" width="215" alt="Choosing which shop the order came from" />
+</div>
+
+Amethyst, Slate, Clay, Plum, Olive and Graphite. Each was built in CIE Lab at a fixed
+lightness per role, so a "dark accent" is equally dark across hues rather than an HSL
+yellow being far brighter than an HSL blue at the same number, and each is checked three
+ways before it ships: label text on the accent, text on the container, and the accent
+against the surface behind it. Nothing is below 4.5:1 where text is involved.
+
+They are also checked against the colours in this app that already mean something. Green
+is taken by settled, amber by warning, red by danger, and the two store pills own a blue
+and a green of their own. A forest green accent measured **4.9 CIEDE2000 from the settled
+colour**, which is no distinction at all, and a first choice of indigo measured 10 from the
+Walmart pill. Both were dropped rather than shipped.
+
+A colour scheme changes the accent and nothing else. The semantic colours and the ten
+member colours are untouched by all six, and a test asserts it, because a preference about
+liking plum is not a reason for "settled" to move.
+
+---
+
 ## It keeps score of its own reading
 
 <div align="center">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One group in the switcher. The current one is marked with a tick as well as a colour,
-     so which group you are in survives greyscale and colour blindness. -->
+<!-- One colour scheme. A swatch, its name, and a tick when it is the chosen one, because
+     a swatch alone tells a colour blind user nothing about which is selected. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,30 +8,23 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:minHeight="@dimen/touch_target_min"
-    android:orientation="horizontal"
-    android:paddingStart="@dimen/space_l"
-    android:paddingEnd="@dimen/space_l">
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/paletteSwatch"
+        android:layout_width="24dp"
+        android:layout_height="24dp" />
 
     <TextView
-        android:id="@+id/groupInitial"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:gravity="center"
-        android:textAppearance="@style/Text.Caption"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/groupName"
+        android:id="@+id/paletteName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/space_m"
         android:layout_weight="1"
-        android:ellipsize="end"
-        android:maxLines="1"
         android:textAppearance="@style/Text.Body" />
 
     <ImageView
-        android:id="@+id/groupTick"
+        android:id="@+id/paletteTick"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:contentDescription="@string/drawer_current_group"

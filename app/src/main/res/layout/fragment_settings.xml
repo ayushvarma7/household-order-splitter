@@ -185,6 +185,29 @@
                                 android:text="@string/settings_theme_dark"
                                 android:textAppearance="@style/Text.Body" />
                         </RadioGroup>
+
+                        <!-- Colour schemes, under light and dark because they are the same
+                             question: what should this look like. -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_l"
+                            android:text="@string/settings_palette"
+                            android:textAppearance="@style/Text.SectionLabel" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xxs"
+                            android:text="@string/settings_palette_body"
+                            android:textAppearance="@style/Text.Caption" />
+
+                        <LinearLayout
+                            android:id="@+id/paletteList"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
+                            android:orientation="vertical" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

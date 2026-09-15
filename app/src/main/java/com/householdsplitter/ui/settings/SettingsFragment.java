@@ -20,6 +20,10 @@ import com.householdsplitter.BuildConfig;
 
 import com.householdsplitter.core.quality.ParserScorecard;
 import java.util.Locale;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import com.householdsplitter.databinding.ItemPaletteBinding;
+import com.householdsplitter.ui.theme.Palette;
 import com.householdsplitter.R;
 import com.householdsplitter.backup.AutoBackupService;
 import com.householdsplitter.backup.BackupService;
@@ -232,6 +236,7 @@ public class SettingsFragment extends BaseFragment {
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
         // SPEC 7.14.6
+        bindPalettes();
         bindParserReport();
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
@@ -471,5 +476,42 @@ public class SettingsFragment extends BaseFragment {
             ParserReportSheet.of(report, locator().settings().currencySymbol())
                     .show(getChildFragmentManager(), "parser-report");
         });
+    }
+
+    /**
+     * The colour scheme picker.
+     *
+     * <p>Applying a scheme recreates the Activity, because a theme is resolved when a view
+     * is inflated and every view on screen has already been inflated by the time this is
+     * tapped. Recreating is what Android itself does for the same reason, and it lands the
+     * user back on this screen with the new colour already on it, so the change is its own
+     * confirmation.
+     */
+    private void bindPalettes() {
+        Palette current = settings.palette();
+        binding.paletteList.removeAllViews();
+        for (Palette palette : Palette.values()) {
+            ItemPaletteBinding row = ItemPaletteBinding.inflate(
+                    getLayoutInflater(), binding.paletteList, false);
+            row.paletteName.setText(palette.labelRes());
+
+            // A filled circle rather than a square, so it reads as a colour sample and not
+            // as a control that could be pressed on its own.
+            GradientDrawable dot = new GradientDrawable();
+            dot.setShape(GradientDrawable.OVAL);
+            dot.setColor(palette.swatch());
+            row.paletteSwatch.setBackground(dot);
+
+            boolean chosen = palette == current;
+            row.paletteTick.setVisibility(chosen ? View.VISIBLE : View.GONE);
+            row.paletteName.setTypeface(null, chosen ? Typeface.BOLD : Typeface.NORMAL);
+            row.getRoot().setOnClickListener(v -> {
+                if (palette != settings.palette()) {
+                    settings.palette(palette);
+                    requireActivity().recreate();
+                }
+            });
+            binding.paletteList.addView(row.getRoot());
+        }
     }
 }

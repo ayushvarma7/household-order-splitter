@@ -60,6 +60,15 @@ public class MainActivity extends AppCompatActivity {
         // frame is ready, so launch never shows a blank white window, and hands over to the
         // main theme afterwards.
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        // Before the first view is inflated, or half the screen keeps the old accent.
+        // AMETHYST returns zero and applies nothing, which is how the original scheme
+        // stays byte for byte what it was.
+        int overlay = ((SplitterApp) getApplication()).serviceLocator()
+                .settings().palette().overlayRes();
+        if (overlay != 0) {
+            getTheme().applyStyle(overlay, true);
+        }
+
         super.onCreate(savedInstanceState);
 
         // The very first launch has to read the database before it knows whether to open

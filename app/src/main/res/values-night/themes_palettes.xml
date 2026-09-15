@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Theme palettes for dark mode, generated rather than hand picked, and checked rather than eyeballed.
+
+  Every colour here was built in CIE Lab at a fixed L* per role, so a "dark accent" is
+  equally dark across hues instead of an HSL yellow being far brighter than an HSL blue at
+  the same number. Each one is then checked three ways, and the figures are in the comment
+  above it: label text on the accent, text on the container, and the accent against the
+  surface it sits on. Nothing below is under 4.5:1 where text is involved.
+
+  They are also checked against the colours in this app that already mean something. Green
+  is taken by "settled", amber by warning, red by danger, and the two store pills own a
+  blue and a green of their own. A forest green primary measured 4.9 CIEDE2000 from the
+  settled colour, which is no distinction at all, and a first choice of indigo measured 10
+  from the Walmart pill. Both were dropped for plum and olive, which sit above 28 from
+  everything that carries a meaning.
+
+  Amethyst is not here on purpose. It is the theme the app already had, and the way to
+  leave it exactly as it was is to apply no overlay at all.
+-->
+<resources>
+    <!-- Slate: label text 6.5:1, container text 6.4:1, accent on surface 10.9:1 -->
+    <style name="ThemeOverlay.Splitter.Slate" parent="">
+        <item name="colorPrimary">#9ECCEC</item>
+        <item name="colorOnPrimary">#2F3D48</item>
+        <item name="colorPrimaryContainer">#3D5362</item>
+        <item name="colorOnPrimaryContainer">#C8EAFF</item>
+        <item name="colorSecondaryContainer">#3D5362</item>
+        <item name="colorOnSecondaryContainer">#C8EAFF</item>
+    </style>
+    <!-- Clay: label text 6.4:1, container text 6.0:1, accent on surface 10.6:1 -->
+    <style name="ThemeOverlay.Splitter.Clay" parent="">
+        <item name="colorPrimary">#FFB19A</item>
+        <item name="colorOnPrimary">#51342D</item>
+        <item name="colorPrimaryContainer">#6E463B</item>
+        <item name="colorOnPrimaryContainer">#FFD5C3</item>
+        <item name="colorSecondaryContainer">#6E463B</item>
+        <item name="colorOnSecondaryContainer">#FFD5C3</item>
+    </style>
+    <!-- Plum: label text 6.5:1, container text 6.0:1, accent on surface 10.8:1 -->
+    <style name="ThemeOverlay.Splitter.Plum" parent="">
+        <item name="colorPrimary">#FFADD4</item>
+        <item name="colorOnPrimary">#4F3340</item>
+        <item name="colorPrimaryContainer">#6D4456</item>
+        <item name="colorOnPrimaryContainer">#FFD2F0</item>
+        <item name="colorSecondaryContainer">#6D4456</item>
+        <item name="colorOnSecondaryContainer">#FFD2F0</item>
+    </style>
+    <!-- Olive: label text 6.6:1, container text 6.4:1, accent on surface 11.0:1 -->
+    <style name="ThemeOverlay.Splitter.Olive" parent="">
+        <item name="colorPrimary">#CCC997</item>
+        <item name="colorOnPrimary">#3D3C2C</item>
+        <item name="colorPrimaryContainer">#52513A</item>
+        <item name="colorOnPrimaryContainer">#EAE7C1</item>
+        <item name="colorSecondaryContainer">#52513A</item>
+        <item name="colorOnSecondaryContainer">#EAE7C1</item>
+    </style>
+    <!-- Graphite: label text 6.6:1, container text 6.4:1, accent on surface 10.9:1 -->
+    <style name="ThemeOverlay.Splitter.Graphite" parent="">
+        <item name="colorPrimary">#CBC4D2</item>
+        <item name="colorOnPrimary">#3D3A3F</item>
+        <item name="colorPrimaryContainer">#524F55</item>
+        <item name="colorOnPrimaryContainer">#E9E3EE</item>
+        <item name="colorSecondaryContainer">#524F55</item>
+        <item name="colorOnSecondaryContainer">#E9E3EE</item>
+    </style>
+</resources>

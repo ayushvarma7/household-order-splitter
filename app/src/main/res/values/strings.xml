@@ -459,4 +459,14 @@
     <string name="drawer_people_count">%1$d people</string>
     <string name="drawer_switched">Now showing %1$s</string>
     <string name="setup_group_intro_another">Name this group. Its orders and people are kept separate from your other groups.</string>
+
+    <!-- Colour schemes -->
+    <string name="settings_palette">Colour</string>
+    <string name="settings_palette_body">Changes the accent only. The colours that mean something, like settled and overdue, stay as they are.</string>
+    <string name="palette_amethyst">Amethyst</string>
+    <string name="palette_slate">Slate</string>
+    <string name="palette_clay">Clay</string>
+    <string name="palette_plum">Plum</string>
+    <string name="palette_olive">Olive</string>
+    <string name="palette_graphite">Graphite</string>
 </resources>

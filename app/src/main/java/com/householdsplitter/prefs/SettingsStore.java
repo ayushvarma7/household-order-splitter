@@ -3,6 +3,7 @@ package com.householdsplitter.prefs;
 import android.content.Context;
 
 import com.householdsplitter.core.parse.StoreKind;
+import com.householdsplitter.ui.theme.Palette;
 import android.content.SharedPreferences;
 
 import com.householdsplitter.core.calc.AllocationMode;
@@ -25,6 +26,7 @@ public class SettingsStore {
     private static final String KEY_THEME = "theme_mode";
     private static final String KEY_LAST_STORE = "last_store";
     private static final String KEY_CURRENT_HOUSEHOLD = "current_household";
+    private static final String KEY_PALETTE = "palette";
 
     private final SharedPreferences preferences;
     private final String defaultCurrencySymbol;
@@ -188,5 +190,20 @@ public class SettingsStore {
 
     public void currentHouseholdId(long householdId) {
         preferences.edit().putLong(KEY_CURRENT_HOUSEHOLD, householdId).apply();
+    }
+
+    /**
+     * The chosen colour scheme, by name.
+     *
+     * <p>Absent for every existing install, which resolves to the original scheme, so
+     * nobody's app changes colour because this was added.
+     */
+    public Palette palette() {
+        return Palette.fromKey(preferences.getString(KEY_PALETTE, null));
+    }
+
+    public void palette(Palette palette) {
+        preferences.edit().putString(KEY_PALETTE,
+                (palette == null ? Palette.AMETHYST : palette).key()).apply();
     }
 }

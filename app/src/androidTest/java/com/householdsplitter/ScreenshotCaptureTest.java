@@ -195,6 +195,10 @@ public class ScreenshotCaptureTest {
                     .findNavController(a, R.id.nav_host).navigate(R.id.settingsFragment));
             shoot("22-settings");
 
+            // The colour schemes, which live on the same card as light and dark.
+            onView(withId(R.id.paletteList)).perform(scrollTo());
+            shoot("24-themes");
+
             onView(withId(R.id.parserReportButton)).perform(scrollTo(), click());
             shoot("23-parser-report");
         }
