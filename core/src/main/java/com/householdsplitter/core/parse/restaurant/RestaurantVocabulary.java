@@ -177,6 +177,9 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             Pattern.compile("^seat ?\\d{1,2}$")
     ));
 
+    private static final Pattern CURRENCY_SUFFIX =
+            Pattern.compile("\\s*\\((?:[a-z]{1,4}|[\\p{Sc}])\\)\\s*$");
+
     private static final DateTimeFormatter LABEL_FORMAT =
             DateTimeFormatter.ofPattern("MMM dd", Locale.US);
 
@@ -389,7 +392,7 @@ public final class RestaurantVocabulary implements StoreVocabulary {
      */
     @Override
     public OrderField summaryLabelOf(String leftText) {
-        String label = Normalise.text(leftText);
+        String label = currencySuffix(Normalise.text(leftText));
         if (label.isEmpty()) {
             return null;
         }
@@ -401,6 +404,8 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             case "item subtotal":
             case "items subtotal":
             case "order subtotal":
+            case "total sales (excluding gst)":
+            case "total excluding gst":
                 return OrderField.SUBTOTAL;
             case "tax":
             case "taxes":
@@ -433,6 +438,11 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             case "admin fee":
             case "kitchen fee":
             case "delivery fee":
+            // A rounding adjustment is a real charge of a cent or two, up or down, and is
+            // the difference between a bill that reconciles and one that is off by one.
+            case "rounding":
+            case "rounding adj":
+            case "rounding adjustment":
                 return OrderField.OTHER_FEE;
             case "discount":
             case "discounts":
@@ -449,14 +459,38 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             case "check total":
             case "net total":
             case "total amount":
+            case "total amt":
             case "amount":
             case "amount due":
+            case "amount payable":
+            case "amount paid":
             case "balance due":
             case "total due":
+            case "nett total":
+            case "net amount":
+            case "rounded total":
+            case "total rounded":
+            case "total sales (inclusive of gst)":
+            case "total inclusive of gst":
                 return OrderField.TOTAL;
             default:
                 return null;
         }
+    }
+
+    /**
+     * Strips the currency a till prints after a summary label.
+     *
+     * <p>"Rounded Total (RM)", "Total ($)", "Amount (USD)". The parenthetical says which
+     * currency the column is in, which is a fact about the column and not about the label,
+     * and leaving it on means every one of these has to be written out once per currency.
+     *
+     * <p>Only a short bracketed run of letters and currency symbols at the very end, so
+     * "Total Sales (Inclusive of GST)" is not mistaken for one: that parenthetical changes
+     * which figure the label refers to and has to be matched, not discarded.
+     */
+    private static String currencySuffix(String label) {
+        return CURRENCY_SUFFIX.matcher(label).replaceAll("").trim();
     }
 
     /**
@@ -532,12 +566,44 @@ public final class RestaurantVocabulary implements StoreVocabulary {
     @Override
     public String nameAfterQuantity(String line) {
         Matcher prefix = QUANTITY_PREFIX.matcher(line == null ? "" : line.trim());
-        if (!prefix.matches()) {
+        String remainder = null;
+        if (prefix.matches()) {
+            remainder = prefix.group(2).trim();
+        } else {
             // Case is preserved above where possible, because the name reaches the user.
             Matcher lowered = QUANTITY_PREFIX.matcher(Normalise.text(line));
-            return lowered.matches() ? lowered.group(2).trim() : null;
+            if (lowered.matches()) {
+                remainder = lowered.group(2).trim();
+            }
         }
-        return prefix.group(2).trim();
+        // "1 PC 9.00 0.00" is a count, a unit, a price and a discount. Stripping the count
+        // leaves "PC 9.00 0.00", which is not what the thing was called, and on a till that
+        // prints the description on the line above it is not the name of anything at all.
+        return namesSomething(remainder) ? remainder : null;
+    }
+
+    /** True when a string contains a word long enough to be a product rather than a unit. */
+    private static boolean namesSomething(String text) {
+        if (text == null) {
+            return false;
+        }
+        int run = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isLetter(text.charAt(i))) {
+                if (++run >= 3) {
+                    return true;
+                }
+            } else {
+                run = 0;
+            }
+        }
+        return false;
+    }
+
+    /** Plenty of tills print the description above the figures. See the interface. */
+    @Override
+    public boolean nameMayPrecedePrice() {
+        return true;
     }
 
     /** A till prints in capitals because it has no choice. See {@link ReceiptCase}. */

@@ -174,6 +174,27 @@ public interface StoreVocabulary {
     }
 
     /**
+     * True when this store prints a row's description on the line above its figures.
+     *
+     * <p>False by default, which is the arrangement both screenshot stores use and the one
+     * the whole block assembler is built around: the price is right-aligned against the
+     * first line of a name that wraps downward, so a block opens at a price and grows down.
+     *
+     * <p>A good many tills do the opposite. They print a product code and description on
+     * one line and the quantity, unit price and amount on the next, so the band that
+     * carries the amount carries no name at all and the name sits immediately above it.
+     * Growing downward there collects the <em>next</em> row's description instead, which
+     * is not a near miss: every item ends up labelled with the name of the one after it.
+     *
+     * <p>Opting in does not force the layout. The assembler still only looks upward for a
+     * band whose own figures name nothing, so a till that prints the name and the amount on
+     * one line is read exactly as before.
+     */
+    default boolean nameMayPrecedePrice() {
+        return false;
+    }
+
+    /**
      * True when the line is row metadata rather than part of the product name: a multipack
      * count, a weight, a note about the price.
      *

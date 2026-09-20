@@ -85,7 +85,23 @@ final class BlockAssembler {
                 }
             }
 
-            ParsedItem item = buildItem(bands, i, end);
+            // A till that prints the description above the figures leaves this band naming
+            // nothing at all. Looking up for it is what stops every row being labelled with
+            // the name of the row after it.
+            int nameStart = i;
+            if (vocabulary.nameMayPrecedePrice() && i > 0 && namesNothing(start)) {
+                TextBand above = bands.get(i - 1);
+                if (above.kind() == TextBand.Kind.CONTENT && !above.hasLinePrice()
+                        && !namesNothing(above)) {
+                    nameStart = i - 1;
+                    // And the block stops at the price band. Growing downward from here
+                    // would take the band above the next price, which is that row's
+                    // description and is about to be claimed by it.
+                    end = i + 1;
+                }
+            }
+
+            ParsedItem item = buildItem(bands, i, nameStart, end);
             if (item != null) {
                 items.add(item);
                 lastOpened = i;
@@ -283,8 +299,37 @@ final class BlockAssembler {
                 (right * 1000) / width, (bottom * 1000) / height);
     }
 
-    private ParsedItem buildItem(List<TextBand> bands, int startIndex, int endIndex) {
-        TextBand priceBand = bands.get(startIndex);
+    /**
+     * True when a band's own text, left of the price column, names nothing: it is a count,
+     * a unit, a rate and an amount, with no word in it long enough to be a product.
+     *
+     * <p>Three letters, because a two letter token on a figures line is a unit (PC, EA, KG)
+     * and a three letter one is usually a word (TEA, PIE, RUM). Getting this wrong in the
+     * cautious direction costs a name that could have been improved; getting it wrong in
+     * the other direction relabels a row.
+     */
+    private boolean namesNothing(TextBand band) {
+        String text = band.leftText(tuning.nameZoneEndPermille);
+        int run = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isLetter(text.charAt(i))) {
+                if (++run >= 3) {
+                    return false;
+                }
+            } else {
+                run = 0;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param priceIndex the band carrying the amount, which fixes the price column
+     * @param startIndex the first band contributing name text, normally the same one
+     */
+    private ParsedItem buildItem(List<TextBand> bands, int priceIndex, int startIndex,
+                                 int endIndex) {
+        TextBand priceBand = bands.get(priceIndex);
         long lineTotalCents;
         try {
             lineTotalCents = PriceTokens.toCents(priceBand.linePrice().text());

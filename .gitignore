@@ -14,6 +14,12 @@ local.properties
 # The order-page fixtures are screenshots of a real order: page three carries a card
 # last four, the order number and a barcode. Keep them local, see the readme.
 app/src/androidTest/assets/order-page-*.png
+# Receipt fixtures pulled from public datasets for local calibration. Not committed:
+# they are other people's photographs under their own licences, and this repository has
+# no business redistributing them. See tools/receipts/fetch.sh to fetch them again.
+app/src/androidTest/assets/bill-*.jpg
+app/src/androidTest/assets/bill-*.png
+app/src/androidTest/assets/bill-*.jpeg
 
 # Working directory for fixture captures and backups. Amazon Fresh order pages land
 # here and two of them carry a card last four, so this must never be committable.

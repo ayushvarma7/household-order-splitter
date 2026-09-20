@@ -460,6 +460,20 @@ public class ReceiptLayoutParser implements LayoutParser {
                     OrderField field =
                             vocabulary.summaryLabelOf(band.leftText(tuning.nameZoneEndPermille));
                     Long amount = BandAmounts.amountOnBand(band);
+                    if (field != null && amount == null) {
+                        // The label was recognised and the figure beside it was not. Worth
+                        // saying out loud rather than leaving the field at zero: a bill
+                        // whose total line reads "900" where it should read "9.00" is a
+                        // bill this reader cannot check its own arithmetic against, and a
+                        // silent zero looks exactly like a bill that stated no total.
+                        //
+                        // Deliberately not guessed at. A dropped decimal point is a factor
+                        // of a hundred, and inventing one would be the one kind of mistake
+                        // this whole reader is arranged to avoid.
+                        page.warnings.add("The " + field.name().toLowerCase(java.util.Locale.US)
+                                .replace('_', ' ') + " line was found but its amount could"
+                                + " not be read: \"" + band.text() + "\"");
+                    }
                     if (field == null || amount == null) {
                         break;
                     }

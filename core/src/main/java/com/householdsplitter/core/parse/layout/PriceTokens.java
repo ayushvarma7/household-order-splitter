@@ -12,7 +12,7 @@ public final class PriceTokens {
 
     /** SPEC 8.3.1, verbatim, plus an optional leading minus for refunded rows. */
     private static final Pattern PRICE_TOKEN =
-            Pattern.compile("^-?\\$?\\d{1,3}(,\\d{3})*\\.\\d{2}$");
+            Pattern.compile("^-?[\\p{Sc}]?\\d{1,3}(,\\d{3})*\\.\\d{2}$");
 
     /**
      * SPEC 8.6.4: the free-delivery line prints a bare {@code $0} beside a struck-through
@@ -20,7 +20,7 @@ public final class PriceTokens {
      * looser pattern is used only there, never to open an item block.
      */
     private static final Pattern LOOSE_AMOUNT =
-            Pattern.compile("^-?\\$\\d{1,3}(,\\d{3})*(\\.\\d{1,2})?$|^-?\\d{1,3}(,\\d{3})*\\.\\d{2}$");
+            Pattern.compile("^-?[\\p{Sc}]\\d{1,3}(,\\d{3})*(\\.\\d{1,2})?$|^-?\\d{1,3}(,\\d{3})*\\.\\d{2}$");
 
     /**
      * SPEC 8.3.3, written tolerantly because SPEC 8.4 asks for tolerance of OCR noise and
