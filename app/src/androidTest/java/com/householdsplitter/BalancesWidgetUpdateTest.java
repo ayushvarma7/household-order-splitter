@@ -131,6 +131,76 @@ public class BalancesWidgetUpdateTest {
      * Ana paid $90 and Ben paid $30 for two orders shared three ways, so each owes $40:
      * Ana is $50 up, Ben $10 down, Chen $40 down. The widget should say so.
      */
+    /**
+     * Renders what the launcher would actually draw, at the sizes the widget asks for.
+     *
+     * <p>The test above proves the right RemoteViews reach a host. This proves they survive
+     * being inflated and laid out in a space the size of three cells by two, which is a
+     * different failure: a label that fits in a preview and not on a home screen, or a row
+     * that the launcher clips, shows up here and nowhere else.
+     *
+     * <p>Writes PNGs into the app's own files directory so they can be pulled off and
+     * looked at. Asserts only what can be asserted without a human: that something was
+     * drawn, and that nothing came out blank.
+     */
+    @Test
+    public void bothWidgetsDrawAtHomeScreenSize() throws Exception {
+        assertTrue("no views were handed to the host",
+                host.received.await(20, java.util.concurrent.TimeUnit.SECONDS));
+
+        // A phone home screen cell is about 110dp wide and 100dp tall on this density.
+        render("widget-balances.png", host.latest.get(), 3, 2);
+        render("widget-quick-actions.png",
+                com.householdsplitter.widget.QuickActionsWidgetProvider.buildViews(context), 3, 1);
+    }
+
+    private void render(String name, RemoteViews views, int cellsWide, int cellsHigh)
+            throws Exception {
+        assertNotNull("nothing to draw", views);
+        float density = context.getResources().getDisplayMetrics().density;
+        int width = (int) (110 * cellsWide * density);
+        int height = (int) (100 * cellsHigh * density);
+
+        final android.graphics.Bitmap[] drawn = new android.graphics.Bitmap[1];
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            android.view.View view = views.apply(context, new android.widget.FrameLayout(context));
+            view.measure(
+                    android.view.View.MeasureSpec.makeMeasureSpec(
+                            width, android.view.View.MeasureSpec.EXACTLY),
+                    android.view.View.MeasureSpec.makeMeasureSpec(
+                            height, android.view.View.MeasureSpec.EXACTLY));
+            view.layout(0, 0, width, height);
+            android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                    width, height, android.graphics.Bitmap.Config.ARGB_8888);
+            android.graphics.Canvas canvas = new android.graphics.Canvas(bitmap);
+            canvas.drawColor(android.graphics.Color.parseColor("#121212"));
+            view.draw(canvas);
+            drawn[0] = bitmap;
+        });
+
+        android.graphics.Bitmap bitmap = drawn[0];
+        assertNotNull("nothing was drawn for " + name, bitmap);
+
+        // A widget that laid out but painted nothing is the failure worth catching: it
+        // looks exactly like a working one from every angle except a home screen.
+        int distinct = 0;
+        java.util.Set<Integer> seen = new java.util.HashSet<>();
+        for (int x = 0; x < bitmap.getWidth(); x += 7) {
+            for (int y = 0; y < bitmap.getHeight(); y += 7) {
+                if (seen.add(bitmap.getPixel(x, y))) {
+                    distinct++;
+                }
+            }
+        }
+        assertTrue(name + " drew only " + distinct + " distinct colours, so it is blank",
+                distinct > 3);
+
+        java.io.File out = new java.io.File(context.getExternalFilesDir(null), name);
+        try (java.io.OutputStream stream = new java.io.FileOutputStream(out)) {
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream);
+        }
+    }
+
     private void seed() {
         long householdId = database.householdDao().insert(new Household("Flat 12", 1L));
         TestData.locator().currentHouseholdId(householdId);

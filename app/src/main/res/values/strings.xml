@@ -491,7 +491,11 @@
     <string name="widget_configure_follow_app_detail">Follows the group you last opened in the app</string>
     <string name="widget_quick_description">Two taps you would otherwise open the app for: photograph a restaurant bill, or start an order from a screenshot.</string>
     <string name="widget_action_new_order">New order</string>
-    <string name="widget_action_balances">Who owes whom</string>
+    <!-- Short on purpose. "Who owes whom" fits the widget at its smallest size but not the
+         preview in the launcher's widget picker, which draws smaller than the widget does,
+         and the picker is where somebody decides whether to place this at all. It also
+         matches the tab it opens. -->
+    <string name="widget_action_balances">Spending</string>
 
     <!-- Bottom navigation -->
     <string name="nav_home">Orders</string>

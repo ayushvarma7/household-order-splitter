@@ -74,6 +74,10 @@ public class BalancesWidgetConfigureActivity extends AppCompatActivity {
 
         binding = ActivityWidgetConfigureBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        // A close, not a back arrow, and it cancels. The result was already set to
+        // RESULT_CANCELED, so leaving this way tells the launcher to drop the widget rather
+        // than keep an unconfigured one.
+        binding.toolbar.setNavigationContentDescription(R.string.action_cancel);
         binding.toolbar.setNavigationOnClickListener(v -> finish());
 
         long chosen = new WidgetPreferences(this).householdFor(appWidgetId);
