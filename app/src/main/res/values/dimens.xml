@@ -74,6 +74,7 @@
     <dimen name="drawer_width">300dp</dimen>
     <!-- The introduction's illustration plate -->
     <dimen name="welcome_plate">200dp</dimen>
+    <dimen name="welcome_illustration">156dp</dimen>
     <dimen name="welcome_plate_radius">44dp</dimen>
 
 </resources>

@@ -43,13 +43,15 @@
                 android:layout_height="@dimen/welcome_plate"
                 android:background="@drawable/bg_welcome_plate">
 
+                <!-- No tint. These three are multicoloured scenes rather than interface
+                     icons, and a tint would flatten every receipt, coin and card in them
+                     to one colour. -->
                 <ImageView
                     android:id="@+id/pageIcon"
-                    android:layout_width="@dimen/empty_illustration"
-                    android:layout_height="@dimen/empty_illustration"
+                    android:layout_width="@dimen/welcome_illustration"
+                    android:layout_height="@dimen/welcome_illustration"
                     android:layout_gravity="center"
-                    android:contentDescription="@null"
-                    app:tint="@android:color/white" />
+                    android:contentDescription="@null" />
             </FrameLayout>
 
             <TextView
