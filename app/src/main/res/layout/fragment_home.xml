@@ -18,9 +18,33 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/profileButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- You, in the corner. The tab bar has no room for a fifth destination and this
+             one is not really a destination anyway: it is the answer to "and what about
+             me", which every other screen answers about somebody else.
+
+             Aligned to the toolbar's bottom rather than centred between its top and
+             bottom. The toolbar carries the status bar inset as top padding, so centring
+             across it puts anything here halfway up the clock. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileButton"
+            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="@dimen/space_m"
+            android:layout_marginBottom="@dimen/space_s"
+            android:contentDescription="@string/profile_title"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:icon="@drawable/ic_person"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:layout_constraintBottom_toBottomOf="@id/toolbar"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/memberSummary"

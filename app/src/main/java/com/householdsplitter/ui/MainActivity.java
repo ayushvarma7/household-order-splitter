@@ -12,15 +12,11 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavGraph;
 import androidx.navigation.fragment.NavHostFragment;
 
-import android.graphics.Typeface;
 import android.view.View;
 import android.widget.Toast;
 import androidx.core.graphics.Insets;
-import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import com.householdsplitter.databinding.ItemDrawerGroupBinding;
 import com.householdsplitter.ui.setup.SetupGroupFragment;
 import com.householdsplitter.R;
 import com.householdsplitter.SplitterApp;
@@ -92,22 +88,7 @@ public class MainActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        setUpDrawer();
-        // Back closes the drawer before it does anything else, which is what every Android
-        // user already expects and the only reading of back that is never surprising.
-        getOnBackPressedDispatcher().addCallback(this,
-                new androidx.activity.OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        if (isDrawerOpen()) {
-                            closeDrawer();
-                        } else {
-                            setEnabled(false);
-                            getOnBackPressedDispatcher().onBackPressed();
-                            setEnabled(true);
-                        }
-                    }
-                });
+        setUpBottomNav();
 
         if (savedInstanceState != null) {
             // The NavHostFragment restores its own back stack; do not re-point the graph.
@@ -266,79 +247,93 @@ public class MainActivity extends AppCompatActivity {
     // ---- navigation drawer ---------------------------------------------------------------
 
     /**
-     * Opens the drawer. Called by the top level screen's hamburger.
+     * Wires the bar across the foot of the screen.
      *
-     * <p>Only that screen offers it. A drawer reachable from the middle of assigning an
-     * order would make the back gesture ambiguous, and the way out of a detail screen
-     * should be the way you came in.
+     * <p>Four destinations and nothing else at the top level. Selecting one pops back to
+     * it rather than pushing, which is what stops the back stack growing by one every time
+     * somebody looks at spending and comes back: a tab is a place, not a step.
+     *
+     * <p>The bar is hidden everywhere below the top level. Halfway through assigning an
+     * order there is nowhere to go except forward or back, and a bar offering to leave the
+     * order entirely is an invitation to lose the work in progress.
      */
-    public void openDrawer() {
-        refreshDrawer();
-        // Unlock first. openDrawer is a no-op while the lock mode says closed, which is
-        // how the hamburger managed to do nothing at all on the first attempt.
-        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-        binding.drawerLayout.openDrawer(GravityCompat.START);
-    }
-
-    public boolean isDrawerOpen() {
-        return binding != null && binding.drawerLayout.isDrawerOpen(GravityCompat.START);
-    }
-
-    public void closeDrawer() {
-        if (binding != null) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START);
-        }
-    }
-
-    /** Wires the drawer's fixed actions once. The group list is rebuilt on each open. */
-    private void setUpDrawer() {
-        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-
-        // The drawer belongs to the top level screen only. Locking it everywhere else is
-        // what stops an edge swipe halfway through assigning an order from pulling out a
-        // menu, and stops back meaning two different things on the same screen.
-        NavHostFragment navHost = (NavHostFragment) getSupportFragmentManager()
+    private void setUpBottomNav() {
+        NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host);
-        if (navHost != null) {
-            navHost.getNavController().addOnDestinationChangedListener(
-                    (controller, destination, arguments) -> {
-                        if (binding == null) {
-                            return;
-                        }
-                        boolean topLevel = destination.getId() == R.id.homeFragment;
-                        binding.drawerLayout.setDrawerLockMode(topLevel
-                                ? DrawerLayout.LOCK_MODE_UNLOCKED
-                                : DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-                        if (!topLevel && isDrawerOpen()) {
-                            closeDrawer();
-                        }
-                    });
+        if (host == null) {
+            return;
         }
+        NavController controller = host.getNavController();
 
-        // Insets by hand: the drawer sits behind the status bar and the gesture bar, and
-        // the rule in this project is padding for a container, margin for a control.
-        ViewCompat.setOnApplyWindowInsetsListener(binding.navDrawer.getRoot(), (view, insets) -> {
+        // Insets are handed out from here rather than left to each view, because with a
+        // bar in the way there are two different right answers and only this level knows
+        // which applies.
+        //
+        // When the bar is showing it is the thing at the bottom of the screen, so it takes
+        // the gesture inset as padding, and the fragment above it is handed insets with
+        // the bottom removed: it does not reach the gesture area, and a screen that pads
+        // its own footer would otherwise clear the gesture bar a second time and float its
+        // buttons an inch off the floor.
+        //
+        // When the bar is hidden the fragment really is the thing at the bottom, and it
+        // gets the insets untouched.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (view, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            binding.navDrawer.drawerScroll.setPadding(0, bars.top, 0, bars.bottom);
+            boolean barShowing = binding.bottomNav.getVisibility() == View.VISIBLE;
+            binding.bottomNav.setPadding(0, 0, 0, barShowing ? bars.bottom : 0);
+
+            WindowInsetsCompat forHost = barShowing
+                    ? new WindowInsetsCompat.Builder(insets)
+                            .setInsets(WindowInsetsCompat.Type.systemBars(),
+                                    Insets.of(bars.left, bars.top, bars.right, 0))
+                            .build()
+                    : insets;
+            ViewCompat.dispatchApplyWindowInsets(binding.navHost, forHost);
             return insets;
         });
 
-        binding.navDrawer.drawerNewGroup.setOnClickListener(v -> {
-            closeDrawer();
-            navigate(R.id.setupGroupFragment, SetupGroupFragment.argsForAnotherGroup());
+        binding.bottomNav.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == controller.getGraph().getStartDestinationId()
+                    && controller.getCurrentDestination() != null
+                    && controller.getCurrentDestination().getId() == item.getItemId()) {
+                return true;
+            }
+            controller.navigate(item.getItemId(), null,
+                    new androidx.navigation.NavOptions.Builder()
+                            .setLaunchSingleTop(true)
+                            .setPopUpTo(R.id.homeFragment, false)
+                            .build());
+            return true;
         });
-        binding.navDrawer.drawerSpending.setOnClickListener(v -> go(R.id.analyticsFragment));
-        binding.navDrawer.drawerPeople.setOnClickListener(v -> go(R.id.setupMembersFragment));
-        binding.navDrawer.drawerRules.setOnClickListener(v -> go(R.id.rulesFragment));
-        binding.navDrawer.drawerSettings.setOnClickListener(v -> go(R.id.settingsFragment));
-        // Export lives on the Settings screen, which is where the overflow item pointed
-        // too. The drawer names it separately because that is what people look for.
-        binding.navDrawer.drawerExport.setOnClickListener(v -> go(R.id.settingsFragment));
+        // Reselecting the tab you are already on does nothing, rather than reloading the
+        // screen under the user's finger.
+        binding.bottomNav.setOnItemReselectedListener(item -> { });
+
+        controller.addOnDestinationChangedListener((c, destination, arguments) -> {
+            if (binding == null) {
+                return;
+            }
+            boolean topLevel = isTopLevel(destination.getId());
+            boolean wasShowing = binding.bottomNav.getVisibility() == View.VISIBLE;
+            binding.bottomNav.setVisibility(topLevel ? View.VISIBLE : View.GONE);
+            if (wasShowing != topLevel) {
+                // The right answer about insets has just changed, and nothing re-asks on
+                // its own when a sibling's visibility does.
+                ViewCompat.requestApplyInsets(binding.getRoot());
+            }
+            if (topLevel) {
+                // Checked without firing the listener, which would navigate again.
+                binding.bottomNav.getMenu().findItem(destination.getId()).setChecked(true);
+            }
+        });
     }
 
-    private void go(int destination) {
-        closeDrawer();
-        navigate(destination, null);
+    /** The four destinations the bar offers, and the only ones it is shown on. */
+    private static boolean isTopLevel(int destinationId) {
+        return destinationId == R.id.homeFragment
+                || destinationId == R.id.groupsFragment
+                || destinationId == R.id.analyticsFragment
+                || destinationId == R.id.settingsFragment;
     }
 
     private void navigate(int destination, Bundle args) {
@@ -350,67 +345,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Rebuilds the group list from the database each time the drawer opens.
-     *
-     * <p>Cheap, and it means a group renamed on another screen is never shown under its old
-     * name. Reading on the disk executor because SPEC 4.7 does not make an exception for
-     * counts.
-     */
-    private void refreshDrawer() {
-        ServiceLocator locator = ((SplitterApp) getApplication()).serviceLocator();
-        long current = locator.currentHouseholdId();
-        locator.executors().diskIO().execute(() -> {
-            List<com.householdsplitter.data.entity.Household> groups =
-                    locator.database().householdDao().getAllSync();
-            com.householdsplitter.data.entity.Household active =
-                    locator.database().householdDao().getByIdSync(current);
-            int people = active == null ? 0
-                    : locator.database().memberDao().getActiveSync(current).size();
-            locator.executors().mainThread().execute(() -> {
-                if (binding == null || isFinishing()) {
-                    return;
-                }
-                binding.navDrawer.drawerGroupName.setText(active == null ? getString(R.string.app_name)
-                        : active.name);
-                binding.navDrawer.drawerGroupMeta.setText(
-                        getResources().getString(R.string.drawer_people_count, people));
-                bindGroups(groups, current);
-            });
-        });
-    }
-
-    private void bindGroups(List<com.householdsplitter.data.entity.Household> groups,
-                            long current) {
-        binding.navDrawer.drawerGroupList.removeAllViews();
-        for (com.householdsplitter.data.entity.Household group : groups) {
-            ItemDrawerGroupBinding row = ItemDrawerGroupBinding.inflate(
-                    getLayoutInflater(), binding.navDrawer.drawerGroupList, false);
-            row.groupName.setText(group.name);
-            row.groupInitial.setText(group.name.isEmpty()
-                    ? "?" : group.name.substring(0, 1).toUpperCase());
-            boolean isCurrent = group.id == current;
-            // A tick as well as emphasis, so which group you are in does not depend on
-            // noticing a weight change.
-            row.groupTick.setVisibility(isCurrent ? View.VISIBLE : View.GONE);
-            row.groupName.setTypeface(null, isCurrent ? Typeface.BOLD : Typeface.NORMAL);
-            row.getRoot().setOnClickListener(v -> {
-                closeDrawer();
-                if (!isCurrent) {
-                    switchToGroup(group);
-                }
-            });
-            binding.navDrawer.drawerGroupList.addView(row.getRoot());
-        }
-    }
-
-    /**
      * Switches group and returns to the top level screen.
      *
      * <p>Rebuilds the back stack rather than pushing, because everything behind the current
      * screen belongs to the group being left. Going back into another group's order would
      * be the worst kind of bug in an app about who owes what.
      */
-    private void switchToGroup(com.householdsplitter.data.entity.Household group) {
+    public void switchToGroup(com.householdsplitter.data.entity.Household group) {
         ServiceLocator locator = ((SplitterApp) getApplication()).serviceLocator();
         locator.currentHouseholdId(group.id);
         NavHostFragment host = (NavHostFragment) getSupportFragmentManager()

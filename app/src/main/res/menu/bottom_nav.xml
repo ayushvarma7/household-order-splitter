@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Four destinations, which is the whole app at the top level.
+
+  Four rather than five: a bar is a promise that these are the places you go, and a fifth
+  entry is usually a sign that one of the other four is really two things. Orders, groups,
+  what it all cost, and everything else.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/ic_nav_home"
+        android:title="@string/nav_home" />
+
+    <item
+        android:id="@+id/groupsFragment"
+        android:icon="@drawable/ic_group"
+        android:title="@string/nav_groups" />
+
+    <item
+        android:id="@+id/analyticsFragment"
+        android:icon="@drawable/ic_nav_spending"
+        android:title="@string/nav_spending" />
+
+    <item
+        android:id="@+id/settingsFragment"
+        android:icon="@drawable/ic_nav_settings"
+        android:title="@string/nav_settings" />
+</menu>

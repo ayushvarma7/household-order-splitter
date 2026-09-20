@@ -1,0 +1,11 @@
+<!-- An interface glyph. Untinted: the colour is supplied at the usage, which is what lets
+     the same shape be an accent in a tab bar and plain text colour in a list row. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M4,20 h3 V10 H4 z M10.5,20 h3 V4 h-3 z M17,20 h3 v-7 h-3 z" />
+</vector>

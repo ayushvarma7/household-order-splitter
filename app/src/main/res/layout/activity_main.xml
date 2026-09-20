@@ -1,37 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The drawer wraps the whole navigation host so that any screen could open it, while only
-  the top level one actually does. Locking it shut elsewhere is done in code rather than
-  by leaving it out, because a drawer that exists but is unreachable from a detail screen
-  is far less confusing than a back gesture that sometimes means "close the drawer".
+  The shell: a navigation host with a bar across the foot of it.
+
+  This replaced a navigation drawer, and the reason is that the two cannot both be right.
+  A drawer and a bar are the same promise made twice, and the app then has two answers to
+  "where am I" that have to be kept in step. Everything the drawer offered is still here:
+  the group list and "new group" became the Groups tab, spending and settings became tabs
+  of their own, and the people in a group moved to that group's own screen, where they are
+  a property of the group rather than an entry in a menu.
+
+  The bar is a sibling of the host rather than inside it, so it survives every fragment
+  transaction and does not animate in and out on each navigation.
 -->
-<androidx.drawerlayout.widget.DrawerLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawerLayout"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="false">
+    android:fitsSystemWindows="false"
+    android:orientation="vertical">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/root"
+    <!--
+      Stacked rather than overlaid, so the host genuinely ends where the bar begins. An
+      overlay looks identical until a screen puts something at its own bottom edge, and
+      then the bar sits on top of it: the first version of this hid the new order button
+      behind the Spending tab.
+    -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/nav_host"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:defaultNavHost="true" />
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceContainer"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <include
-        android:id="@+id/navDrawer"
-        layout="@layout/nav_drawer"
-        android:layout_width="@dimen/drawer_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="start" />
-
-</androidx.drawerlayout.widget.DrawerLayout>
+</LinearLayout>

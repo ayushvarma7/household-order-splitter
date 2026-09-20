@@ -493,4 +493,69 @@
     <string name="widget_action_new_order">New order</string>
     <string name="widget_action_balances">Who owes whom</string>
 
+    <!-- Bottom navigation -->
+    <string name="nav_home">Orders</string>
+    <string name="nav_groups">Groups</string>
+    <string name="nav_spending">Spending</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Groups -->
+    <string name="groups_title">Groups</string>
+    <string name="groups_new">New group</string>
+    <string name="groups_current">Open</string>
+    <string name="groups_edit">Edit this group</string>
+    <string name="groups_no_orders">no orders yet</string>
+    <string name="groups_meta_separator">" · "</string>
+    <plurals name="groups_people">
+        <item quantity="one">%d person</item>
+        <item quantity="other">%d people</item>
+    </plurals>
+    <plurals name="groups_orders">
+        <item quantity="one">%d order</item>
+        <item quantity="other">%d orders</item>
+    </plurals>
+    <plurals name="groups_drafts">
+        <item quantity="one">%d unfinished</item>
+        <item quantity="other">%d unfinished</item>
+    </plurals>
+
+    <!-- Editing one group -->
+    <string name="edit_group_title">Group</string>
+    <string name="edit_group_spent">Settled</string>
+    <string name="edit_group_open">Still open</string>
+    <string name="edit_group_name">Group name</string>
+    <string name="edit_group_name_required">A group needs a name.</string>
+    <string name="edit_group_orders">Orders</string>
+    <string name="edit_group_orders_count">Orders (%1$d)</string>
+    <string name="edit_group_order_detail">%1$s · %2$s</string>
+    <string name="edit_group_settled">Settled</string>
+    <string name="edit_group_draft">Unfinished</string>
+    <string name="edit_group_open_order">Open this order</string>
+    <string name="edit_group_add_order">Add an order</string>
+    <string name="edit_group_people_count">People (%1$d)</string>
+    <string name="edit_group_manage_people">Manage people</string>
+    <string name="edit_group_save">Save</string>
+    <string name="edit_group_save_failed">That name could not be saved.</string>
+    <string name="edit_group_delete">Delete this group</string>
+    <string name="edit_group_delete_title">Delete %1$s?</string>
+    <string name="edit_group_delete_message">Every order, item and settlement in this group goes with it. This cannot be undone.</string>
+    <string name="edit_group_delete_last">This is your only group, so there would be nowhere left to go. Make another one first.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">You</string>
+    <string name="profile_unknown_name">Who are you?</string>
+    <string name="profile_unknown_body">Pick yourself below and this app can tell you what you are owed, instead of listing everybody.</string>
+    <string name="profile_nothing_yet">Nothing settled in this group yet.</string>
+    <string name="profile_square">You are square with everyone.</string>
+    <string name="profile_owed">You are owed %1$s</string>
+    <string name="profile_owes">You owe %1$s</string>
+    <string name="profile_standing_detail">Paid %1$s · your share %2$s</string>
+    <string name="profile_pick_label">Which one is you?</string>
+    <string name="profile_pick_body">Kept separately for each group, since you are a different row in each. Tap yourself again to unset it.</string>
+    <string name="profile_this_is_me">This is you</string>
+    <string name="profile_more">More</string>
+    <string name="profile_appearance">Appearance and colour scheme</string>
+    <string name="profile_settings">All settings</string>
+    <string name="profile_privacy_note">There is no account here. This is a note to the app about which row is yours, kept on this phone like everything else.</string>
+
 </resources>

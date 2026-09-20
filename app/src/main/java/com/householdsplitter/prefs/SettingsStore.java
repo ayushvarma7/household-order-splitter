@@ -25,6 +25,7 @@ public class SettingsStore {
     private static final String KEY_WELCOME_SEEN = "welcome_seen";
     private static final String KEY_THEME = "theme_mode";
     private static final String KEY_LAST_STORE = "last_store";
+    private static final String KEY_SELF_PREFIX = "self_member_in_";
     private static final String KEY_CURRENT_HOUSEHOLD = "current_household";
     private static final String KEY_PALETTE = "palette";
 
@@ -190,6 +191,26 @@ public class SettingsStore {
 
     public void currentHouseholdId(long householdId) {
         preferences.edit().putLong(KEY_CURRENT_HOUSEHOLD, householdId).apply();
+    }
+
+    /**
+     * Which member of a group is the person holding the phone.
+     *
+     * <p>The app has never needed to know. A split is symmetric: it produces a figure for
+     * everybody and has no opinion about which of them is reading it, and that is the right
+     * shape for the arithmetic. It is the wrong shape for a sentence, though. "Ben pays Ana
+     * $12.40" is an instruction to somebody, and the app cannot say which without this.
+     *
+     * <p>Kept per group, because you are a different row in each one. Zero means not chosen,
+     * which is every existing install, and every screen that uses this has to read as well
+     * without it as it did before, since most people will never set it.
+     */
+    public long selfMemberId(long householdId) {
+        return preferences.getLong(KEY_SELF_PREFIX + householdId, 0L);
+    }
+
+    public void selfMemberId(long householdId, long memberId) {
+        preferences.edit().putLong(KEY_SELF_PREFIX + householdId, memberId).apply();
     }
 
     /**

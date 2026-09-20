@@ -155,17 +155,14 @@ public class HomeFragment extends BaseFragment {
         binding.newOrderFab.setOnClickListener(v -> startNewOrder());
         binding.emptyStateButton.setOnClickListener(v -> startNewOrder());
 
-        // A hamburger rather than an overflow. Everything that used to hide behind the
-        // three dots now lives in the drawer alongside the group switcher, because "which
-        // group am I in" and "what else can I do" are the same question at the top level,
-        // and an overflow menu cannot answer the first one at all.
-        binding.toolbar.setNavigationIcon(R.drawable.ic_menu);
-        binding.toolbar.setNavigationContentDescription(R.string.drawer_open);
-        binding.toolbar.setNavigationOnClickListener(v -> {
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).openDrawer();
-            }
-        });
+        // No navigation icon at all now. This is a top level screen and the bar across the
+        // foot says so; a back arrow or a hamburger here would be a second answer to
+        // "where am I" competing with the first.
+        //
+        // What sits in the corner instead is you, which is the one thing the tab bar has
+        // no room for and the one place the answer to "and what do I owe" belongs.
+        binding.profileButton.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.profileFragment));
     }
 
     /**

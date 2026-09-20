@@ -20,7 +20,7 @@
         style="@style/Widget.Splitter.Toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:title="@string/widget_configure_title"
+        app:title="@string/widget_configure_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

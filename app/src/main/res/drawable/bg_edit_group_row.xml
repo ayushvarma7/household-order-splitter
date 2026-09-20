@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A tinted row on the group editor. A container colour rather than an outline, so a list
+     of them reads as a stack of items rather than a grid of boxes. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorSurfaceContainer" />
+            <corners android:radius="@dimen/radius_m" />
+        </shape>
+    </item>
+</ripple>
