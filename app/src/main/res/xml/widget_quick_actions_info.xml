@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One cell high and three wide, resizable horizontally only. Making it taller would give the
+  buttons room they have no use for; making it narrower than three cells would crush three
+  labels into a space that fits one.
+
+  updatePeriodMillis is zero because there is nothing here to go stale. The balances widget
+  is redrawn when an order settles; this one draws the same three buttons forever.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_quick_description"
+    android:initialLayout="@layout/widget_quick_actions"
+    android:minHeight="40dp"
+    android:minWidth="180dp"
+    android:previewLayout="@layout/widget_quick_actions"
+    android:resizeMode="horizontal"
+    android:targetCellHeight="1"
+    android:targetCellWidth="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

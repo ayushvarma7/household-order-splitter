@@ -68,6 +68,36 @@
                 android:resource="@xml/widget_balances_info" />
         </receiver>
 
+        <!-- The quick actions widget: three buttons, no database read. -->
+        <receiver
+            android:name=".widget.QuickActionsWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_quick_actions_info" />
+        </receiver>
+
+        <!--
+          Asked once, when a balances widget is placed: which group should it show?
+
+          exported="true" is required rather than careless. The launcher starts this
+          activity on the user's behalf when they drop the widget, and it is a different
+          app, so a configuration activity that is not exported is simply never launched and
+          the widget can never be placed at all.
+        -->
+        <activity
+            android:name=".widget.BalancesWidgetConfigureActivity"
+            android:exported="true"
+            android:label="@string/widget_configure_title"
+            android:theme="@style/Theme.HouseholdSplitter">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <!--
           The quick settings tile. Reachable from the lock screen shade on every device from
           Android 7 up, which is what makes it the dependable half of the lock screen story

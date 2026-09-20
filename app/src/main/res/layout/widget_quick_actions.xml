@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The quick actions widget: a row of the three things somebody opens this app to do.
+
+  Only classes RemoteViews accepts appear here, which rules out plain View, Space and
+  anything Material. A launcher inflates this in its own process, so an unsupported class
+  fails there rather than here and nothing in this app would ever see it.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/quickRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_widget"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/quickScan"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/bg_widget_action"
+        android:drawableTop="@drawable/ic_widget_scan"
+        android:drawablePadding="4dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="6dp"
+        android:text="@string/widget_scan_bill"
+        android:textColor="@color/widget_action_text"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/quickNewOrder"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_widget_action"
+        android:drawableTop="@drawable/ic_widget_new_order"
+        android:drawablePadding="4dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="6dp"
+        android:text="@string/widget_action_new_order"
+        android:textColor="@color/widget_action_text"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/quickBalances"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_widget_action"
+        android:drawableTop="@drawable/ic_widget_balances"
+        android:drawablePadding="4dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="6dp"
+        android:text="@string/widget_action_balances"
+        android:textColor="@color/widget_action_text"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+</LinearLayout>

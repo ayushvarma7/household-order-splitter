@@ -12,10 +12,14 @@ import com.householdsplitter.R;
 import com.householdsplitter.SplitterApp;
 import com.householdsplitter.core.analytics.Balances;
 import com.householdsplitter.core.money.CurrencyFormat;
+import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.di.ServiceLocator;
 import com.householdsplitter.ui.MainActivity;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A home-screen widget showing who owes whom.
@@ -62,45 +66,123 @@ public class BalancesWidgetProvider extends AppWidgetProvider {
         PendingResult pending = goAsync();
         ServiceLocator locator = ((SplitterApp) context.getApplicationContext())
                 .serviceLocator();
+        WidgetPreferences bindings = new WidgetPreferences(context);
 
         locator.executors().diskIO().execute(() -> {
-            // The selected group, not the first one. Before groups could be switched these
-            // were always the same household and getHouseholdSync was correct; once the
-            // drawer let a second group exist, the widget carried on reporting whichever
-            // group had the lowest id while the app showed another one, and the two
-            // disagreed about who owed what.
-            com.householdsplitter.data.entity.Household household = selectedHousehold(locator);
-            if (household == null) {
-                // Nothing set up yet. An invitation, not an error.
-                push(context, manager, appWidgetIds,
-                        context.getString(R.string.app_name),
-                        context.getString(R.string.widget_no_household), null, null);
+            // Widgets are grouped by the household they show before anything is read, so a
+            // home screen holding four widgets of the same group costs one pass over the
+            // orders rather than four. Two widgets of two groups cost two, which is the
+            // work actually being asked for.
+            Map<Long, List<Integer>> byHousehold = new LinkedHashMap<>();
+            for (int appWidgetId : appWidgetIds) {
+                Household household = householdFor(locator, bindings, appWidgetId);
+                long key = household == null ? 0L : household.id;
+                List<Integer> ids = byHousehold.get(key);
+                if (ids == null) {
+                    ids = new ArrayList<>();
+                    byHousehold.put(key, ids);
+                }
+                ids.add(appWidgetId);
+            }
+
+            // One countdown across every group, so the receiver stays alive until the last
+            // of them has been drawn rather than until the first finishes.
+            final int[] outstanding = {byHousehold.size()};
+            final Runnable done = () -> {
+                synchronized (outstanding) {
+                    if (--outstanding[0] <= 0) {
+                        pending.finish();
+                    }
+                }
+            };
+            if (byHousehold.isEmpty()) {
                 pending.finish();
                 return;
             }
-            locator.workbookService().analyse(household.id, insight -> {
-                try {
-                    if (insight == null || insight.balances == null) {
-                        push(context, manager, appWidgetIds, household.name,
-                                context.getString(R.string.widget_nothing_yet), null, null);
-                        return;
-                    }
-                    List<Balances.Transfer> transfers = insight.balances.transfers();
-                    if (transfers.isEmpty()) {
-                        push(context, manager, appWidgetIds, household.name,
-                                context.getString(R.string.widget_all_square), null, null);
-                        return;
-                    }
-                    CurrencyFormat money = new CurrencyFormat(
-                            locator.settings().currencySymbol(), locator.settings().locale());
-                    String[] rows = rowsFor(context, transfers, money);
-                    push(context, manager, appWidgetIds, household.name, null, rows,
-                            moreFor(context, transfers.size(), rows.length));
-                } finally {
-                    pending.finish();
+
+            for (Map.Entry<Long, List<Integer>> entry : byHousehold.entrySet()) {
+                int[] ids = toArray(entry.getValue());
+                if (entry.getKey() == 0L) {
+                    // Nothing set up yet. An invitation, not an error.
+                    push(context, manager, ids, context.getString(R.string.app_name),
+                            context.getString(R.string.widget_no_household), null, null);
+                    done.run();
+                    continue;
                 }
-            });
+                Household household =
+                        locator.database().householdDao().getByIdSync(entry.getKey());
+                String title = household == null
+                        ? context.getString(R.string.app_name) : household.name;
+                locator.workbookService().analyse(entry.getKey(), insight -> {
+                    try {
+                        if (insight == null || insight.balances == null) {
+                            push(context, manager, ids, title,
+                                    context.getString(R.string.widget_nothing_yet), null, null);
+                            return;
+                        }
+                        List<Balances.Transfer> transfers = insight.balances.transfers();
+                        if (transfers.isEmpty()) {
+                            push(context, manager, ids, title,
+                                    context.getString(R.string.widget_all_square), null, null);
+                            return;
+                        }
+                        CurrencyFormat money = new CurrencyFormat(
+                                locator.settings().currencySymbol(),
+                                locator.settings().locale());
+                        String[] rows = rowsFor(context, transfers, money);
+                        push(context, manager, ids, title, null, rows,
+                                moreFor(context, transfers.size(), rows.length));
+                    } finally {
+                        done.run();
+                    }
+                });
+            }
         });
+    }
+
+    /**
+     * Forgets a widget the user has removed, so the bindings file does not accumulate ids
+     * that no longer exist and a launcher reusing one cannot inherit an old group.
+     */
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        super.onDeleted(context, appWidgetIds);
+        new WidgetPreferences(context).forget(appWidgetIds);
+    }
+
+    /**
+     * Which group this particular widget shows.
+     *
+     * <p>Its configured group where it has one, otherwise whichever the app has open,
+     * otherwise the first that exists. The last fallback matters: a configured group can be
+     * deleted, and a widget that only read its binding would then show nothing at all
+     * rather than what the app itself falls back to.
+     */
+    private static Household householdFor(ServiceLocator locator, WidgetPreferences bindings,
+                                          int appWidgetId) {
+        long bound = bindings.householdFor(appWidgetId);
+        if (bound != WidgetPreferences.FOLLOW_APP) {
+            Household configured = locator.database().householdDao().getByIdSync(bound);
+            if (configured != null) {
+                return configured;
+            }
+        }
+        long open = locator.currentHouseholdId();
+        if (open != 0L) {
+            Household chosen = locator.database().householdDao().getByIdSync(open);
+            if (chosen != null) {
+                return chosen;
+            }
+        }
+        return locator.database().householdDao().getHouseholdSync();
+    }
+
+    private static int[] toArray(List<Integer> values) {
+        int[] out = new int[values.size()];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = values.get(i);
+        }
+        return out;
     }
 
     private void push(Context context, AppWidgetManager manager, int[] appWidgetIds,
@@ -168,26 +250,6 @@ public class BalancesWidgetProvider extends AppWidgetProvider {
     public static String moreFor(Context context, int transferCount, int shownCount) {
         return transferCount > shownCount
                 ? context.getString(R.string.widget_more, transferCount - shownCount) : null;
-    }
-
-    /**
-     * The group the app is currently showing, falling back to the first that exists.
-     *
-     * <p>The fallback matters: a remembered group can be deleted, and a widget that read
-     * the setting alone would then show nothing at all rather than the group the app itself
-     * falls back to.
-     */
-    private static com.householdsplitter.data.entity.Household selectedHousehold(
-            ServiceLocator locator) {
-        long selected = locator.currentHouseholdId();
-        if (selected != 0L) {
-            com.householdsplitter.data.entity.Household chosen =
-                    locator.database().householdDao().getByIdSync(selected);
-            if (chosen != null) {
-                return chosen;
-            }
-        }
-        return locator.database().householdDao().getHouseholdSync();
     }
 
     /** Straight to the camera with a bill in front of it, skipping the store picker. */

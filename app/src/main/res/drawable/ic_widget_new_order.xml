@@ -1,0 +1,13 @@
+<!--
+  A widget copy of an interface glyph.
+
+  Separate files because a widget is inflated in the launcher's process, where a theme
+  attribute such as ?attr/colorPrimary does not resolve to anything. Every colour a widget
+  draws has to be a literal or a colour resource, so these carry one.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@color/widget_action_text"
+        android:pathData="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+</vector>

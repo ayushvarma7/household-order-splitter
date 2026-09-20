@@ -484,4 +484,13 @@
     <string name="widget_scan_bill">Scan a bill</string>
     <string name="tile_scan_bill">Split a bill</string>
 
+    <!-- Home screen widgets -->
+    <string name="widget_configure_title">Which group?</string>
+    <string name="widget_configure_body">This widget will show who owes whom in the group you pick. Place a second widget to watch another group at the same time.</string>
+    <string name="widget_configure_follow_app">Whichever group is open</string>
+    <string name="widget_configure_follow_app_detail">Follows the group you last opened in the app</string>
+    <string name="widget_quick_description">Two taps you would otherwise open the app for: photograph a restaurant bill, or start an order from a screenshot.</string>
+    <string name="widget_action_new_order">New order</string>
+    <string name="widget_action_balances">Who owes whom</string>
+
 </resources>
