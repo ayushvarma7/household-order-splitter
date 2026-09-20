@@ -56,7 +56,11 @@ public class RealBillCalibrationTest {
             "bill-photo-1.jpg", "bill-photo-2.jpg",
             "bill-sroie-000.jpg", "bill-sroie-001.jpg", "bill-sroie-002.jpg",
             "bill-sroie-003.jpg", "bill-sroie-004.jpg", "bill-sroie-005.jpg",
-            "bill-sroie-006.jpg", "bill-sroie-007.jpg");
+            "bill-sroie-006.jpg", "bill-sroie-007.jpg",
+            // A Burlington till receipt, photographed on a Pixel 8 and reported as reading
+            // nothing at all. It is the first fixture here that came off a camera rather
+            // than a scanner, which is exactly why it found what it found.
+            "bill-burlington.jpg");
 
     private static boolean present(String name) {
         try {

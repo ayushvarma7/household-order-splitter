@@ -56,4 +56,50 @@ public class ReceiptCaseTest {
         assertEquals(null, ReceiptCase.title(null));
         assertEquals("", ReceiptCase.title(""));
     }
+
+    /**
+     * A real Burlington line, which is a style code, a product, a SKU, a count and a unit
+     * price, all of it left of the amount column and all of it reaching the name.
+     */
+    @Test
+    public void stockCodesAndStrayFiguresAreNotPartOfTheName() {
+        assertEquals("POWERBLEND HOODIE-MAROON",
+                ReceiptCase.withoutCodes("CPM253FH68 POWERBLEND HOODIE-MAROON M337784517 16.99"));
+    }
+
+    /** Short alphanumerics are real names and must survive. */
+    @Test
+    public void sizesAndShortNamesSurvive() {
+        assertEquals("COKE 500ML", ReceiptCase.withoutCodes("COKE 500ML"));
+        assertEquals("7UP", ReceiptCase.withoutCodes("7UP"));
+        assertEquals("A1 SAUCE", ReceiptCase.withoutCodes("A1 SAUCE"));
+        assertEquals("CAESAR SALAD", ReceiptCase.withoutCodes("CAESAR SALAD"));
+    }
+
+    /** Stripping everything would leave a row labelled with nothing, which is worse. */
+    @Test
+    public void aLineThatIsNothingButCodesKeepsWhatItHad() {
+        assertEquals("9556789012345", ReceiptCase.withoutCodes("9556789012345"));
+        assertEquals("16.99", ReceiptCase.withoutCodes("16.99"));
+    }
+
+    @Test
+    public void theTwoStepsComposeTheWayTheReaderUsesThem() {
+        assertEquals("Powerblend Hoodie-maroon",
+                ReceiptCase.title(ReceiptCase.withoutCodes(
+                        "CPM253FH68 POWERBLEND HOODIE-MAROON M337784517 16.99")));
+    }
+
+    /** The count column bleeding into the name, which is where the Burlington row ended up. */
+    @Test
+    public void aCountStrandedBetweenWordsIsNotPartOfTheName() {
+        assertEquals("POWERBLEND HOODIE", ReceiptCase.withoutCodes("POWERBLEND 1 HOODIE"));
+    }
+
+    /** But a number that is genuinely part of a short name stays. */
+    @Test
+    public void aNumberInAShortNameStays() {
+        assertEquals("7 UP", ReceiptCase.withoutCodes("7 UP"));
+        assertEquals("PIZZA 12", ReceiptCase.withoutCodes("PIZZA 12"));
+    }
 }

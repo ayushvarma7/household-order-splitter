@@ -14,6 +14,7 @@ import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.restaurant.Redact;
+import com.householdsplitter.util.Images;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,26 +79,15 @@ public class MlKitTextSource {
         }
     }
 
+    /**
+     * SPEC 8.2.1: load, downscale to the long-edge limit, and turn the right way up.
+     *
+     * <p>The turning is the part that was missing, and it cost the whole restaurant
+     * feature: a camera writes its pixels in the sensor's orientation and records how the
+     * phone was held in an EXIF tag, which BitmapFactory ignores. See {@link Images}.
+     */
     private Bitmap loadDownscaled(Uri uri) throws IOException {
-        BitmapFactory.Options bounds = new BitmapFactory.Options();
-        bounds.inJustDecodeBounds = true;
-        try (InputStream stream = context.getContentResolver().openInputStream(uri)) {
-            BitmapFactory.decodeStream(stream, null, bounds);
-        }
-        int longEdge = Math.max(bounds.outWidth, bounds.outHeight);
-        if (longEdge <= 0) {
-            throw new IOException("That file is not an image");
-        }
-        int sample = 1;
-        while (longEdge / (sample * 2) >= maxDimensionPx) {
-            sample *= 2;
-        }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = sample;
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        try (InputStream stream = context.getContentResolver().openInputStream(uri)) {
-            return BitmapFactory.decodeStream(stream, null, options);
-        }
+        return Images.decode(context, uri, maxDimensionPx);
     }
 
     /**

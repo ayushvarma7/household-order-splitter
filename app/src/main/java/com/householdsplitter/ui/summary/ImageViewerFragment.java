@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.householdsplitter.R;
+import com.householdsplitter.util.Images;
 import com.householdsplitter.databinding.FragmentImageViewerBinding;
 import com.householdsplitter.ui.common.Insets;
 
@@ -50,7 +51,7 @@ public class ImageViewerFragment extends Fragment {
 
         if (uri != null) {
             try {
-                binding.image.setImageURI(Uri.parse(uri));
+                Images.into(binding.image, Uri.parse(uri), 2048);
             } catch (SecurityException noLongerPermitted) {
                 binding.image.setImageDrawable(null);
             }

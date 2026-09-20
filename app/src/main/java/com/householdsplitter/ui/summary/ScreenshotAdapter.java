@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.householdsplitter.R;
+import com.householdsplitter.util.Images;
 import com.householdsplitter.databinding.ItemScreenshotThumbBinding;
 
 /** SPEC 7.12.2: the thumbnail strip of the original screenshots. */
@@ -62,7 +63,7 @@ public class ScreenshotAdapter
 
         void bind(String uri, int position, Listener listener) {
             try {
-                binding.thumbnail.setImageURI(Uri.parse(uri));
+                Images.into(binding.thumbnail, Uri.parse(uri), 512);
             } catch (SecurityException noLongerPermitted) {
                 // The user revoked access to the picture. The order still reads fine
                 // without it, so the tile simply stays blank.

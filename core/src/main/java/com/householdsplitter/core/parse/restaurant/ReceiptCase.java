@@ -62,6 +62,96 @@ public final class ReceiptCase {
     private ReceiptCase() {
     }
 
+    /**
+     * Drops the parts of a till line that are not what the thing is called.
+     *
+     * <p>A receipt row carries more than a name. A Burlington line reads
+     * {@code CPM253FH68 POWERBLEND HOODIE-MAROON 029 M337784517 1 16.99}, of which the
+     * product is three words and the rest is a style code, a SKU, a count and a unit price.
+     * All of it sits left of the amount column, so all of it reaches the name.
+     *
+     * <p>Three things go, and each is recognisable without knowing the shop:
+     *
+     * <ul>
+     *   <li>an amount, because the charged one is taken from the amount column and any
+     *       other figure on the row is a unit price or a discount;
+     *   <li>a long run of digits, which is a barcode or a receipt number, never a name;
+     *   <li>a long token mixing letters and digits, which is a SKU. Short ones are left
+     *       alone, because "500ML", "7UP" and "A1" are all real and all look like this.
+     * </ul>
+     *
+     * <p>If that removes everything, the original is kept. A name that reads badly is a
+     * great deal better than a row labelled with nothing at all, and the user is looking
+     * at a screen built for correcting exactly this.
+     */
+    public static String withoutCodes(String name) {
+        if (name == null || name.isEmpty()) {
+            return name;
+        }
+        String[] tokens = name.trim().split("\\s+");
+        int words = 0;
+        for (String token : tokens) {
+            if (token.matches(".*[A-Za-z]{3,}.*")) {
+                words++;
+            }
+        }
+        StringBuilder kept = new StringBuilder(name.length());
+        for (String token : tokens) {
+            if (isAmount(token) || isLongDigitRun(token) || isProductCode(token)) {
+                continue;
+            }
+            // A bare small integer stranded between words is the count column bleeding into
+            // the name: "POWERBLEND 1 HOODIE". The count is captured separately, so it is
+            // not being lost here, only stopped from appearing twice.
+            //
+            // Only when two real words survive without it, because "7 UP" and "PIZZA 12"
+            // exist and a name is worth more than a tidy one.
+            if (words >= 2 && token.matches("\\d{1,2}")) {
+                continue;
+            }
+            if (kept.length() > 0) {
+                kept.append(' ');
+            }
+            kept.append(token);
+        }
+        String cleaned = kept.toString().trim();
+        return cleaned.isEmpty() ? name : cleaned;
+    }
+
+    private static boolean isAmount(String token) {
+        return token.matches("-?[\\p{Sc}]?\\d{1,3}(,\\d{3})*\\.\\d{2}[.,;:]?");
+    }
+
+    /** Five digits or more with nothing else in them: a barcode, not a word. */
+    private static boolean isLongDigitRun(String token) {
+        String bare = token.replaceAll("[^0-9]", "");
+        return bare.length() >= 5 && bare.length() == token.replaceAll("[^0-9A-Za-z]", "").length();
+    }
+
+    /**
+     * A long token that mixes letters and digits, which on a receipt is a stock code.
+     *
+     * <p>Six characters is the floor, and it is chosen to protect real names rather than to
+     * catch every code: sizes and product names are routinely alphanumeric and short, and
+     * losing "500ML" off a drink is a worse outcome than keeping one SKU.
+     */
+    private static boolean isProductCode(String token) {
+        String bare = token.replaceAll("[^0-9A-Za-z]", "");
+        if (bare.length() < 6) {
+            return false;
+        }
+        int digits = 0;
+        int letters = 0;
+        for (int i = 0; i < bare.length(); i++) {
+            if (Character.isDigit(bare.charAt(i))) {
+                digits++;
+            } else {
+                letters++;
+            }
+        }
+        return digits >= 2 && letters >= 1;
+    }
+
     public static String title(String name) {
         if (name == null || name.isEmpty()) {
             return name;

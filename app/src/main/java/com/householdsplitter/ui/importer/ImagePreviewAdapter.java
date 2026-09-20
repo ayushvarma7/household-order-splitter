@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.householdsplitter.databinding.ItemImagePreviewBinding;
+import com.householdsplitter.util.Images;
 
 /** SPEC 7.4.2: the preview strip, each with a remove control and a drag handle. */
 public class ImagePreviewAdapter
@@ -63,7 +64,7 @@ public class ImagePreviewAdapter
 
         @SuppressWarnings("ClickableViewAccessibility")
         void bind(String uri, int position, Listener listener) {
-            binding.preview.setImageURI(Uri.parse(uri));
+            Images.into(binding.preview, Uri.parse(uri), 512);
             binding.positionLabel.setText(String.valueOf(position + 1));
             binding.removeButton.setContentDescription("Remove screenshot " + (position + 1));
             binding.removeButton.setOnClickListener(v ->

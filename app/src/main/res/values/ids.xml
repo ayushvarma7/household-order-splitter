@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Tags the URI an ImageView was last asked to load, so an asynchronous decode that
+      finishes after the view has been recycled can tell that it is no longer wanted. A
+      view tag needs a declared id rather than a bare integer, or two libraries tagging the
+      same view silently overwrite each other.
+    -->
+    <item name="image_uri_tag" type="id" />
+</resources>

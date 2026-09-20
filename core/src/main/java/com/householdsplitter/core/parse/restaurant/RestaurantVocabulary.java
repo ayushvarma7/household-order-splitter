@@ -609,7 +609,7 @@ public final class RestaurantVocabulary implements StoreVocabulary {
     /** A till prints in capitals because it has no choice. See {@link ReceiptCase}. */
     @Override
     public String presentName(String name) {
-        return ReceiptCase.title(name);
+        return ReceiptCase.title(ReceiptCase.withoutCodes(name));
     }
 
     @Override
