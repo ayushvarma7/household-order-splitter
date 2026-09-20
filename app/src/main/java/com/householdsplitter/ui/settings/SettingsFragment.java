@@ -39,6 +39,12 @@ import com.householdsplitter.ui.common.StateColors;
 /** S14. SPEC 7.14. */
 public class SettingsFragment extends BaseFragment {
 
+    /** A tab, not a step down: siblings fade through rather than sliding. */
+    @Override
+    protected boolean isTopLevel() {
+        return true;
+    }
+
     private FragmentSettingsBinding binding;
     private SettingsStore settings;
     private BackupService backup;

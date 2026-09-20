@@ -43,6 +43,12 @@ import java.util.Locale;
  */
 public class AnalyticsFragment extends BaseFragment {
 
+    /** A tab, not a step down: siblings fade through rather than sliding. */
+    @Override
+    protected boolean isTopLevel() {
+        return true;
+    }
+
     private FragmentAnalyticsBinding binding;
     private AnalyticsViewModel model;
     private CurrencyFormat money;

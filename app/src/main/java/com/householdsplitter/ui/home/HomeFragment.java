@@ -38,6 +38,12 @@ import com.householdsplitter.ui.summary.SummaryFragment;
 /** S3, Home. SPEC 7.3. */
 public class HomeFragment extends BaseFragment {
 
+    /** A tab, not a step down: siblings fade through rather than sliding. */
+    @Override
+    protected boolean isTopLevel() {
+        return true;
+    }
+
     private FragmentHomeBinding binding;
     private HomeViewModel model;
     private OrderAdapter adapter;

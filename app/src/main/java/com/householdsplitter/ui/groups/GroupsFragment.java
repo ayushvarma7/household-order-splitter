@@ -36,6 +36,12 @@ import java.util.List;
  */
 public class GroupsFragment extends BaseFragment {
 
+    /** A tab, not a step down: siblings fade through rather than sliding. */
+    @Override
+    protected boolean isTopLevel() {
+        return true;
+    }
+
     private FragmentGroupsBinding binding;
 
     @Nullable
@@ -98,6 +104,18 @@ public class GroupsFragment extends BaseFragment {
         row.groupName.setText(summary.group.name);
         row.groupInitial.setText(summary.group.name.isEmpty()
                 ? "?" : summary.group.name.substring(0, 1).toUpperCase());
+        // A disc behind it. Without one the letter floats in the corner of the card with
+        // nothing to belong to, which is the single clearest tell that a screen was laid
+        // out and never looked at.
+        android.graphics.drawable.GradientDrawable disc =
+                new android.graphics.drawable.GradientDrawable();
+        disc.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        disc.setColor(com.google.android.material.color.MaterialColors.getColor(
+                row.groupInitial, com.google.android.material.R.attr.colorSecondaryContainer));
+        row.groupInitial.setBackground(disc);
+        row.groupInitial.setTextColor(com.google.android.material.color.MaterialColors.getColor(
+                row.groupInitial,
+                com.google.android.material.R.attr.colorOnSecondaryContainer));
         row.groupMeta.setText(summary.describe(requireContext(),
                 locator().settings().currencySymbol(), locator().settings().locale()));
 

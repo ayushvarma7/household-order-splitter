@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Inter, in four weights.
+
+  Bundled rather than fetched. Android's downloadable fonts arrive through Google Play
+  Services, which is a network request made by another app on this one's behalf, and this
+  app's whole claim is that it does not make any. Four Latin-subset static faces come to
+  272 KB, which is a fair price for the claim staying literally true.
+
+  Static instances rather than the variable file, because selecting a weight from a
+  variable font needs API 26 and this app supports 24. A variable file would silently
+  render every weight at Regular on Android 7.
+
+  Licensed under the SIL Open Font Licence, reproduced in docs/licences. The faces
+  are redistributed unmodified.
+
+  Inter specifically because this app is mostly numbers in columns: it has tabular figures,
+  which is what lets a list of amounts line up digit under digit, and it was drawn for
+  screens at small sizes rather than adapted to them.
+-->
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto">
+    <font app:font="@font/inter_regular" app:fontStyle="normal" app:fontWeight="400" />
+    <font app:font="@font/inter_medium" app:fontStyle="normal" app:fontWeight="500" />
+    <font app:font="@font/inter_semibold" app:fontStyle="normal" app:fontWeight="600" />
+    <font app:font="@font/inter_bold" app:fontStyle="normal" app:fontWeight="700" />
+</font-family>

@@ -10,6 +10,35 @@
     -->
     <style name="Theme.HouseholdSplitter" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
+
+        <!--
+          Typography, mapped attribute by attribute rather than by setting a font on the
+          theme and hoping.
+
+          A theme level android:fontFamily does not reach a Material component, because
+          every Material text appearance names its own family and wins. Pointing each of
+          the fifteen attributes at a restated style is what makes a button, a toolbar
+          title, a text field label and a snackbar all arrive in the same typeface without
+          any of them being told about it. See type.xml.
+        -->
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.Splitter.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.Splitter.DisplayMedium</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Splitter.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Splitter.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Splitter.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Splitter.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Splitter.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Splitter.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Splitter.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Splitter.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Splitter.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Splitter.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Splitter.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Splitter.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Splitter.LabelSmall</item>
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="fontFamily">@font/inter</item>
+
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
         <item name="colorOnPrimaryContainer">@color/on_primary_container</item>

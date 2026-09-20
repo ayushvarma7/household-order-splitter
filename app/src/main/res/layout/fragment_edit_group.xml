@@ -84,7 +84,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/space_xxs"
-                                android:textAppearance="@style/Text.ScreenTitle"
+                                android:textAppearance="@style/Text.MoneyLarge"
                                 android:textColor="?attr/colorOnSecondaryContainer" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -115,7 +115,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/space_xxs"
-                                android:textAppearance="@style/Text.ScreenTitle" />
+                                android:textAppearance="@style/Text.MoneyLarge" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
