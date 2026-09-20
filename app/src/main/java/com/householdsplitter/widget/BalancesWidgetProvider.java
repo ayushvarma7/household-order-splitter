@@ -64,8 +64,12 @@ public class BalancesWidgetProvider extends AppWidgetProvider {
                 .serviceLocator();
 
         locator.executors().diskIO().execute(() -> {
-            com.householdsplitter.data.entity.Household household =
-                    locator.database().householdDao().getHouseholdSync();
+            // The selected group, not the first one. Before groups could be switched these
+            // were always the same household and getHouseholdSync was correct; once the
+            // drawer let a second group exist, the widget carried on reporting whichever
+            // group had the lowest id while the app showed another one, and the two
+            // disagreed about who owed what.
+            com.householdsplitter.data.entity.Household household = selectedHousehold(locator);
             if (household == null) {
                 // Nothing set up yet. An invitation, not an error.
                 push(context, manager, appWidgetIds,
@@ -140,6 +144,7 @@ public class BalancesWidgetProvider extends AppWidgetProvider {
         }
 
         views.setOnClickPendingIntent(R.id.widgetRoot, openBalances(context));
+        views.setOnClickPendingIntent(R.id.widgetScan, scanBill(context));
         return views;
     }
 
@@ -163,6 +168,39 @@ public class BalancesWidgetProvider extends AppWidgetProvider {
     public static String moreFor(Context context, int transferCount, int shownCount) {
         return transferCount > shownCount
                 ? context.getString(R.string.widget_more, transferCount - shownCount) : null;
+    }
+
+    /**
+     * The group the app is currently showing, falling back to the first that exists.
+     *
+     * <p>The fallback matters: a remembered group can be deleted, and a widget that read
+     * the setting alone would then show nothing at all rather than the group the app itself
+     * falls back to.
+     */
+    private static com.householdsplitter.data.entity.Household selectedHousehold(
+            ServiceLocator locator) {
+        long selected = locator.currentHouseholdId();
+        if (selected != 0L) {
+            com.householdsplitter.data.entity.Household chosen =
+                    locator.database().householdDao().getByIdSync(selected);
+            if (chosen != null) {
+                return chosen;
+            }
+        }
+        return locator.database().householdDao().getHouseholdSync();
+    }
+
+    /** Straight to the camera with a bill in front of it, skipping the store picker. */
+    private static PendingIntent scanBill(Context context) {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.putExtra(MainActivity.EXTRA_OPEN, MainActivity.OPEN_SCAN_BILL);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // A distinct request code, or this would replace the balances intent rather than
+        // sit beside it: PendingIntents that differ only in their extras are the same
+        // PendingIntent as far as the system is concerned.
+        return PendingIntent.getActivity(context, 1, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     /** Tapping the widget lands on the screen the numbers came from, not just the app. */

@@ -180,6 +180,20 @@ public class ReviewItemsViewModel extends ViewModel {
         // Typed by a person, so the reader is not judged on it and, if the text turns out
         // to be on a screenshot after all, it is a charge the reader missed.
         item.origin = ItemOrigin.MANUAL;
+        // Started at whatever the rows are short of the printed subtotal.
+        //
+        // When the bill states a subtotal and the rows do not reach it, the amount of the
+        // row about to be typed is not a guess: it is the difference, exactly. Filling it in
+        // saves the commonest case a step, and where the shortfall is larger than one row it
+        // is still a better starting figure than nothing, because it is visibly wrong and
+        // gets corrected rather than silently accepted.
+        //
+        // Zero when the rows already add up, when the bill stated no subtotal, or when the
+        // rows overshoot, which is a different problem and not one a new row solves.
+        long shortfall = unaccountedCents();
+        if (shortfall > 0L) {
+            item.lineTotalCents = shortfall;
+        }
         return item;
     }
 }

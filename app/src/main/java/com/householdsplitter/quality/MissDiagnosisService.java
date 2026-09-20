@@ -97,13 +97,39 @@ public class MissDiagnosisService {
             }
             ParseTrace trace = new ParseTrace();
             new ReceiptLayoutParser(store.vocabulary()).parse(pages, trace);
-            store(item, MissDiagnosis.diagnose(trace, item.name).verdict);
+            store(item, verdictFor(trace, item));
         } catch (Exception unreadable) {
             // A screenshot the user has since deleted, most likely. No verdict is the
             // truthful outcome, and a guessed one would be worse than none.
         } finally {
             source.close();
         }
+    }
+
+    /**
+     * The verdict, by name first and then by amount.
+     *
+     * <p>The name is asked first because it is what the user typed and so is what they are
+     * asking about. When it finds nothing, the row's own amount is asked instead, and that
+     * question is a much better one: the user has just typed in a row worth exactly this
+     * much, so a band on the page carrying exactly that figure is almost certainly the row
+     * the reader lost. A name match is a similarity score with a threshold; an amount match
+     * is arithmetic.
+     *
+     * <p>Second rather than first, because an amount can coincide where a name cannot. Two
+     * dishes at $12.00 are ordinary, two dishes called the same thing are not, so when the
+     * name does find something it is the better evidence and it wins.
+     *
+     * <p>This matters most for a photographed bill, where a name is abbreviated to fit a
+     * till roll and typed out in full by the user, so the name match has the least to work
+     * with exactly where the amount match has the most.
+     */
+    private static MissDiagnosis.Verdict verdictFor(ParseTrace trace, LineItem item) {
+        MissDiagnosis.Verdict byName = MissDiagnosis.diagnose(trace, item.name).verdict;
+        if (byName != MissDiagnosis.Verdict.NOT_ON_ANY_PAGE) {
+            return byName;
+        }
+        return MissDiagnosis.byAmount(trace, item.lineTotalCents).verdict;
     }
 
     private void store(LineItem item, MissDiagnosis.Verdict verdict) {

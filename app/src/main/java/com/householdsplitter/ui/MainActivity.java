@@ -50,6 +50,16 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_OPEN = "com.householdsplitter.OPEN";
     public static final String OPEN_BALANCES = "balances";
     public static final String OPEN_NEW_ORDER = "new_order";
+    /**
+     * Straight to photographing a restaurant bill, skipping the store picker.
+     *
+     * <p>It has its own entry point because of where it is triggered from. The store picker
+     * is one tap and is the right thing inside the app, where the user has already decided
+     * to add an order. From a lock screen or a quick settings tile the user is standing at a
+     * table with the bill in their hand, and every screen between the tap and the camera is
+     * a screen they are holding a restaurant up for.
+     */
+    public static final String OPEN_SCAN_BILL = "scan_bill";
 
     private ActivityMainBinding binding;
     private volatile boolean startDestinationResolved;
@@ -180,6 +190,11 @@ public class MainActivity extends AppCompatActivity {
             controller.navigate(R.id.analyticsFragment);
         } else if (OPEN_NEW_ORDER.equals(open)) {
             controller.navigate(R.id.importFragment);
+        } else if (OPEN_SCAN_BILL.equals(open)) {
+            Bundle args = new Bundle();
+            args.putString(com.householdsplitter.ui.parsing.ParsingArgs.ARG_STORE,
+                    com.householdsplitter.core.parse.StoreKind.RESTAURANT.name());
+            controller.navigate(R.id.importFragment, args);
         }
     }
 

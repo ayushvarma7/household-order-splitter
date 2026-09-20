@@ -13,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.householdsplitter.R;
 import com.householdsplitter.core.money.CurrencyFormat;
+import com.householdsplitter.core.money.TipCalculator;
 import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedAdjustments;
@@ -44,6 +45,9 @@ public class OrderDetailsFragment extends BaseFragment {
     private OrderDetailsViewModel model;
     private CurrencyFormat money;
     private Order current;
+    /** "Round up" means to the next whole currency unit. */
+    private static final long ROUND_UP_STEP_CENTS = 100L;
+
     private long itemsSubtotalCents;
     private long orderDateMillis;
     /**
@@ -116,12 +120,67 @@ public class OrderDetailsFragment extends BaseFragment {
             refreshReconciliation();
         });
 
+        wireTipShortcuts();
+
         binding.continueButton.setOnClickListener(v -> {
             persist();
             Bundle args = new Bundle();
             args.putLong(ParsingArgs.ARG_ORDER_ID, model.orderId());
             NavHostFragment.findNavController(this).navigate(R.id.participantsFragment, args);
         });
+    }
+
+    /**
+     * The tip shortcuts.
+     *
+     * <p>Each one writes into the tip field rather than into a separate piece of state, so
+     * the field remains the single answer to "what is the tip" and a tapped percentage can
+     * be edited afterwards like any typed figure.
+     *
+     * <p>The percentage base is the subtotal before tax. Which subtotal is a real question,
+     * because the screen holds two: the one printed on the bill and the one the rows add up
+     * to. The printed one is used when there is one, since that is the figure the
+     * restaurant charged for food, and the rows fall back in when the bill did not state it.
+     */
+    private void wireTipShortcuts() {
+        binding.tip15.setOnClickListener(v -> applyPercentTip(15));
+        binding.tip18.setOnClickListener(v -> applyPercentTip(18));
+        binding.tip20.setOnClickListener(v -> applyPercentTip(20));
+        binding.tipClear.setOnClickListener(v -> CurrencyInput.writeCents(binding.tipInput, 0L));
+        binding.tipRoundUp.setOnClickListener(v -> {
+            long topUp = TipCalculator.toRoundTotal(totalWithoutTip(), ROUND_UP_STEP_CENTS);
+            CurrencyInput.writeCents(binding.tipInput, topUp);
+            announceTip(topUp);
+        });
+    }
+
+    private void applyPercentTip(int percent) {
+        long tip = TipCalculator.ofSubtotal(tipBaseCents(), percent);
+        CurrencyInput.writeCents(binding.tipInput, tip);
+        announceTip(tip);
+    }
+
+    /** What a percentage is taken on: the printed subtotal, or the rows if none was read. */
+    private long tipBaseCents() {
+        long printed = CurrencyInput.readCents(binding.subtotalInput, 0L);
+        return printed > 0L ? printed : itemsSubtotalCents;
+    }
+
+    /** Everything settled so far with the tip left out, which is what gets rounded up. */
+    private long totalWithoutTip() {
+        return tipBaseCents()
+                + CurrencyInput.readCents(binding.taxInput, 0L)
+                + CurrencyInput.readCents(binding.deliveryInput, 0L)
+                + CurrencyInput.readCents(binding.otherFeeInput, 0L)
+                - CurrencyInput.readCents(binding.discountInput, 0L);
+    }
+
+    private void announceTip(long tipCents) {
+        int tenths = TipCalculator.percentTenthsOf(tipCents, tipBaseCents());
+        String percentage = tenths < 0
+                ? "" : " (" + (tenths / 10) + "." + (tenths % 10) + "%)";
+        binding.tipLayout.announceForAccessibility(
+                getString(R.string.tip_set, money.format(tipCents)) + percentage);
     }
 
     private void bind(OrderBundle bundle) {

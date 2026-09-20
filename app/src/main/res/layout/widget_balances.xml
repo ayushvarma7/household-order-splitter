@@ -69,4 +69,42 @@
         android:textColor="@color/widget_title"
         android:textSize="11sp"
         android:visibility="gone" />
+
+    <!--
+      A spacer that eats whatever height is left, so the action sits on the floor of the
+      widget at every size the user resizes it to. RemoteViews has no constraint layout.
+
+      A TextView rather than a View or a Space, because RemoteViews accepts only a fixed
+      list of classes and plain View is not on it. That is not a compile error and not a
+      runtime error in this process either: the inflation happens inside the launcher, where
+      nothing in this app would ever see it fail. Lint is what catches it.
+    -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:importantForAccessibility="no" />
+
+    <!--
+      The scan action. Separate from tapping the widget body, which opens the balances this
+      widget is showing; this is the other thing somebody wants from a glance at a phone,
+      and from a lock screen it is the only one worth a tap.
+    -->
+    <TextView
+        android:id="@+id/widgetScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_widget_action"
+        android:drawablePadding="6dp"
+        android:gravity="center"
+        android:minHeight="40dp"
+        android:paddingStart="10dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="8dp"
+        android:text="@string/widget_scan_bill"
+        android:textColor="@color/widget_action_text"
+        android:textSize="13sp"
+        android:textStyle="bold" />
 </LinearLayout>

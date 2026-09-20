@@ -291,12 +291,24 @@
     </plurals>
 
     <!-- Reconciliation help -->
+    <!-- Tip shortcuts on the order details screen -->
+    <string name="tip_15">15%</string>
+    <string name="tip_18">18%</string>
+    <string name="tip_20">20%</string>
+    <string name="tip_round_up">Round up</string>
+    <string name="tip_none">No tip</string>
+    <string name="tip_set">Tip set to %1$s</string>
+
     <string name="reconcile_add_difference">Add the difference as a row</string>
     <string name="reconcile_add_screenshots">Add more screenshots</string>
     <string name="reconcile_difference_name">Unaccounted from the bill</string>
     <string name="reconcile_unit_hint">The bill mentions %1$d units and you have %2$d rows. Quantities are summed, so that is not necessarily wrong, but it can mean a screenshot is missing.</string>
     <string name="reconcile_difference_added">Added a row for %1$s. Say who it is for.</string>
 
+    <string name="import_title_bill">Photograph the bill</string>
+    <string name="import_hint_bill">Lay the bill flat and fill the frame. A slight angle is fine: the app straightens the page before reading it. A long bill can be two photos, taken top to bottom.</string>
+    <string name="action_photograph_bill">Take a photo of the bill</string>
+    <string name="action_choose_photo">Choose a photo instead</string>
     <string name="import_add_to_order">Add to this order</string>
 
     <!-- SPEC 8.1.3 -->
@@ -401,12 +413,12 @@
     <string name="welcome_next">Next</string>
     <string name="welcome_start">Get started</string>
     <string name="welcome_page_of">Page %1$d of %2$d</string>
-    <string name="welcome_1_title">Screenshot the order</string>
-    <string name="welcome_1_body">Share a Walmart order screenshot into the app. It reads every item and the price you were actually charged. Nothing to type.</string>
+    <string name="welcome_1_title">Point it at the bill</string>
+    <string name="welcome_1_body">Screenshot a Walmart or Amazon Fresh order, or photograph a restaurant bill. It reads every item and the price you were actually charged. Nothing to type.</string>
     <string name="welcome_2_title">Tap who it was for</string>
     <string name="welcome_2_body">One item at a time. Something two of you shared is split between those two, not the whole house.</string>
     <string name="welcome_3_title">Everyone owes an exact amount</string>
-    <string name="welcome_3_body">Tax and fees split in proportion, adding up to the printed bill to the penny. Everything stays on your phone.</string>
+    <string name="welcome_3_body">Tax, tip and fees split in proportion, adding up to the printed bill to the penny. Everything stays on your phone, with no account and no network.</string>
 
     <!-- Removing a row that was never a real charge. -->
     <string name="assign_remove_item">Remove this item</string>
@@ -469,4 +481,7 @@
     <string name="palette_plum">Plum</string>
     <string name="palette_olive">Olive</string>
     <string name="palette_graphite">Graphite</string>
+    <string name="widget_scan_bill">Scan a bill</string>
+    <string name="tile_scan_bill">Split a bill</string>
+
 </resources>

@@ -72,4 +72,8 @@
     <!-- Material caps a navigation drawer at 320dp. Left to wrap_content it grew to 84%
          of a 1080px screen, which stops being a drawer and becomes a page. -->
     <dimen name="drawer_width">300dp</dimen>
+    <!-- The introduction's illustration plate -->
+    <dimen name="welcome_plate">200dp</dimen>
+    <dimen name="welcome_plate_radius">44dp</dimen>
+
 </resources>

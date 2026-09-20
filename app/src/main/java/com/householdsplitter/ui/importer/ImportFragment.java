@@ -130,12 +130,7 @@ public class ImportFragment extends BaseFragment {
         });
         touchHelper.attachToRecyclerView(binding.previewStrip);
 
-        binding.chooseButton.setOnClickListener(v -> pickMultiple.launch(
-                new PickVisualMediaRequest.Builder()
-                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                        .build()));
-
-        binding.cameraButton.setOnClickListener(v -> launchCamera());
+        applyStoreFraming();
 
         model.uris().observe(getViewLifecycleOwner(), uris -> {
             adapter.submitList(new ArrayList<>(uris));
@@ -213,4 +208,46 @@ public class ImportFragment extends BaseFragment {
         binding.previewStrip.setAdapter(null);
         binding = null;
     }
+    /**
+     * Which of the two buttons leads, and what the screen calls itself.
+     *
+     * <p>A grocery order is already on the phone, so the job is picking screenshots and the
+     * camera is the odd case. A restaurant bill is on the table in front of the user, so the
+     * camera is the whole point and picking from the gallery is the odd case.
+     *
+     * <p>The two buttons swap what they do rather than the layout reordering, because the
+     * first one is filled and the second outlined and that difference is the emphasis. Moving
+     * views between parents at runtime to achieve the same thing would be a lot of machinery
+     * for the same pixels.
+     */
+    private void applyStoreFraming() {
+        Runnable choosePhotos = () -> pickMultiple.launch(
+                new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build());
+
+        if (storeIsPaper()) {
+            binding.toolbar.setTitle(R.string.import_title_bill);
+            binding.emptyHint.setText(R.string.import_hint_bill);
+            binding.chooseButton.setText(R.string.action_photograph_bill);
+            binding.chooseButton.setOnClickListener(v -> launchCamera());
+            binding.cameraButton.setText(R.string.action_choose_photo);
+            binding.cameraButton.setOnClickListener(v -> choosePhotos.run());
+            return;
+        }
+        binding.chooseButton.setOnClickListener(v -> choosePhotos.run());
+        binding.cameraButton.setOnClickListener(v -> launchCamera());
+    }
+
+    /** True when this order is a photograph of paper rather than a set of screenshots. */
+    private boolean storeIsPaper() {
+        if (getArguments() == null) {
+            return false;
+        }
+        String store = getArguments().getString(ParsingArgs.ARG_STORE);
+        return store != null
+                && com.householdsplitter.core.parse.StoreKind.fromName(store)
+                        == com.householdsplitter.core.parse.StoreKind.RESTAURANT;
+    }
+
 }

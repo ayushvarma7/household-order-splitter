@@ -170,6 +170,14 @@ public class ReceiptLayoutParser implements LayoutParser {
         if (band.topPermille() < tuning.headerZonePermille) {
             return ParseTrace.Stage.INSIDE_THE_HEADER;
         }
+        // Before the positional test, not after it. The item region ends at the first
+        // summary band, so a summary band is always at or past the boundary and the
+        // positional answer would swallow every one of them: READ_AS_A_SUMMARY_LINE was
+        // unreachable, and a row misread as a fee was reported as merely sitting too low.
+        // That is the effect rather than the cause, and it points at the wrong file to fix.
+        if (band.kind() == TextBand.Kind.SUMMARY) {
+            return ParseTrace.Stage.READ_AS_A_SUMMARY_LINE;
+        }
         if (index >= itemsEnd) {
             return ParseTrace.Stage.PAST_THE_ITEM_REGION;
         }
@@ -178,9 +186,6 @@ public class ReceiptLayoutParser implements LayoutParser {
         }
         if (band.kind() == TextBand.Kind.SECTION) {
             return ParseTrace.Stage.READ_AS_A_SECTION_HEADER;
-        }
-        if (band.kind() == TextBand.Kind.SUMMARY) {
-            return ParseTrace.Stage.READ_AS_A_SUMMARY_LINE;
         }
         if (!band.hasLinePrice()) {
             return ParseTrace.Stage.NO_PRICE_IN_THE_COLUMN;

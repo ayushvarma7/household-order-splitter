@@ -168,6 +168,67 @@
                         android:layout_height="wrap_content"
                         android:inputType="numberDecimal" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!--
+                  Tip shortcuts. A percentage is taken on the subtotal before tax, which is
+                  the convention and also the smaller figure; anyone who disagrees types
+                  what they want instead. "Round up" is how a tip is usually settled at a
+                  table, and it is the total that gets rounded rather than the tip.
+                -->
+                <HorizontalScrollView
+                    android:id="@+id/tipShortcutScroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/tipShortcuts"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleLine="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/tip15"
+                            style="@style/Widget.Splitter.Chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="false"
+                            android:text="@string/tip_15" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/tip18"
+                            style="@style/Widget.Splitter.Chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="false"
+                            android:text="@string/tip_18" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/tip20"
+                            style="@style/Widget.Splitter.Chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="false"
+                            android:text="@string/tip_20" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/tipRoundUp"
+                            style="@style/Widget.Splitter.Chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="false"
+                            android:text="@string/tip_round_up" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/tipClear"
+                            style="@style/Widget.Splitter.Chip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="false"
+                            android:text="@string/tip_none" />
+                    </com.google.android.material.chip.ChipGroup>
+                </HorizontalScrollView>
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/otherFeeLayout"
                     style="@style/Widget.Splitter.TextInput"

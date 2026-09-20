@@ -9,4 +9,19 @@
     android:targetCellHeight="2"
     android:targetCellWidth="3"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:initialKeyguardLayout="@layout/widget_balances"
+    android:widgetCategory="home_screen|keyguard" />
+
+<!--
+  keyguard is listed alongside home_screen deliberately, and with a caveat.
+
+  Android removed lock screen widgets in 5.0 and has been reintroducing them since Android
+  14, first on tablets and later on phones, and which devices offer them and how they are
+  picked has moved more than once. Declaring the category costs nothing on a device that
+  ignores it and is the prerequisite on a device that does not, so this is the honest
+  position: the widget is offered to the lock screen, and whether the lock screen takes it
+  is the system's decision rather than this app's.
+
+  The quick settings tile is the version of the same idea that works everywhere from
+  Android 7 up, which is this app's minimum. See ScanBillTileService.
+-->

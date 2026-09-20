@@ -94,5 +94,10 @@
     <!-- The same two identities, lightened for the dark card: 10.1:1 and 10.3:1. -->
     <color name="store_walmart">#A6C8FF</color>
     <color name="store_amazon_fresh">#A9D673</color>
+    <color name="store_restaurant">#00C0C4</color>
+
+    <!-- The widget's scan action: a tinted pill, readable on the widget's own background. -->
+    <color name="widget_action">#33D3BBFF</color>
+    <color name="widget_action_text">#D3BBFF</color>
 
 </resources>

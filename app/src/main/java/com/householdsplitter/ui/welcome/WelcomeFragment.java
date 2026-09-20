@@ -17,7 +17,7 @@ import com.householdsplitter.R;
 import com.householdsplitter.databinding.FragmentWelcomeBinding;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
-import com.householdsplitter.ui.common.StateColors;
+import com.householdsplitter.ui.theme.WelcomeGradient;
 
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +63,7 @@ public class WelcomeFragment extends BaseFragment {
 
         Insets.marginTop(binding.skipButton);
         Insets.padBottom(binding.footer);
+        paintBackdrop();
 
         binding.pager.setAdapter(new WelcomeAdapter(PAGES));
         buildIndicator();
@@ -117,9 +118,10 @@ public class WelcomeFragment extends BaseFragment {
         binding.backButton.setVisibility(position == 0 ? View.INVISIBLE : View.VISIBLE);
         binding.skipButton.setVisibility(last ? View.INVISIBLE : View.VISIBLE);
 
-        int active = StateColors.content(requireContext(), StateColors.State.NEUTRAL);
-        int inactive = androidx.core.content.ContextCompat.getColor(
-                requireContext(), R.color.welcome_dot_inactive);
+        // White on the wash, rather than the palette accent that was here before. The
+        // backdrop is now the palette accent, so an accent dot on it would be invisible.
+        int active = android.graphics.Color.WHITE;
+        int inactive = android.graphics.Color.argb(80, 255, 255, 255);
         for (int i = 0; i < binding.indicator.getChildCount(); i++) {
             View dot = binding.indicator.getChildAt(i);
             boolean on = i == position;
@@ -129,6 +131,55 @@ public class WelcomeFragment extends BaseFragment {
         }
         binding.pager.setContentDescription(getString(R.string.welcome_page_of,
                 position + 1, PAGES.size()));
+    }
+
+    /**
+     * Paints the wash and puts the controls on top of it in white.
+     *
+     * <p>Done here rather than in the layout because the colour is derived from whichever
+     * palette is switched on, and because the derivation is a measurement rather than a
+     * value: {@link WelcomeGradient} darkens the palette colour until white text clears
+     * contrast on it, which no theme attribute can express.
+     *
+     * <p>The primary button inverts: white fill, wash-coloured text. On a coloured
+     * background a white button is the strongest thing on the screen, which is what the
+     * one action on this screen should be.
+     */
+    private void paintBackdrop() {
+        binding.backdrop.setBackground(WelcomeGradient.forTheme(requireContext()));
+
+        int wash = WelcomeGradient.head(com.google.android.material.color.MaterialColors.getColor(
+                requireContext(), androidx.appcompat.R.attr.colorPrimary,
+                android.graphics.Color.BLACK));
+
+        binding.nextButton.setBackgroundTintList(
+                ColorStateList.valueOf(android.graphics.Color.WHITE));
+        binding.nextButton.setTextColor(wash);
+        binding.nextButton.setIconTint(ColorStateList.valueOf(wash));
+
+        binding.backButton.setTextColor(android.graphics.Color.WHITE);
+        binding.skipButton.setTextColor(android.graphics.Color.WHITE);
+
+        // Light status bar icons: the bar now sits over a dark wash rather than a pale
+        // surface, and the system has no way to know that on its own.
+        android.view.Window window = requireActivity().getWindow();
+        new androidx.core.view.WindowInsetsControllerCompat(window, window.getDecorView())
+                .setAppearanceLightStatusBars(false);
+    }
+
+    /** Hands the status bar back to the theme, so the next screen is not left dark-on-dark. */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (getActivity() == null) {
+            return;
+        }
+        boolean lightTheme = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                != android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        android.view.Window window = requireActivity().getWindow();
+        new androidx.core.view.WindowInsetsControllerCompat(window, window.getDecorView())
+                .setAppearanceLightStatusBars(lightTheme);
     }
 
     /**

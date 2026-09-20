@@ -68,6 +68,30 @@
                 android:resource="@xml/widget_balances_info" />
         </receiver>
 
+        <!--
+          The quick settings tile. Reachable from the lock screen shade on every device from
+          Android 7 up, which is what makes it the dependable half of the lock screen story
+          while keyguard widgets remain a moving target.
+
+          BIND_QUICK_SETTINGS_TILE is a permission the system holds, not one this app
+          requests: it is how the system proves to itself that only it may bind this
+          service, and it does not appear on the app's own permission list. The shipped
+          manifest still declares no permissions at all.
+        -->
+        <service
+            android:name=".widget.ScanBillTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_shortcut_new_order"
+            android:label="@string/tile_scan_bill"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.ACTIVE_TILE"
+                android:value="false" />
+        </service>
+
         <!-- SPEC 7.4.3: the camera capture is written to our own cache and shared back. -->
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -58,6 +58,8 @@ public final class StorePill {
         switch (store) {
             case AMAZON_FRESH:
                 return R.color.store_amazon_fresh;
+            case RESTAURANT:
+                return R.color.store_restaurant;
             case WALMART:
             default:
                 return R.color.store_walmart;

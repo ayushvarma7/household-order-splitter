@@ -146,4 +146,26 @@
     <color name="store_walmart">#00539C</color>
     <color name="store_amazon_fresh">#3D6B00</color>
 
+    <!--
+      Restaurant. Teal, and teal specifically because it is what survived the search rather
+      than because paper bills are teal.
+
+      Every other store colour only had to clear the semantic colours. This one also had to
+      clear five palette primaries, because the palettes shipped after the pills did, and a
+      store chip sits inside a themed screen. Sweeping hue, lightness and chroma against all
+      eleven reserved colours at once, and requiring a night twin at the same hue so the two
+      themes agree about what colour this is, leaves very little room: the best available
+      separation is 16.6 CIEDE2000 from Slate in light and 18.2 from success at night.
+      Contrast against the surface is 4.6 and 8.3, both above the WCAG AA floor of 4.5.
+
+      The first search, before the palettes were included as constraints, wanted magenta at
+      28 dE. That looked excellent against the semantic colours and sat almost on top of
+      Amethyst, which is the default theme.
+    -->
+    <color name="store_restaurant">#008184</color>
+
+    <!-- The widget's scan action: a tinted pill, readable on the widget's own background. -->
+    <color name="widget_action">#1F6A3FC0</color>
+    <color name="widget_action_text">#6A3FC0</color>
+
 </resources>

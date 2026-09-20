@@ -13,6 +13,7 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import com.householdsplitter.core.parse.model.OcrElement;
+import com.householdsplitter.core.parse.restaurant.Redact;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,6 +109,19 @@ public class MlKitTextSource {
         List<OcrElement> elements = new ArrayList<>();
         for (Text.TextBlock block : text.getTextBlocks()) {
             for (Text.Line line : block.getLines()) {
+                // Card data is removed here, at the boundary, so no path through the app can
+                // carry it any further. A photographed customer copy prints the masked
+                // number, the authorisation code and often a signature line, and all of that
+                // would otherwise be persisted in an item's raw OCR text, in the discarded
+                // rows behind the parser report, and in the parse trace.
+                //
+                // Decided per line as well as per element, because a recogniser splits
+                // "**** **** **** 1234" into four elements, none of which looks like a card
+                // number on its own while the line plainly is one. An element carrying an
+                // amount is exempt: the payment line's total is a real figure, and it is
+                // also one of the right-aligned amounts the restaurant reader measures its
+                // column against.
+                boolean lineCarriesCardData = Redact.carriesCardData(line.getText());
                 for (Text.Element element : line.getElements()) {
                     Rect box = element.getBoundingBox();
                     if (box == null) {
@@ -118,7 +132,8 @@ public class MlKitTextSource {
                     if (reported != null) {
                         confidence = Math.round(reported * 100f);
                     }
-                    elements.add(new OcrElement(element.getText(), imageIndex,
+                    elements.add(new OcrElement(
+                            safeText(element.getText(), lineCarriesCardData), imageIndex,
                             box.left, box.top, box.right, box.bottom,
                             width, height, confidence));
                 }
@@ -126,6 +141,37 @@ public class MlKitTextSource {
         }
         return elements;
     }
+
+    /** An element's text with card data taken out, keeping amounts intact. */
+    private static String safeText(String raw, boolean lineCarriesCardData) {
+        String redacted = Redact.cardData(raw);
+        if (!lineCarriesCardData || !redacted.equals(raw) || isAmount(raw)) {
+            return redacted;
+        }
+        // The line is card data and this fragment is not an amount, so it is part of the
+        // number rather than something that happened to sit on the same line.
+        return hasDigits(raw) ? Redact.MASK : redacted;
+    }
+
+    private static boolean isAmount(String text) {
+        return text != null && AMOUNT.matcher(text.trim()).matches();
+    }
+
+    private static boolean hasDigits(String text) {
+        if (text == null) {
+            return false;
+        }
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isDigit(text.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Deliberately loose: anything that could be money is left alone. */
+    private static final java.util.regex.Pattern AMOUNT =
+            java.util.regex.Pattern.compile("^-?[\\p{Sc}]?-?\\d{1,3}(,\\d{3})*(\\.\\d{1,2})?[\\p{Sc}]?$");
 
     public void close() {
         recognizer.close();

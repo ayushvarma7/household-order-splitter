@@ -15,6 +15,18 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
+    <!-- The gradient wash. A plain View rather than a background on the root,
+         because the fragment paints it from the active palette at runtime and a
+         theme attribute cannot express "darkened until white is legible on it". -->
+    <View
+        android:id="@+id/backdrop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/skipButton"
         style="@style/Widget.Splitter.Button.Text"

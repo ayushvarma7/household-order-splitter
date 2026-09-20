@@ -148,6 +148,66 @@ public final class MissDiagnosis {
         return new Result(verdictFor(best.stage), best.text, best.imageIndex, best.topPermille);
     }
 
+    /**
+     * The same diagnosis, driven by an amount instead of a name.
+     *
+     * <p>Stronger evidence than {@link #diagnose}, and worth having as a separate entry
+     * point because of how much stronger. A name match is a similarity score against
+     * recognised text, with a threshold and a tie-break and a documented failure mode. An
+     * amount match is arithmetic: a bill states its own subtotal, the rows fall short of it
+     * by an exact number of cents, and a band carrying that exact number is the row that
+     * was lost. There is nothing to tune.
+     *
+     * <p>It only becomes available when the printed subtotal is known and the rows do not
+     * reach it, which is precisely the case a photographed bill supplies and a screenshot
+     * often cannot, since a screenshot may be cropped mid-list and come up short for an
+     * innocent reason.
+     *
+     * <p>Bands that were eligible are considered last. An eligible band became a row, so it
+     * is not the missing one; if every candidate was eligible then the amount is on the page
+     * and was read, and something after the reader lost it, which is
+     * {@link Verdict#UNEXPLAINED} and wants a human.
+     *
+     * @param missingCents the shortfall, positive
+     */
+    public static Result byAmount(ParseTrace trace, long missingCents) {
+        if (trace == null || trace.isEmpty() || missingCents <= 0L) {
+            return new Result(Verdict.NOT_ON_ANY_PAGE, null, -1, -1);
+        }
+        // Not anchored to a currency symbol, because the recogniser splits "$7.95" into one
+        // element or two depending on the font. Guarded on both sides against digits and
+        // decimal points instead, so 7.95 does not match inside 17.95 or 7.951.
+        java.util.regex.Pattern amount = java.util.regex.Pattern.compile(
+                "(?<![\\d.])" + java.util.regex.Pattern.quote(plain(missingCents))
+                        + "(?![\\d.])");
+
+        ParseTrace.BandNote fallback = null;
+        for (ParseTrace.BandNote note : trace.notes()) {
+            if (!amount.matcher(note.text).find()) {
+                continue;
+            }
+            if (note.stage == ParseTrace.Stage.ELIGIBLE) {
+                if (fallback == null) {
+                    fallback = note;
+                }
+                continue;
+            }
+            return new Result(verdictFor(note.stage), note.text, note.imageIndex,
+                    note.topPermille);
+        }
+        if (fallback != null) {
+            return new Result(Verdict.UNEXPLAINED, fallback.text, fallback.imageIndex,
+                    fallback.topPermille);
+        }
+        return new Result(Verdict.NOT_ON_ANY_PAGE, null, -1, -1);
+    }
+
+    /** Cents as they are printed on paper: 795 is 7.95, and 100000 is 1000.00. */
+    private static String plain(long cents) {
+        long absolute = Math.abs(cents);
+        return (absolute / 100L) + "." + String.format(java.util.Locale.US, "%02d", absolute % 100L);
+    }
+
     private static Verdict verdictFor(ParseTrace.Stage stage) {
         switch (stage) {
             case CROPPED_AT_THE_MARGIN:
