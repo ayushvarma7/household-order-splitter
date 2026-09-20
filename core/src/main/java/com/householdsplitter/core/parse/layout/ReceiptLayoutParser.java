@@ -87,32 +87,41 @@ public class ReceiptLayoutParser implements LayoutParser {
         return parse(Collections.singletonList(elements));
     }
 
-    private PageParse parsePage(List<OcrElement> raw, int imageIndex, ParseTrace trace) {
+    private PageParse parsePage(List<OcrElement> input, int imageIndex, ParseTrace trace) {
         PageParse page = new PageParse(imageIndex);
-        if (raw == null || raw.isEmpty()) {
+        if (input == null || input.isEmpty()) {
             return page;
         }
 
-        List<OcrElement> cropped = crop(raw);
+        // A photographed page is straightened before any column rule is applied to it,
+        // because every one of those rules assumes the page is square (SPEC 8.3.2). A
+        // screenshot store takes the default and is not touched.
+        List<OcrElement> raw = vocabulary.needsDeskew() ? Deskew.straighten(input) : input;
+
+        // A store with a fixed layout returns its own calibration unchanged, so this is the
+        // identity for every screenshot store and cannot alter what they read.
+        ParseTuning pageTuning = vocabulary.calibrate(raw, tuning);
+
+        List<OcrElement> cropped = crop(raw, pageTuning);
         recordCropped(raw, cropped, imageIndex, trace);
         if (cropped.isEmpty()) {
             return page;
         }
 
-        List<TextBand> bands = BandBuilder.build(cropped, tuning);
+        List<TextBand> bands = BandBuilder.build(cropped, pageTuning);
         int medianHeight = medianHeight(cropped);
 
-        classify(bands, page);
-        markHeaderZone(bands);
+        classify(bands, page, pageTuning);
+        markHeaderZone(bands, pageTuning);
         markSuggestionCarousel(bands);
         propagateSections(bands);
 
-        int itemsEnd = itemsEndIndex(bands);
-        detectLinePrices(bands, itemsEnd, medianHeight);
+        int itemsEnd = itemsEndIndex(bands, pageTuning);
+        detectLinePrices(bands, itemsEnd, medianHeight, pageTuning);
 
-        page.items.addAll(new BlockAssembler(vocabulary).assemble(bands, itemsEnd));
-        extractOrderFields(bands, page);
-        recordBands(bands, itemsEnd, imageIndex, trace);
+        page.items.addAll(new BlockAssembler(vocabulary, pageTuning).assemble(bands, itemsEnd));
+        extractOrderFields(bands, page, pageTuning);
+        recordBands(bands, itemsEnd, imageIndex, trace, pageTuning);
         return page;
     }
 
@@ -140,7 +149,7 @@ public class ReceiptLayoutParser implements LayoutParser {
      * because a trace is present.
      */
     private void recordBands(List<TextBand> bands, int itemsEnd, int imageIndex,
-                             ParseTrace trace) {
+                             ParseTrace trace, ParseTuning tuning) {
         if (trace == null) {
             return;
         }
@@ -151,11 +160,13 @@ public class ReceiptLayoutParser implements LayoutParser {
                 continue;
             }
             trace.addBand(imageIndex, band.topPermille(), text,
-                    band.leftText(tuning.nameZoneEndPermille), stageOf(band, i, itemsEnd));
+                    band.leftText(tuning.nameZoneEndPermille),
+                    stageOf(band, i, itemsEnd, tuning));
         }
     }
 
-    private ParseTrace.Stage stageOf(TextBand band, int index, int itemsEnd) {
+    private ParseTrace.Stage stageOf(TextBand band, int index, int itemsEnd,
+                                     ParseTuning tuning) {
         if (band.topPermille() < tuning.headerZonePermille) {
             return ParseTrace.Stage.INSIDE_THE_HEADER;
         }
@@ -182,7 +193,7 @@ public class ReceiptLayoutParser implements LayoutParser {
      * numbers in a loop, and expressed as fractions of image height so a tablet screenshot
      * behaves the same as a phone one (SPEC 11.9).
      */
-    private List<OcrElement> crop(List<OcrElement> elements) {
+    private List<OcrElement> crop(List<OcrElement> elements, ParseTuning tuning) {
         List<OcrElement> kept = new ArrayList<>(elements.size());
         int bottomLimit = 1000 - tuning.bottomCropPermille;
         for (OcrElement element : elements) {
@@ -207,7 +218,7 @@ public class ReceiptLayoutParser implements LayoutParser {
         return heights.get(heights.size() / 2);
     }
 
-    private void classify(List<TextBand> bands, PageParse page) {
+    private void classify(List<TextBand> bands, PageParse page, ParseTuning tuning) {
         for (TextBand band : bands) {
             String full = band.text();
             String left = band.leftText(tuning.nameZoneEndPermille);
@@ -269,7 +280,7 @@ public class ReceiptLayoutParser implements LayoutParser {
      * and relying on the nameless-row guard of SPEC 8.7.5 to clean up afterwards would mean
      * one stray word beneath the bar turns the cart into a phantom purchase.
      */
-    private void markHeaderZone(List<TextBand> bands) {
+    private void markHeaderZone(List<TextBand> bands, ParseTuning tuning) {
         int appBarBottom = -1;
         for (TextBand band : bands) {
             // Only a date band that is genuinely up in the header defines the bar's extent.
@@ -350,7 +361,7 @@ public class ReceiptLayoutParser implements LayoutParser {
      * Item extraction stops at the payment card or the summary block (SPEC 8.4.2, 8.6.3):
      * every amount below that point is an order-level figure, not a purchased row.
      */
-    private int itemsEndIndex(List<TextBand> bands) {
+    private int itemsEndIndex(List<TextBand> bands, ParseTuning tuning) {
         for (int i = 0; i < bands.size(); i++) {
             TextBand band = bands.get(i);
             if (band.kind() == TextBand.Kind.SUMMARY) {
@@ -377,7 +388,8 @@ public class ReceiptLayoutParser implements LayoutParser {
      * than a charge; a row whose only amount is over there yields no line price, so it opens
      * no block and is discarded.
      */
-    private void detectLinePrices(List<TextBand> bands, int itemsEnd, int medianHeight) {
+    private void detectLinePrices(List<TextBand> bands, int itemsEnd, int medianHeight,
+                                  ParseTuning tuning) {
         int minHeight = medianHeight <= 0
                 ? 0
                 : (medianHeight * tuning.linePriceMinHeightPermilleOfMedian) / 1000;
@@ -418,7 +430,7 @@ public class ReceiptLayoutParser implements LayoutParser {
     }
 
     /** SPEC 8.6. */
-    private void extractOrderFields(List<TextBand> bands, PageParse page) {
+    private void extractOrderFields(List<TextBand> bands, PageParse page, ParseTuning tuning) {
         long otherFees = 0L;
         boolean sawOtherFee = false;
 

@@ -149,8 +149,70 @@ public final class ParseTuning {
                 .build();
     }
 
+    /**
+     * A restaurant bill photographed on paper.
+     *
+     * <p>Unlike the two above, these numbers are not a measurement of a layout. There is no
+     * layout to measure: every till prints a different width, a different column order and
+     * a different character cell. What this is instead is a safe fallback for a page whose
+     * own columns could not be found, plus the handful of facts that are true of paper
+     * rather than of any particular restaurant.
+     *
+     * <ul>
+     *   <li>No crops at top or bottom. A screenshot has a status bar and a gesture bar
+     *       pinned over the content; a photograph has neither, and cropping 5% off a
+     *       photograph throws away the restaurant name at one end and the total at the
+     *       other.
+     *   <li>No header zone, for the same reason. Nothing is pinned over a sheet of paper.
+     *   <li>The name column starts at the very left edge. There is no product thumbnail on
+     *       a till roll, so the left margin that exists to clear one would cut into a
+     *       quantity prefix instead.
+     *   <li>A price may be any height relative to the median. Thermal printers are
+     *       monospace and print every line in one size, so the "larger or bolder than body
+     *       text" signal of SPEC 8.3.2 carries no information here, and applying it would
+     *       reject the amounts it was meant to find.
+     *   <li>A larger working image. Till text is small and faint, and downscaling a
+     *       photograph of it to 2048 pixels costs strokes that the recogniser needs.
+     * </ul>
+     *
+     * <p>The price column position is the one number that genuinely cannot be guessed, and
+     * so it is not guessed: {@link ColumnCalibration} measures it off each page.
+     */
+    public static ParseTuning restaurant() {
+        return builder()
+                .topCropPermille(0)
+                .bottomCropPermille(0)
+                .headerZonePermille(0)
+                .nameZoneStartPermille(0)
+                .nameZoneEndPermille(700)
+                .linePriceZoneStartPermille(700)
+                .linePriceMinHeightPermilleOfMedian(0)
+                .maxImageDimensionPx(3072)
+                .minNameLength(2)
+                .build();
+    }
+
     public static Builder builder() {
         return new Builder();
+    }
+
+    /** This tuning's values, ready to have one or two of them replaced. */
+    public Builder toBuilder() {
+        return builder()
+                .topCropPermille(topCropPermille)
+                .bottomCropPermille(bottomCropPermille)
+                .headerZonePermille(headerZonePermille)
+                .linePriceZoneStartPermille(linePriceZoneStartPermille)
+                .nameZoneEndPermille(nameZoneEndPermille)
+                .nameZoneStartPermille(nameZoneStartPermille)
+                .linePriceMinHeightPermilleOfMedian(linePriceMinHeightPermilleOfMedian)
+                .dedupeWindow(dedupeWindow)
+                .minConfidencePercent(minConfidencePercent)
+                .minNameLength(minNameLength)
+                .priceOutlierCents(priceOutlierCents)
+                .maxImageDimensionPx(maxImageDimensionPx)
+                .bandOverlapPermille(bandOverlapPermille)
+                .edgeZonePermille(edgeZonePermille);
     }
 
     public static final class Builder {

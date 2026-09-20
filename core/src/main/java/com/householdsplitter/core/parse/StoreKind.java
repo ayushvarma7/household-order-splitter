@@ -2,6 +2,7 @@ package com.householdsplitter.core.parse;
 
 import com.householdsplitter.core.parse.amazon.AmazonFreshVocabulary;
 import com.householdsplitter.core.parse.layout.StoreVocabulary;
+import com.householdsplitter.core.parse.restaurant.RestaurantVocabulary;
 import com.householdsplitter.core.parse.walmart.WalmartVocabulary;
 
 /**
@@ -37,6 +38,23 @@ public enum StoreKind {
         @Override
         public StoreVocabulary vocabulary() {
             return new AmazonFreshVocabulary();
+        }
+    },
+
+    /**
+     * A printed bill, photographed.
+     *
+     * <p>The odd one out, and worth flagging as such. The other two are apps whose pages are
+     * captured square and look the same every time. This is paper: it arrives tilted, its
+     * columns sit somewhere different on every till, and what the user photographs may be
+     * the customer copy with their card details on it. The vocabulary straightens the page
+     * and measures its own columns, and the recogniser strips card data before the parser
+     * sees it.
+     */
+    RESTAURANT("Restaurant") {
+        @Override
+        public StoreVocabulary vocabulary() {
+            return new RestaurantVocabulary();
         }
     };
 

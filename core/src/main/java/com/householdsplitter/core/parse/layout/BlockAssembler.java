@@ -38,6 +38,15 @@ final class BlockAssembler {
     }
 
     /**
+     * The same assembler against a page's own measured geometry rather than the store's.
+     * Used by the restaurant reader, whose columns are calibrated per page.
+     */
+    BlockAssembler(StoreVocabulary vocabulary, ParseTuning tuning) {
+        this.vocabulary = vocabulary;
+        this.tuning = tuning == null ? vocabulary.tuning() : tuning;
+    }
+
+    /**
      * @param bands          classified bands for one screenshot, ordered top to bottom
      * @param itemsEndIndex  the first band that belongs to the payment or summary region
      */
@@ -351,6 +360,11 @@ final class BlockAssembler {
             int printedQuantity = vocabulary.quantityIn(candidate);
             if (printedQuantity > 0) {
                 quantity = printedQuantity;
+                // A count printed in front of the dish leaves the dish behind it.
+                String remainder = vocabulary.nameAfterQuantity(candidate);
+                if (remainder != null && !remainder.isEmpty()) {
+                    kept.add(remainder);
+                }
                 continue;
             }
             if (PriceTokens.isBareUnitPriceLine(candidate)) {
@@ -368,7 +382,7 @@ final class BlockAssembler {
         }
         kept = dropRedundantSizeFragments(kept);
 
-        String name = normaliseWhitespace(String.join(" ", kept));
+        String name = vocabulary.presentName(normaliseWhitespace(String.join(" ", kept)));
         boolean nameMissing = name.isEmpty();
         if (nameMissing) {
             // SPEC 8.7.5: at a screenshot edge, a row with no name is a fragment whose

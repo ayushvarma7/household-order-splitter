@@ -39,6 +39,41 @@ public interface StoreVocabulary {
     /** The geometry that goes with this wording. */
     ParseTuning tuning();
 
+    /**
+     * True when this store's pages arrive as photographs rather than screenshots, and so
+     * have to be straightened before their columns mean anything ({@link Deskew}).
+     *
+     * <p>Opt in rather than always on. A screenshot is square by construction, so measuring
+     * a tilt on one can only ever find noise, and acting on that noise would move elements
+     * that were already exactly where the tuning expects them. The two screenshot stores
+     * take the default and are provably untouched by the deskew stage.
+     */
+    default boolean needsDeskew() {
+        return false;
+    }
+
+    /**
+     * This page's geometry, given the store's calibration and the page itself.
+     *
+     * <p>The default ignores the page and returns the store's fixed calibration, which is
+     * the right answer for a store with one layout. Walmart's order page looks the same on
+     * every capture, so its columns can be measured once and written down, and a number
+     * measured on a real screenshot beats a number re-derived from a single noisy one.
+     *
+     * <p>A restaurant has no fixed layout to write down. Every till prints a different
+     * width, and the only thing that is reliably true is that the amounts on one receipt
+     * line up with each other. So that store overrides this and measures its own columns
+     * off each page, which is the same idea as the fixed tuning applied to a store whose
+     * layout is not known in advance.
+     *
+     * @param page  the page's elements, already straightened if this store asked for that
+     * @param store this vocabulary's own {@link #tuning()}, to fall back on
+     */
+    default ParseTuning calibrate(java.util.List<
+            com.householdsplitter.core.parse.model.OcrElement> page, ParseTuning store) {
+        return store;
+    }
+
     // ----- interface furniture, SPEC 8.4 -------------------------------------------------
 
     /** True when the line is a button, a card header, a status bar reading or similar. */
@@ -109,6 +144,34 @@ public interface StoreVocabulary {
      * something has to show the user the arithmetic behind its line total.
      */
     int quantityIn(String line);
+
+    /**
+     * The rest of the line once a leading count has been taken off it, or null when the
+     * count stood on its own.
+     *
+     * <p>Null by default, which is what a store printing its quantity on a separate line
+     * needs: "Qty: 2" has no remainder, and the line is consumed whole. A store that runs
+     * the count into the name, as a till does with "2 CAESAR SALAD", returns the name, and
+     * without this the whole line including the dish would be discarded along with the
+     * count.
+     */
+    default String nameAfterQuantity(String line) {
+        return null;
+    }
+
+    /**
+     * The assembled name as it should be shown, given how this store prints.
+     *
+     * <p>The identity by default, which is right for a store that chose its own product
+     * names. A till has one case and did not choose it, so the restaurant reader tidies
+     * here rather than letting the hardware's limitation reach the user.
+     *
+     * <p>Presentation only. Nothing downstream matches on a name, so this cannot change
+     * what anybody is charged.
+     */
+    default String presentName(String name) {
+        return name;
+    }
 
     /**
      * True when the line is row metadata rather than part of the product name: a multipack
