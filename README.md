@@ -2,11 +2,11 @@
 
 # Order Splitter
 
-### Reads your Walmart or Amazon Fresh order from a screenshot and works out what each person owes
+### Reads a grocery order or a restaurant bill and works out what each person owes
 
 **One person pays for the shop. Everyone owes a different amount, because half the items were not for everyone.**
 
-Share the order screenshot into the app. It reads every item and the price you were actually charged, you tap who each one was for, and it hands back per-person totals that add up to the printed bill to the penny. Entirely on your phone, with no account and no network permission.
+Share in a Walmart or Amazon Fresh screenshot, or photograph a restaurant bill. It reads every item and the price you were actually charged, you tap who each one was for, and it hands back per-person totals that add up to the printed bill to the penny. Entirely on your phone, with no account and no network permission.
 
 <p>
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-b07219?style=for-the-badge&logo=openjdk&logoColor=white" />
@@ -14,8 +14,8 @@ Share the order screenshot into the app. It reads every item and the price you w
   <img alt="Offline, no network permission" src="https://img.shields.io/badge/Offline-no_network_permission-6A3FC0?style=for-the-badge" />
 </p>
 <p>
-  <img alt="239 JVM tests, 147 instrumented" src="https://img.shields.io/badge/tests-239_JVM_%2B_147_instrumented-1F6B4A?style=flat-square" />
-  <img alt="Two stores" src="https://img.shields.io/badge/stores-Walmart_%2B_Amazon_Fresh-6A3FC0?style=flat-square" />
+  <img alt="305 JVM tests, 152 instrumented" src="https://img.shields.io/badge/tests-305_JVM_%2B_152_instrumented-1F6B4A?style=flat-square" />
+  <img alt="Three receipt kinds" src="https://img.shields.io/badge/reads-Walmart_%2B_Amazon_Fresh_%2B_paper-6A3FC0?style=flat-square" />
   <img alt="No INTERNET permission" src="https://img.shields.io/badge/INTERNET_permission-none-BA1A1A?style=flat-square" />
   <img alt="Room schema version 7" src="https://img.shields.io/badge/migrations-7_versions,_hand_written-615B71?style=flat-square" />
   <img alt="Offline" src="https://img.shields.io/badge/data-stays_on_device-1F6B4A?style=flat-square" />
@@ -46,7 +46,7 @@ It answers the question you actually have about a name the reader mangled or a p
 
 ---
 
-## Two stores, one pipeline
+## Three receipts, one pipeline
 
 <div align="center">
   <img src="docs/screenshots/16-store-picker.png" width="215" alt="Choosing which shop the order came from" />
@@ -69,6 +69,52 @@ plausible order that is quietly wrong. That case is a test, not an argument:
 Underneath, a store is two small things: the words it prints (`StoreVocabulary`) and where
 it prints them (`ParseTuning`). The pipeline that turns positioned text into an order is
 shared. `AmazonFreshLayoutParser` is four lines long.
+
+### Paper is the awkward one
+
+A restaurant bill breaks both halves of that arrangement, and it is worth being precise
+about how, because the fixes are different.
+
+**It arrives tilted.** Every column rule in the pipeline assumes the page is square, which
+a screenshot is by construction and a photograph never is. Tilt a receipt five degrees in
+the hand and a right-aligned price near the top of the page lands in a different column
+from one near the bottom, so the price column stops being a column.
+
+The usual answer is a document-corner detector and several megabytes of imaging library.
+It is not needed, because the receipt already contains the answer: right-aligned amounts
+lie on a line that is vertical when the page is square. `Deskew` measures that line and
+rotates the page back. The estimate is a **Theil-Sen median of pairwise slopes** rather
+than a least-squares fit, which has a breakdown point of zero; one phone number read as an
+amount would drag the whole line. All integer arithmetic, with an integer square root, so
+the result is identical on every device.
+
+**It has no fixed layout.** Walmart has one layout and Amazon has one layout, so their
+columns were measured once off real captures and written down. Restaurants have as many
+layouts as there are tills, and any constant written here would be wrong for the next one.
+`ColumnCalibration` measures each page instead, taking the densest cluster of right edges
+as the amount column, and **refuses to answer** rather than answering badly: a default
+column produces rows you can see and fix, and a confidently wrong one moves the boundary
+between the dish and what it cost.
+
+Both are opt in through the vocabulary, so the two screenshot stores take the default and
+cannot be affected by either. The 250 tests that passed before the restaurant reader
+existed still pass unchanged, which is the evidence that this was an addition and not a
+rewrite.
+
+**What paper gives back** is an arithmetic check the screenshots cannot offer. A whole bill
+states its own subtotal, so the dishes must add up to it exactly, and a shortfall is proof
+of a missed row *together with its value*. A screenshot can be cropped mid-list, so a
+shortfall there is ambiguous. That exact figure is what pre-fills the next hand-typed row,
+and what `MissDiagnosis.byAmount` searches the parse trace for when a typed name finds
+nothing: a band carrying exactly that amount is the row that was lost.
+
+**Card data never reaches storage.** A photographed customer copy prints the masked number,
+the authorisation code and often a signature line, and it would otherwise be persisted in
+an item's raw OCR text, in the discarded rows behind the parser report, and in the parse
+trace. `Redact` strips it at the recognition boundary, per line as well as per element,
+because a recogniser splits `**** **** **** 1234` into four fragments that each look
+innocent alone. Amounts are exempt, which is the whole difficulty: a receipt is nothing but
+digits, and a pattern that blanks a total is a parser that loses a charge.
 
 ---
 

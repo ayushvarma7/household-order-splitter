@@ -48,6 +48,19 @@ and nothing else. It does not browse your photo library.
 If you turn on backups, the app writes backup files to a folder you choose. Those files
 stay wherever you put them.
 
+## Payment card details
+
+A photograph of a restaurant bill often catches the customer copy, which prints a masked
+card number, an authorisation code and a signature line.
+
+The app removes those before anything is stored. Recognised text is stripped of card
+numbers, last four digits, and authorisation, approval and reference codes at the moment
+it comes out of the recogniser, so none of it reaches the database, the diagnostics or a
+backup file. Amounts are deliberately left alone, since a total is not card data.
+
+The photograph itself is not altered. It is your picture, kept where you took it, and the
+app only holds a reference to it.
+
 ## Deleting your data
 
 Uninstalling Order Splitter deletes everything it stored. Settings also offers an option to

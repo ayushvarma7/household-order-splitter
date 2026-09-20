@@ -27,7 +27,7 @@
 
     <!-- S3, SPEC 7.3 -->
     <string name="home_empty_title">No orders yet</string>
-    <string name="home_empty_body">Screenshot a Walmart order page and share it here, or start one from scratch.</string>
+    <string name="home_empty_body">Share in a grocery order screenshot, photograph a restaurant bill, or start one from scratch.</string>
     <string name="action_new_order">New order</string>
     <string name="menu_members">Members</string>
     <string name="menu_settings">Settings</string>
@@ -447,7 +447,7 @@
     <!-- Store identity -->
     <string name="store_pill_description">Ordered from %1$s</string>
     <string name="store_picker_title">Which store is this order from?</string>
-    <string name="store_picker_subtitle">Each store prints its receipt differently, so this picks how the screenshots are read.</string>
+    <string name="store_picker_subtitle">Each one prints its receipt differently, so this picks how it gets read.</string>
     <string name="store_walmart">Walmart</string>
     <string name="store_amazon_fresh">Amazon Fresh</string>
     <string name="store_last_used">Last used</string>
