@@ -275,13 +275,14 @@ public class RealBillCalibrationTest {
     /** Every amount the recogniser found, so a missed row can be told from a missed price. */
     @Test
     public void dumpTheTextOfOneBill() throws Exception {
-        String bill = "bill-sroie-000.jpg";
+        String bill = System.getProperty("dumpBill", "bill-real-2.jpg");
         if (!present(bill)) {
             Log.i(TAG, "SKIP text dump (not fetched)");
             return;
         }
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        MlKitTextSource source = new MlKitTextSource(context, 3072);
+        MlKitTextSource source = new MlKitTextSource(context,
+                    StoreKind.RESTAURANT.vocabulary().tuning().maxImageDimensionPx);
         try {
             List<OcrElement> elements = source.read(copyAsset(bill), 0);
             Log.i(TAG, "================ RAW " + bill);

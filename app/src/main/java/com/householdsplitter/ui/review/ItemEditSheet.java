@@ -34,9 +34,19 @@ public class ItemEditSheet extends BottomSheetDialogFragment {
     private Listener listener;
     private String currencySymbol;
 
+    /**
+     * Opens the sheet on a copy of the row, never on the caller's own object.
+     *
+     * <p>This sheet is opened from a list, and the row it is handed is the one the list
+     * adapter is holding. Editing that object in place looked correct and was not: the
+     * list is diffed by content, so the old list already had the new name by the time the
+     * saved row came back from the database, the two compared equal, and the view was
+     * never rebound. The name was saved and the screen went on showing the old one, which
+     * reads as a save button that did nothing.
+     */
     public static ItemEditSheet forItem(LineItem item, String currencySymbol, Listener listener) {
         ItemEditSheet sheet = new ItemEditSheet();
-        sheet.item = item;
+        sheet.item = item == null ? null : item.copy();
         sheet.currencySymbol = currencySymbol;
         sheet.listener = listener;
         return sheet;

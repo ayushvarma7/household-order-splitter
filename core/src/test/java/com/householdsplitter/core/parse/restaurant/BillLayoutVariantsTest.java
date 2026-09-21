@@ -240,4 +240,45 @@ public class BillLayoutVariantsTest {
         assertTrue("a tilted short bill should still find its dishes: " + namesOf(tilted),
                 tilted.items().size() >= 4);
     }
+
+    /**
+     * A real bill from Dave's Hot Chicken: one slider, discounted to nothing.
+     *
+     * <p>The discount is named after the loyalty scheme that gave it, which is how nearly
+     * every discount on a till receipt is labelled, and without reading it the arithmetic
+     * says the bill should have cost $7.09 when the bill itself says $0.00.
+     */
+    @Test
+    public void aDiscountNamedAfterItsSchemeIsStillADiscount() {
+        ParsedOrder order = read(Bill.paper()
+                .leftLine("Item Price")
+                .item("SINGLE SLIDER", "$7.09")
+                .modifier("S-EXTRA HOT")
+                .summary("Subtotal", "$7.09")
+                .summary("Punchh Discount", "-$7.09")
+                .summary("Total", "$0.00")
+                .pages());
+
+        assertEquals(namesOf(order).toString(), 1, order.items().size());
+        assertEquals(709L, order.itemsSubtotalCents());
+        assertEquals(709L, order.adjustments().statedSubtotalCents());
+        assertEquals("the discount is stored positive and applied negative",
+                709L, order.adjustments().discountCents());
+        assertTrue("a bill discounted to nothing should still reconcile",
+                Reconciler.reconcile(order).totalMatches());
+    }
+
+    /** But a total is not matched by suffix, or "Total Tax" would become the total. */
+    @Test
+    public void onlyDiscountsAreMatchedBySuffix() {
+        ParsedOrder order = read(Bill.paper()
+                .leftLine("QTY DESC AMT")
+                .item(1, "PAD THAI", "$18.00")
+                .summary("Total Tax", "$1.58")
+                .summary("Total", "$19.58")
+                .pages());
+
+        assertEquals(158L, order.adjustments().taxCents());
+        assertEquals(1958L, order.adjustments().statedTotalCents());
+    }
 }

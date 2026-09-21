@@ -135,6 +135,46 @@ public class LineItem {
     public String missVerdict;
 
     /** True when the reader produced this row and it still says what the reader said. */
+    /**
+     * A detached duplicate of this row, for a screen that is about to edit it.
+     *
+     * <p>The edit sheet used to write straight into the object the list adapter was
+     * holding, which looked correct and was not. The list is diffed by content, so once
+     * the object in the old list had already been given the new name, the row that came
+     * back from the database compared equal to it and the view was never rebound: the name
+     * was saved and the screen went on showing the old one until something else forced a
+     * redraw. Editing a copy leaves the old list genuinely old, so the diff sees a change.
+     *
+     * <p>Every field, including the ones no editor touches. A partial copy would save a
+     * row and quietly blank whatever it forgot, and there is a test that walks the fields
+     * by reflection so that adding one to this class fails loudly here.
+     */
+    public LineItem copy() {
+        LineItem copy = new LineItem();
+        copy.id = id;
+        copy.orderId = orderId;
+        copy.name = name;
+        copy.rawOcrText = rawOcrText;
+        copy.quantity = quantity;
+        copy.lineTotalCents = lineTotalCents;
+        copy.unitPriceText = unitPriceText;
+        copy.scope = scope;
+        copy.sourceSection = sourceSection;
+        copy.needsReview = needsReview;
+        copy.reviewReasonsCsv = reviewReasonsCsv;
+        copy.position = position;
+        copy.sourceImageIndex = sourceImageIndex;
+        copy.boundsLeftPermille = boundsLeftPermille;
+        copy.boundsTopPermille = boundsTopPermille;
+        copy.boundsRightPermille = boundsRightPermille;
+        copy.boundsBottomPermille = boundsBottomPermille;
+        copy.origin = origin;
+        copy.parsedName = parsedName;
+        copy.parsedCents = parsedCents;
+        copy.missVerdict = missVerdict;
+        return copy;
+    }
+
     public boolean matchesWhatWasRead() {
         if (origin != ItemOrigin.PARSED) {
             return false;

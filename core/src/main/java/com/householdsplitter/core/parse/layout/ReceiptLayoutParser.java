@@ -78,7 +78,7 @@ public class ReceiptLayoutParser implements LayoutParser {
             return ParsedOrder.empty();
         }
         if (!vocabulary.needsDeskew()) {
-            return parseOnce(pages, trace, false);
+            return parseOnce(pages, trace, Correction.NONE);
         }
 
         // A photographed page is read both ways and the better reading kept.
@@ -94,16 +94,45 @@ public class ReceiptLayoutParser implements LayoutParser {
         // the page is pure arithmetic over a few hundred boxes, thousands of times cheaper
         // than the recognition that already happened, so both readings can simply be
         // produced and compared on what they actually yield.
-        ParsedOrder asPhotographed = parseOnce(pages, null, false);
-        ParsedOrder straightened = parseOnce(pages, null, true);
-        boolean straightenedWins = scoreOf(straightened) >= scoreOf(asPhotographed);
-
-        if (trace == null) {
-            return straightenedWins ? straightened : asPhotographed;
+        // Four candidate readings, from two corrections that fix different damage.
+        //
+        // Rotation turns the whole page about its centre, which is right for a page held
+        // at an angle. Column alignment slides the amounts up or down against the labels,
+        // which is right for a page that is curled, where the two columns have moved
+        // relative to each other and no rotation can bring them back together.
+        //
+        // Neither is always an improvement and the combination sometimes beats both, so
+        // all four are read and compared rather than chosen between in advance.
+        Correction best = null;
+        long bestScore = Long.MIN_VALUE;
+        for (Correction candidate : Correction.values()) {
+            long score = scoreOf(parseOnce(pages, null, candidate));
+            if (score > bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
         }
-        // The trace has to describe the reading that was kept, or it explains a parse that
-        // did not happen. Cheaper to read the winner again than to carry two traces.
-        return parseOnce(pages, trace, straightenedWins);
+        return parseOnce(pages, trace, best);
+    }
+
+    /** What may be done to a photographed page before it is read. */
+    private enum Correction {
+        /** Exactly as it came off the camera. */
+        NONE(false, false),
+        /** Rotated so the amount column stands vertical. */
+        STRAIGHTENED(true, false),
+        /** Amounts slid back level with their labels. */
+        ALIGNED(false, true),
+        /** Both, for a page that is tilted and curled at once. */
+        STRAIGHTENED_AND_ALIGNED(true, true);
+
+        final boolean straighten;
+        final boolean align;
+
+        Correction(boolean straighten, boolean align) {
+            this.straighten = straighten;
+            this.align = align;
+        }
     }
 
     /**
@@ -133,10 +162,10 @@ public class ReceiptLayoutParser implements LayoutParser {
     }
 
     private ParsedOrder parseOnce(List<List<OcrElement>> pages, ParseTrace trace,
-                                  boolean straighten) {
+                                  Correction correction) {
         List<PageParse> parsed = new ArrayList<>(pages.size());
         for (int index = 0; index < pages.size(); index++) {
-            parsed.add(parsePage(pages.get(index), index, trace, straighten));
+            parsed.add(parsePage(pages.get(index), index, trace, correction));
         }
         return Stitcher.merge(parsed, tuning);
     }
@@ -147,16 +176,21 @@ public class ReceiptLayoutParser implements LayoutParser {
     }
 
     private PageParse parsePage(List<OcrElement> input, int imageIndex, ParseTrace trace,
-                                boolean straighten) {
+                                Correction correction) {
         PageParse page = new PageParse(imageIndex);
         if (input == null || input.isEmpty()) {
             return page;
         }
 
-        // Straightened before any column rule is applied to it, because every one of those
-        // rules assumes the page is square (SPEC 8.3.2). Whether to is decided by the
-        // caller, which reads the page both ways and keeps the better one.
-        List<OcrElement> raw = straighten ? Deskew.straighten(input) : input;
+        // Corrected before any column rule is applied, because every one of those rules
+        // assumes the page is square and its columns are level (SPEC 8.3.2). Which
+        // correction is decided by the caller, which reads the page every way and keeps
+        // whichever adds up. Rotation first: alignment measures the amount column, and
+        // that measurement is better taken on a page that has been stood upright.
+        List<OcrElement> raw = correction.straighten ? Deskew.straighten(input) : input;
+        if (correction.align) {
+            raw = ColumnAlignment.aligned(raw);
+        }
 
         // A store with a fixed layout returns its own calibration unchanged, so this is the
         // identity for every screenshot store and cannot alter what they read.

@@ -177,6 +177,10 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             Pattern.compile("^seat ?\\d{1,2}$")
     ));
 
+    /** "Punchh Discount", "Member Savings", and anything else named after its scheme. */
+    private static final Pattern DISCOUNT_SUFFIX =
+            Pattern.compile("^[a-z0-9 '&.-]{1,24} (discount|savings|comp)$");
+
     private static final Pattern CURRENCY_SUFFIX =
             Pattern.compile("\\s*\\((?:[a-z]{1,4}|[\\p{Sc}])\\)\\s*$");
 
@@ -395,6 +399,17 @@ public final class RestaurantVocabulary implements StoreVocabulary {
         String label = currencySuffix(Normalise.text(leftText));
         if (label.isEmpty()) {
             return null;
+        }
+        // A discount is usually named after whatever gave it: "Punchh Discount", "Member
+        // Discount", "Employee Discount", "Happy Hour Discount". The word that makes it a
+        // discount is the last one, and the words in front are a loyalty scheme this
+        // parser has no reason to know the names of.
+        //
+        // Matched by suffix only, and only for discounts, because a discount is the one
+        // summary line whose label is routinely prefixed by a brand. Doing the same for
+        // "total" would match "Total Tax".
+        if (DISCOUNT_SUFFIX.matcher(label).matches()) {
+            return OrderField.DISCOUNT;
         }
         switch (label) {
             case "subtotal":
