@@ -307,6 +307,8 @@
 
     <string name="import_title_bill">Photograph the bill</string>
     <string name="import_hint_bill">Lay the bill flat and fill the frame. A slight angle is fine: the app straightens the page before reading it. A long bill can be two photos, taken top to bottom.</string>
+    <string name="action_browse_files">Browse files</string>
+    <string name="import_files_empty">Nothing was chosen from files.</string>
     <string name="action_photograph_bill">Take a photo of the bill</string>
     <string name="action_choose_photo">Choose a photo instead</string>
     <string name="import_add_to_order">Add to this order</string>

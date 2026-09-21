@@ -60,7 +60,12 @@ public class RealBillCalibrationTest {
             // A Burlington till receipt, photographed on a Pixel 8 and reported as reading
             // nothing at all. It is the first fixture here that came off a camera rather
             // than a scanner, which is exactly why it found what it found.
-            "bill-burlington.jpg");
+            "bill-burlington.jpg",
+            // Three restaurant bills photographed by hand, and the hardest set here: a
+            // hundred percent discount taking a total to zero, dish names wrapping over
+            // two lines on curved paper, and a four column layout whose quantities are
+            // printed as "1.00" and so look exactly like prices.
+            "bill-real-1.jpg", "bill-real-2.jpg", "bill-real-3.jpg");
 
     private static boolean present(String name) {
         try {

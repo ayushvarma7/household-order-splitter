@@ -172,4 +172,72 @@ public class BillLayoutVariantsTest {
             assertEquals("currency " + symbol, 800L, order.adjustments().statedTotalCents());
         }
     }
+
+    /**
+     * A curled bill, where straightening makes things worse.
+     *
+     * <p>Paper held in the hand bows, so its amounts lie on an arc. A line fitted through
+     * an arc has a real slope, and rotating by it straightens one end while shearing the
+     * rows apart at the other: measured on a real curved receipt it lost two dishes and a
+     * third of the money.
+     *
+     * <p>The reader is not asked to predict which case a page is. Two cheap proxies were
+     * tried and both were wrong on real receipts, in opposite directions. It reads the page
+     * both ways and keeps whichever adds up, so this passes whether or not the tilt
+     * estimate fires.
+     */
+    @Test
+    public void aCurledBillIsReadTheWayThatWorks() {
+        Bill bill = Bill.paper()
+                .leftLine("QTY DESC AMT")
+                .item(1, "STEAMED WONTONS", "$21.95")
+                .item(1, "PORK WONTONS", "$13.95")
+                .item(1, "SESAME CHICKEN", "$19.95")
+                .item(1, "FRIED RICE", "$17.95")
+                .summary("SUBTOTAL", "$73.80");
+
+        ParsedOrder flat = read(bill.pages());
+        assertEquals(namesOf(flat).toString(), 4, flat.items().size());
+        assertEquals(7380L, flat.itemsSubtotalCents());
+
+        // The same bill photographed on a curve. However the tilt estimate reacts to it,
+        // the reading that is kept must not be worse than reading it as photographed.
+        ParsedOrder curved = read(bill.bowed(70));
+        assertTrue("a curled bill lost rows: " + namesOf(curved),
+                curved.items().size() >= 4);
+        assertEquals("and lost money", 7380L, curved.itemsSubtotalCents());
+    }
+
+    /**
+     * A tilt is only measurable when there are enough amounts, spread far enough apart.
+     *
+     * <p>{@link com.householdsplitter.core.parse.layout.Deskew} wants four amounts covering
+     * at least a seventh of the page height before it will fit a line through them, and
+     * that floor is deliberate: four prices crowded into one corner describe the corner
+     * rather than the page, and a rotation derived from them is noise acted upon.
+     *
+     * <p>The consequence is worth stating rather than discovering. A short bill photographed
+     * at an angle is not straightened, because it does not carry enough evidence of the
+     * angle. Four dishes over a few centimetres of till roll is a short bill.
+     *
+     * <p>What the reader promises even then is that it does not make things worse: it reads
+     * the page as photographed as well, and keeps whichever adds up. So this asserts the
+     * money, not the mechanism.
+     */
+    @Test
+    public void aShortTiltedBillIsNeverReadWorseThanAsPhotographed() {
+        Bill bill = Bill.paper()
+                .leftLine("QTY DESC AMT")
+                .item(1, "CAPUCCINO", "$5.40")
+                .item(1, "CHOCOLATE DONUT", "$8.13")
+                .item(2, "CAESAR SALAD", "$23.38")
+                .item(1, "ICED TEA", "$4.60")
+                .summary("SUBTOTAL", "$41.51");
+
+        assertEquals(4151L, read(bill.pages()).itemsSubtotalCents());
+
+        ParsedOrder tilted = read(bill.tilted(140));
+        assertTrue("a tilted short bill should still find its dishes: " + namesOf(tilted),
+                tilted.items().size() >= 4);
+    }
 }

@@ -33,12 +33,23 @@ public class ImportFragment extends BaseFragment {
     /** Set when the user shared screenshots straight into the app (SPEC 8.1.2). */
     public static final String ARG_SHARED_URIS = "shared_uris";
 
+    /**
+     * What the file picker will offer.
+     *
+     * <p>Images only, so a PDF is greyed out rather than accepted and then failing at
+     * decode. Plenty of receipts do arrive as PDFs and reading one would mean rendering a
+     * page to a bitmap first; offering it here without doing that would be a promise the
+     * next screen breaks.
+     */
+    private static final String[] IMAGE_TYPES = {"image/*"};
+
     private FragmentImportBinding binding;
     private ImportViewModel model;
     private ImagePreviewAdapter adapter;
     private ItemTouchHelper touchHelper;
 
     private ActivityResultLauncher<PickVisualMediaRequest> pickMultiple;
+    private ActivityResultLauncher<String[]> openDocuments;
     private ActivityResultLauncher<Uri> takePicture;
 
 
@@ -57,6 +68,22 @@ public class ImportFragment extends BaseFragment {
                         persistPermissions(uris);
                         model.add(uris);
                     }
+                });
+
+        // The system file picker, which reaches everywhere the photo picker cannot:
+        // Downloads, Documents, and whatever cloud providers the user has mounted.
+        //
+        // Its grants are also the better ones. A photo picker URI is readable until the
+        // process dies and refuses takePersistableUriPermission; a document URI survives a
+        // restart, which matters because this app keeps the URI on the order and reads the
+        // image again later to explain what the parser missed.
+        openDocuments = registerForActivityResult(
+                new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
+                    if (uris == null || uris.isEmpty()) {
+                        return;
+                    }
+                    persistPermissions(uris);
+                    model.add(uris);
                 });
 
         takePicture = registerForActivityResult(
@@ -225,6 +252,10 @@ public class ImportFragment extends BaseFragment {
                 new PickVisualMediaRequest.Builder()
                         .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                         .build());
+
+        // The same in both framings. Where a file came from is not a property of which
+        // shop it is from, and a receipt saved out of an email is as likely either way.
+        binding.filesButton.setOnClickListener(v -> openDocuments.launch(IMAGE_TYPES));
 
         if (storeIsPaper()) {
             binding.toolbar.setTitle(R.string.import_title_bill);

@@ -1,10 +1,12 @@
 package com.householdsplitter.core.parse.layout;
 
 import com.householdsplitter.core.parse.LayoutParser;
+import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.OcrElement;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedItem;
 import com.householdsplitter.core.parse.model.ParsedOrder;
+import com.householdsplitter.core.parse.model.Reconciliation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,9 +77,66 @@ public class ReceiptLayoutParser implements LayoutParser {
         if (pages == null || pages.isEmpty()) {
             return ParsedOrder.empty();
         }
+        if (!vocabulary.needsDeskew()) {
+            return parseOnce(pages, trace, false);
+        }
+
+        // A photographed page is read both ways and the better reading kept.
+        //
+        // Straightening a tilted page is often a large win: on one scan it found four rows
+        // where reading it as photographed found two. It is also sometimes a loss, because
+        // a receipt held in the hand curls, and on a curled page the amounts lie on an arc.
+        // A line fitted through an arc has a real slope, and rotating by it straightens one
+        // end while shearing the rows apart at the other.
+        //
+        // Two cheap ways of predicting which case a page is were tried and both were wrong
+        // on real receipts, in opposite directions. Predicting it is the mistake: reading
+        // the page is pure arithmetic over a few hundred boxes, thousands of times cheaper
+        // than the recognition that already happened, so both readings can simply be
+        // produced and compared on what they actually yield.
+        ParsedOrder asPhotographed = parseOnce(pages, null, false);
+        ParsedOrder straightened = parseOnce(pages, null, true);
+        boolean straightenedWins = scoreOf(straightened) >= scoreOf(asPhotographed);
+
+        if (trace == null) {
+            return straightenedWins ? straightened : asPhotographed;
+        }
+        // The trace has to describe the reading that was kept, or it explains a parse that
+        // did not happen. Cheaper to read the winner again than to carry two traces.
+        return parseOnce(pages, trace, straightenedWins);
+    }
+
+    /**
+     * How good a reading is, for choosing between two of them.
+     *
+     * <p>Ordered by how much the evidence is worth. A reading whose rows add up to a figure
+     * the bill itself prints is checked against the receipt rather than against a
+     * preference, and outranks everything. Failing that, more rows found beats fewer, since
+     * the failure this reader actually has is losing rows rather than inventing them. Rows
+     * it had to flag break the tie downward.
+     */
+    private static long scoreOf(ParsedOrder order) {
+        long score = 0L;
+        Reconciliation check = Reconciler.reconcile(order);
+        boolean statedSomething = order.adjustments().statedTotalCents() != 0L
+                || order.adjustments().statedSubtotalCents() != 0L;
+        if (statedSomething && check.totalMatches() && check.subtotalMatches()) {
+            score += 1_000_000L;
+        }
+        score += order.items().size() * 1_000L;
+        for (ParsedItem item : order.items()) {
+            if (item.needsReview()) {
+                score -= 1L;
+            }
+        }
+        return score;
+    }
+
+    private ParsedOrder parseOnce(List<List<OcrElement>> pages, ParseTrace trace,
+                                  boolean straighten) {
         List<PageParse> parsed = new ArrayList<>(pages.size());
         for (int index = 0; index < pages.size(); index++) {
-            parsed.add(parsePage(pages.get(index), index, trace));
+            parsed.add(parsePage(pages.get(index), index, trace, straighten));
         }
         return Stitcher.merge(parsed, tuning);
     }
@@ -87,16 +146,17 @@ public class ReceiptLayoutParser implements LayoutParser {
         return parse(Collections.singletonList(elements));
     }
 
-    private PageParse parsePage(List<OcrElement> input, int imageIndex, ParseTrace trace) {
+    private PageParse parsePage(List<OcrElement> input, int imageIndex, ParseTrace trace,
+                                boolean straighten) {
         PageParse page = new PageParse(imageIndex);
         if (input == null || input.isEmpty()) {
             return page;
         }
 
-        // A photographed page is straightened before any column rule is applied to it,
-        // because every one of those rules assumes the page is square (SPEC 8.3.2). A
-        // screenshot store takes the default and is not touched.
-        List<OcrElement> raw = vocabulary.needsDeskew() ? Deskew.straighten(input) : input;
+        // Straightened before any column rule is applied to it, because every one of those
+        // rules assumes the page is square (SPEC 8.3.2). Whether to is decided by the
+        // caller, which reads the page both ways and keeps the better one.
+        List<OcrElement> raw = straighten ? Deskew.straighten(input) : input;
 
         // A store with a fixed layout returns its own calibration unchanged, so this is the
         // identity for every screenshot store and cannot alter what they read.

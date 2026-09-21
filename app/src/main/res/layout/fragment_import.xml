@@ -62,6 +62,24 @@
                     android:layout_marginTop="@dimen/space_s"
                     android:text="@string/action_take_photo" />
 
+                <!--
+                  The third route, and the one the other two cannot reach. The photo picker
+                  shows the media store, which is where the camera and screenshots put
+                  things; a receipt saved out of an email, a browser or a chat lands in
+                  Downloads, and is invisible to it. This opens the system file picker, so
+                  Downloads, Documents and anything a cloud provider has mounted are all
+                  available.
+                -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/filesButton"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/action_browse_files"
+                    app:icon="@drawable/ic_folder"
+                    app:iconGravity="textStart" />
+
                 <TextView
                     android:id="@+id/emptyHint"
                     style="@style/Widget.Splitter.Banner"

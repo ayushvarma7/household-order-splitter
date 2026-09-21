@@ -71,6 +71,28 @@ public final class Bill {
         return pages;
     }
 
+    /**
+     * The same receipt photographed on a curve, as paper held in the hand always is.
+     *
+     * <p>The amounts bow out and back rather than leaning, so a straight line fitted
+     * through them reports a slope that no rotation can take out.
+     *
+     * @param bowPixels how far the middle of the page bulges sideways
+     */
+    public List<List<OcrElement>> bowed(int bowPixels) {
+        List<OcrElement> out = new ArrayList<>(elements.size());
+        for (OcrElement e : elements) {
+            double through = (double) e.top() / HEIGHT;
+            int shift = (int) (bowPixels * Math.sin(Math.PI * through));
+            out.add(new OcrElement(e.text(), e.imageIndex(),
+                    e.left() + shift, e.top(), e.right() + shift, e.bottom(),
+                    WIDTH, HEIGHT, e.confidencePercent()));
+        }
+        List<List<OcrElement>> pages = new ArrayList<>();
+        pages.add(out);
+        return pages;
+    }
+
     /** Inlined rather than borrowed, so widening the parser's API is not a test concern. */
     private static long isqrt(long value) {
         long guess = value;

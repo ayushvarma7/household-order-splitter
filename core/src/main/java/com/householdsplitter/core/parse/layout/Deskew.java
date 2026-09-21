@@ -136,6 +136,22 @@ public final class Deskew {
      * <p>The identity case returns the argument unchanged rather than a copy, so a store
      * that opts in but photographs straight pays nothing.
      */
+    /**
+     * The page with its measured tilt taken out, or the same list when there is none.
+     *
+     * <p>Whether that is an improvement is deliberately not decided here. Two cheap proxies
+     * were tried and both were wrong on real receipts: how tightly the amounts line up
+     * vertically said a curled bill had improved when its rows had in fact sheared apart,
+     * and counting amounts that still had a name beside them said the opposite on a scan
+     * where rotating genuinely found four more rows.
+     *
+     * <p>So this only offers the rotation. {@link ReceiptLayoutParser} reads the page both
+     * ways and keeps whichever one adds up, which is not a proxy for the answer but the
+     * answer.
+     *
+     * <p>The identity case returns the argument unchanged rather than a copy, so a store
+     * that opts in but photographs straight pays nothing.
+     */
     public static List<OcrElement> straighten(List<OcrElement> elements) {
         int slope = slopePermille(elements);
         return slope == 0 ? elements : rotate(elements, slope);
