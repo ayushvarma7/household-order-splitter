@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pill behind a screenshot's number. Solid rather than translucent, because it sits
+     on a photograph and a photograph can be any colour underneath it. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorPrimary" />
+    <corners android:radius="@dimen/radius_s" />
+</shape>

@@ -31,8 +31,34 @@ public class HouseholdRepository {
     }
 
     /** Null until the user creates one, which is what routes first launch to S1. */
-    public LiveData<Household> observeHousehold() {
+    /**
+     * The first group that exists.
+     *
+     * <p>Only correct for asking whether <em>any</em> group exists, which is what the start
+     * destination needs. Every screen that shows a group to the user wants
+     * {@link #observeCurrent(long)} instead: this one answers "a group" where they are
+     * asking "the group I am in".
+     */
+    public LiveData<Household> observeAnyHousehold() {
         return householdDao.observeHousehold();
+    }
+
+    /**
+     * The group being looked at.
+     *
+     * <p>Added because the screens predate groups being switchable and all asked for the
+     * first row. That was the same answer as the right one while there was only ever one
+     * group, and silently the wrong answer afterwards: with two groups, the members screen
+     * added people to whichever had the lower id, so making a second group and typing names
+     * into it put them in the first one.
+     *
+     * <p>Zero means nothing has been chosen, which is every install that has never switched,
+     * and falls back to the first group so those installs behave exactly as before.
+     */
+    public LiveData<Household> observeCurrent(long householdId) {
+        return householdId == 0L
+                ? householdDao.observeHousehold()
+                : householdDao.observeById(householdId);
     }
 
     public LiveData<List<Member>> observeMembers(long householdId) {
@@ -60,7 +86,9 @@ public class HouseholdRepository {
                 post(callback, Result.failure("Enter a name of 1 to 60 characters"));
                 return;
             }
-            Household household = householdDao.getHouseholdSync();
+            // By the id it was given. It used to fetch the first group and rename that
+            // whatever it was asked for, so renaming the second group renamed the first.
+            Household household = householdDao.getByIdSync(householdId);
             if (household == null) {
                 post(callback, Result.failure("No group to rename"));
                 return;

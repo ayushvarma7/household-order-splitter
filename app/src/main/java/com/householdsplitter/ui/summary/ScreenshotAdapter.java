@@ -69,6 +69,10 @@ public class ScreenshotAdapter
                 // without it, so the tile simply stays blank.
                 binding.thumbnail.setImageDrawable(null);
             }
+            // On the picture as well as in the description. The app asks which photo a
+            // missed row was on, and that cannot be answered from a strip of unlabelled
+            // thumbnails.
+            binding.thumbNumber.setText(String.valueOf(position + 1));
             String label = binding.getRoot().getContext()
                     .getString(R.string.screenshot_number, position + 1);
             binding.getRoot().setContentDescription(label);

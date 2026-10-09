@@ -47,8 +47,13 @@ public class HomeViewModel extends ViewModel {
 
     public HomeViewModel(HouseholdRepository householdRepository,
                          OrderRepository orderRepository) {
+        this(householdRepository, orderRepository, 0L);
+    }
+
+    public HomeViewModel(HouseholdRepository householdRepository,
+                         OrderRepository orderRepository, long householdId) {
         this.orderRepository = orderRepository;
-        this.household = householdRepository.observeHousehold();
+        this.household = householdRepository.observeCurrent(householdId);
         this.members = Transformations.switchMap(household, value -> {
             if (value == null) {
                 return new MutableLiveData<>(Collections.<Member>emptyList());

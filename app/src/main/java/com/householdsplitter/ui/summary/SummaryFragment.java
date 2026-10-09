@@ -377,7 +377,7 @@ public class SummaryFragment extends BaseFragment {
     }
 
     private void groupName(com.householdsplitter.util.Callback<String> callback) {
-        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+        locator().householdRepository().observeCurrent(locator().currentHouseholdId()).observe(getViewLifecycleOwner(),
                 household -> callback.onResult(household == null ? "" : household.name));
     }
 
@@ -435,7 +435,7 @@ public class SummaryFragment extends BaseFragment {
      * not be told about one every time they settle up.
      */
     private void refreshWorkbook() {
-        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+        locator().householdRepository().observeCurrent(locator().currentHouseholdId()).observe(getViewLifecycleOwner(),
                 household -> {
                     if (household != null) {
                         locator().workbookService()

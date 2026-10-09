@@ -573,6 +573,7 @@
     <string name="note_body_corrected">“%1$s” was read wrongly. A note about what went wrong helps fix the reader.</string>
     <string name="note_what_it_read">What it read</string>
     <string name="note_which_photo">Which photo was it on?</string>
+    <string name="note_which_photo_of">Which photo was it on? They are numbered on the order screen.</string>
     <string name="note_photo_number">Photo %1$d</string>
     <string name="note_photo_unsure">Not sure</string>
     <string name="note_what_went_wrong">What went wrong?</string>

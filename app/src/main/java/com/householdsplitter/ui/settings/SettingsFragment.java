@@ -313,7 +313,7 @@ public class SettingsFragment extends BaseFragment {
     }
 
     private void exportAll() {
-        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+        locator().householdRepository().observeCurrent(locator().currentHouseholdId()).observe(getViewLifecycleOwner(),
                 household -> {
                     if (household == null) {
                         return;
@@ -331,7 +331,7 @@ public class SettingsFragment extends BaseFragment {
 
     /** @param target a newly chosen file, or null to rewrite the one already saved */
     private void writeWorkbook(Uri target) {
-        locator().householdRepository().observeHousehold().observe(getViewLifecycleOwner(),
+        locator().householdRepository().observeCurrent(locator().currentHouseholdId()).observe(getViewLifecycleOwner(),
                 household -> {
                     if (household == null) {
                         return;

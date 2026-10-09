@@ -50,10 +50,12 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
             return (T) new SetupGroupViewModel(locator.householdRepository(), handle);
         }
         if (modelClass == SetupMembersViewModel.class) {
-            return (T) new SetupMembersViewModel(locator.householdRepository(), handle);
+            return (T) new SetupMembersViewModel(locator.householdRepository(), handle,
+                    locator.currentHouseholdId());
         }
         if (modelClass == HomeViewModel.class) {
-            return (T) new HomeViewModel(locator.householdRepository(), locator.orderRepository());
+            return (T) new HomeViewModel(locator.householdRepository(),
+                    locator.orderRepository(), locator.currentHouseholdId());
         }
         if (modelClass == AnalyticsViewModel.class) {
             return (T) new AnalyticsViewModel(locator.workbookService(),

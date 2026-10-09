@@ -28,8 +28,13 @@ public class SetupMembersViewModel extends ViewModel {
     private final MutableLiveData<String> toast = new MutableLiveData<>();
 
     public SetupMembersViewModel(HouseholdRepository repository, SavedStateHandle handle) {
+        this(repository, handle, 0L);
+    }
+
+    public SetupMembersViewModel(HouseholdRepository repository, SavedStateHandle handle,
+                                 long householdId) {
         this.repository = repository;
-        this.household = repository.observeHousehold();
+        this.household = repository.observeCurrent(householdId);
         this.members = Transformations.switchMap(household, value -> {
             if (value == null) {
                 return new MutableLiveData<>(Collections.<Member>emptyList());

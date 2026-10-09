@@ -271,6 +271,11 @@ public class EditGroupFragment extends BaseFragment {
     private void delete() {
         long doomed = householdId;
         locator().executors().diskIO().execute(() -> {
+            // The correction log has no foreign key, on purpose: an observation about a row
+            // the reader invented has to outlive the row it was about. A deleted group is
+            // the one case where that is wrong, since its entries are only ever read back
+            // by household and would sit there unreachable.
+            locator().database().correctionEventDao().clearForHousehold(doomed);
             locator().database().householdDao().deleteById(doomed);
             List<Household> left = locator().database().householdDao().getAllSync();
             long next = left.isEmpty() ? 0L : left.get(0).id;
