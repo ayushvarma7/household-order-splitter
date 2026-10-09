@@ -11,6 +11,7 @@ import androidx.room.TypeConverters;
 
 import com.householdsplitter.data.converter.Converters;
 import com.householdsplitter.data.dao.AssignmentDao;
+import com.householdsplitter.data.dao.CorrectionEventDao;
 import com.householdsplitter.data.dao.AssignmentMemoryDao;
 import com.householdsplitter.data.dao.HouseholdDao;
 import com.householdsplitter.data.dao.LineItemDao;
@@ -21,6 +22,7 @@ import com.householdsplitter.data.dao.OrderImageDao;
 import com.householdsplitter.data.dao.ParticipantDao;
 import com.householdsplitter.data.dao.SettlementDao;
 import com.householdsplitter.data.entity.AssignmentMemory;
+import com.householdsplitter.data.entity.CorrectionEvent;
 import com.householdsplitter.data.entity.DiscardedRow;
 import com.householdsplitter.data.dao.DiscardedRowDao;
 import com.householdsplitter.data.entity.Household;
@@ -55,9 +57,10 @@ import com.householdsplitter.data.entity.SettlementPayment;
                 AssignmentMemory.class,
                 SettlementPayment.class,
                 MemberRule.class,
-                DiscardedRow.class
+                DiscardedRow.class,
+                CorrectionEvent.class
         },
-        version = 7,
+        version = 8,
         exportSchema = true)
 @TypeConverters(Converters.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -77,6 +80,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract LineItemDao lineItemDao();
 
     public abstract AssignmentDao assignmentDao();
+
+    public abstract CorrectionEventDao correctionEventDao();
 
     public abstract AssignmentMemoryDao assignmentMemoryDao();
 
@@ -106,7 +111,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public static Migration[] migrations() {
         return new Migration[]{
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7
+                MIGRATION_6_7, MIGRATION_7_8
         };
     }
 
@@ -121,6 +126,48 @@ public abstract class AppDatabase extends RoomDatabase {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE `line_items` ADD COLUMN `missVerdict` TEXT");
+        }
+    };
+
+    /**
+     * The correction log.
+     *
+     * <p>A new table rather than more columns on the row being corrected, because a
+     * correction is an event and a row is a thing: the same row corrected twice has two
+     * observations to record, and the second must not overwrite the first.
+     *
+     * <p>Nothing is backfilled. Every order imported before this existed was corrected
+     * without anybody writing down what happened, and inventing entries for them would put
+     * guesses into the one table whose whole purpose is to hold what was actually seen.
+     */
+    public static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `correction_events` ("
+                    + "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                    + "`householdId` INTEGER NOT NULL, "
+                    + "`orderId` INTEGER NOT NULL, "
+                    + "`lineItemId` INTEGER NOT NULL, "
+                    + "`store` TEXT, "
+                    + "`kind` TEXT NOT NULL, "
+                    + "`parsedName` TEXT, "
+                    + "`parsedCents` INTEGER NOT NULL, "
+                    + "`finalName` TEXT, "
+                    + "`finalCents` INTEGER NOT NULL, "
+                    + "`parsedQuantity` INTEGER NOT NULL, "
+                    + "`finalQuantity` INTEGER NOT NULL, "
+                    + "`imageIndex` INTEGER NOT NULL, "
+                    + "`reason` TEXT, "
+                    + "`missVerdict` TEXT, "
+                    + "`createdAt` INTEGER NOT NULL)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS "
+                    + "`index_correction_events_householdId` ON `correction_events` "
+                    + "(`householdId`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS "
+                    + "`index_correction_events_orderId` ON `correction_events` (`orderId`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS "
+                    + "`index_correction_events_createdAt` ON `correction_events` "
+                    + "(`createdAt`)");
         }
     };
 

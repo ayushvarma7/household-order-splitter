@@ -11,6 +11,7 @@ import com.householdsplitter.data.repo.SettlementRepository;
 import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.parse.ParserFactory;
 import com.householdsplitter.quality.MissDiagnosisService;
+import com.householdsplitter.quality.CorrectionLog;
 import com.householdsplitter.quality.ParserQualityService;
 import com.householdsplitter.suggest.AssignmentMemoryService;
 import com.householdsplitter.suggest.RuleService;
@@ -180,9 +181,20 @@ public class ServiceLocator {
                 database.orderImageDao(), database.lineItemDao(), executors());
     }
 
+    private CorrectionLog correctionLog;
+
+    /** The correction log. One per app: it is append-only and holds no per-screen state. */
+    public synchronized CorrectionLog correctionLog() {
+        if (correctionLog == null) {
+            correctionLog = new CorrectionLog(database().correctionEventDao(),
+                    database().orderDao(), database().lineItemDao(), executors());
+        }
+        return correctionLog;
+    }
+
     public ParserQualityService parserQualityService() {
         return new ParserQualityService(database.orderDao(), database.lineItemDao(),
-                database.discardedRowDao(), executors());
+                database.discardedRowDao(), database.correctionEventDao(), executors());
     }
 
     public ReceiptParser receiptParser() {

@@ -82,6 +82,14 @@ public class ReviewItemsFragment extends BaseFragment {
             binding.itemCount.setText(getResources().getQuantityString(
                     R.plurals.item_count, items == null ? 0 : items.size(),
                     items == null ? 0 : items.size()));
+            // The rows' own sum, which is the figure the banner is comparing against and
+            // the only one that changes as rows are corrected.
+            long runningCents = 0L;
+            for (LineItem row : items) {
+                runningCents += row.lineTotalCents;
+            }
+            binding.runningTotal.setText(getString(R.string.review_running_total,
+                    money.format(runningCents)));
         });
 
         // SPEC 7.6.2 and 8.9.4: prominent, and advisory only.
@@ -89,6 +97,24 @@ public class ReviewItemsFragment extends BaseFragment {
                 renderBanner(reconciliation, money));
 
         binding.addItemButton.setOnClickListener(v -> openEditSheet(model.newBlankItem()));
+
+        // Offered, not imposed. The correction is already saved; this is a snackbar with
+        // an action, so correcting a row and moving on costs nothing and anybody who wants
+        // to say what went wrong can.
+        model.lastLogged().observe(getViewLifecycleOwner(), logged -> {
+            if (logged == null || binding == null) {
+                return;
+            }
+            model.clearLastLogged();
+            boolean missed = com.householdsplitter.data.entity.CorrectionEvent.ADDED_BY_HAND
+                    .equals(logged.kind);
+            Snackbar.make(binding.getRoot(),
+                            missed ? R.string.note_prompt_missed
+                                   : R.string.note_prompt_corrected,
+                            8000)
+                    .setAction(R.string.note_prompt_action, v -> openNoteSheet(logged))
+                    .show();
+        });
 
         binding.continueButton.setOnClickListener(v -> {
             List<Integer> blocking = model.blockingPositions();
@@ -181,6 +207,21 @@ public class ReviewItemsFragment extends BaseFragment {
                 NavHostFragment.findNavController(this).navigate(R.id.importFragment, args);
             });
         }
+    }
+
+    private void openNoteSheet(ReviewItemsViewModel.Logged logged) {
+        com.householdsplitter.data.relation.OrderBundle bundle = model.bundle().getValue();
+        int images = bundle == null || bundle.images == null ? 0 : bundle.images.size();
+        CorrectionNoteSheet.forEvent(logged.eventId, logged.kind, logged.name,
+                        model.whatTheReaderSaid(logged.name), images,
+                        (eventId, imageIndex, reason) -> {
+                            model.annotate(eventId, imageIndex, reason);
+                            if (binding != null) {
+                                Snackbar.make(binding.getRoot(), R.string.note_saved,
+                                        Snackbar.LENGTH_SHORT).show();
+                            }
+                        })
+                .show(getParentFragmentManager(), "correction-note");
     }
 
     private void openEditSheet(LineItem item) {

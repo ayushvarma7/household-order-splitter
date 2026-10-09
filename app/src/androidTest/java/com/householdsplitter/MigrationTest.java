@@ -109,6 +109,46 @@ public class MigrationTest {
         helper.runMigrationsAndValidate(NAME, 4, true, AppDatabase.MIGRATION_3_4).close();
     }
 
+    /**
+     * The correction log arrives as a new table and nothing else moves.
+     *
+     * <p>Validated rather than merely run, so the hand-written CREATE TABLE is checked
+     * against the entity Room generates from. A column declared NOT NULL here and nullable
+     * there is the kind of difference that only shows up on somebody's upgrade.
+     */
+    @Test
+    public void migratesSevenToEight() throws IOException {
+        helper.createDatabase(NAME, 7).close();
+        helper.runMigrationsAndValidate(NAME, 8, true, AppDatabase.MIGRATION_7_8).close();
+    }
+
+    /** An order already in the database survives the new table being added beside it. */
+    @Test
+    public void anExistingOrderIsUntouchedByTheCorrectionLog() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 7);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Flat 12");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 8, true,
+                AppDatabase.MIGRATION_7_8);
+        try (Cursor cursor = migrated.query("SELECT name FROM households")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("Flat 12", cursor.getString(0));
+        }
+        // And the new table is there and empty: nothing is invented for orders that were
+        // corrected before anybody was writing it down.
+        try (Cursor cursor = migrated.query("SELECT COUNT(*) FROM correction_events")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals(0, cursor.getInt(0));
+        }
+        migrated.close();
+    }
+
     @Test
     public void migratesSixToSeven() throws IOException {
         helper.createDatabase(NAME, 6).close();

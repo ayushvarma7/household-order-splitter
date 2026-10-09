@@ -91,6 +91,8 @@
     <string name="action_add_adjustment">Add fee, tip or discount</string>
     <string name="from_screenshot">From screenshot</string>
     <string name="reconcile_equation">Items plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
+    <string name="reconcile_equation_from_printed">Printed subtotal plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
+    <string name="reconcile_items_short">The rows only add up to %1$s, so %2$s of this is unaccounted for.</string>
     <string name="reconcile_matches">Matches the bill</string>
     <string name="reconcile_delta">Off by %1$s. You can still carry on.</string>
 
@@ -563,5 +565,35 @@
     <string name="profile_appearance">Appearance and colour scheme</string>
     <string name="profile_settings">All settings</string>
     <string name="profile_privacy_note">There is no account here. This is a note to the app about which row is yours, kept on this phone like everything else.</string>
+
+    <!-- Annotating a correction, so the log holds why rather than only how many -->
+    <string name="note_title_missed">The reader missed this</string>
+    <string name="note_title_corrected">You corrected this</string>
+    <string name="note_body_missed">You typed in “%1$s” yourself. A note about where it was helps fix the reader.</string>
+    <string name="note_body_corrected">“%1$s” was read wrongly. A note about what went wrong helps fix the reader.</string>
+    <string name="note_what_it_read">What it read</string>
+    <string name="note_which_photo">Which photo was it on?</string>
+    <string name="note_photo_number">Photo %1$d</string>
+    <string name="note_photo_unsure">Not sure</string>
+    <string name="note_what_went_wrong">What went wrong?</string>
+    <string name="note_reason_not_read_at_all">Not read at all</string>
+    <string name="note_reason_cut_off">Cut off at the edge</string>
+    <string name="note_reason_blurry">Blurry or faint</string>
+    <string name="note_reason_merged_with_another">Merged with another row</string>
+    <string name="note_reason_wrong_name">Wrong name</string>
+    <string name="note_reason_wrong_price">Wrong price</string>
+    <string name="note_reason_wrong_quantity">Wrong quantity</string>
+    <string name="note_reason_name_truncated">Name cut short</string>
+    <string name="note_anything_else">Anything else (optional)</string>
+    <string name="note_save">Save the note</string>
+    <string name="note_skip">Not now</string>
+    <string name="note_prompt_action">Say what went wrong</string>
+    <string name="note_prompt_missed">Row added. The reader missed it.</string>
+    <string name="note_prompt_corrected">Saved. The reader had this one wrong.</string>
+    <string name="note_saved">Thanks, noted.</string>
+    <string name="review_running_total">%1$s so far</string>
+
+    <string name="assign_continue_later">Save and continue later</string>
+    <string name="assign_continue_later_done">Saved. Reopen the order to carry on from here.</string>
 
 </resources>

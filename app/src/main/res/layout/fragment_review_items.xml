@@ -92,6 +92,20 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_m"
             android:textAppearance="@style/Text.SectionLabel" />
+
+        <!-- What the rows add up to, beside how many there are.
+             The banner above only appears when the bill states a subtotal to disagree with,
+             so on a bill that states none there was no running figure anywhere, and the one
+             question somebody scrolling a list of twenty-seven rows is actually asking is
+             whether it is coming out near the right number. -->
+        <TextView
+            android:id="@+id/runningTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/screen_margin"
+            android:textAppearance="@style/Text.Money"
+            app:layout_constraintBaseline_toBaselineOf="@id/itemCount"
+            app:layout_constraintEnd_toEndOf="parent" />
     </LinearLayout>
 
     <FrameLayout

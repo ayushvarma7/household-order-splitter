@@ -40,17 +40,22 @@ public class ParserQualityService {
         public final List<LineItem> addedByHand;
         /** Rows the user deleted: charges the reader invented. */
         public final List<DiscardedRow> discarded;
+
+        /** The annotated correction log, newest first. */
+        public final List<com.householdsplitter.data.entity.CorrectionEvent> log;
         /** Rows the reader found but got wrong. */
         public final List<LineItem> corrected;
 
         Report(ParserScorecard overall, Map<StoreKind, ParserScorecard> byStore,
                List<LineItem> addedByHand, List<DiscardedRow> discarded,
-               List<LineItem> corrected) {
+               List<LineItem> corrected,
+               List<com.householdsplitter.data.entity.CorrectionEvent> log) {
             this.overall = overall;
             this.byStore = byStore;
             this.addedByHand = addedByHand;
             this.discarded = discarded;
             this.corrected = corrected;
+            this.log = log;
         }
     }
 
@@ -61,10 +66,14 @@ public class ParserQualityService {
     private final OrderDao orderDao;
     private final LineItemDao lineItemDao;
     private final DiscardedRowDao discardedRowDao;
+    private final com.householdsplitter.data.dao.CorrectionEventDao correctionEventDao;
     private final AppExecutors executors;
 
     public ParserQualityService(OrderDao orderDao, LineItemDao lineItemDao,
-                                DiscardedRowDao discardedRowDao, AppExecutors executors) {
+                                DiscardedRowDao discardedRowDao,
+                                com.householdsplitter.data.dao.CorrectionEventDao correctionEventDao,
+                                AppExecutors executors) {
+        this.correctionEventDao = correctionEventDao;
         this.orderDao = orderDao;
         this.lineItemDao = lineItemDao;
         this.discardedRowDao = discardedRowDao;
@@ -127,7 +136,10 @@ public class ParserQualityService {
             byStore.put(entry.getKey(), card);
             overall = overall.plus(card);
         }
-        return new Report(overall, byStore, addedByHand, discarded, corrected);
+        return new Report(overall, byStore, addedByHand, discarded, corrected,
+                correctionEventDao == null
+                        ? new java.util.ArrayList<>()
+                        : correctionEventDao.recentSync(householdId, 60));
     }
 
     private static ParserScorecard.Builder builderFor(

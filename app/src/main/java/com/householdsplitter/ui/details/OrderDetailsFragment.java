@@ -253,19 +253,43 @@ public class OrderDetailsFragment extends BaseFragment {
 
         Reconciliation reconciliation = Reconciler.reconcile(itemsSubtotalCents, adjustments);
 
-        binding.reconcileLine.setText(getString(R.string.reconcile_equation,
+        // Which subtotal the arithmetic actually used, said plainly.
+        //
+        // This line claimed "items plus tax" while computing from the printed subtotal
+        // whenever the bill stated one, which is nearly always. On a real order whose rows
+        // were $3.08 short of the printed subtotal that produced a green "Matches the
+        // bill" here and a red "Off by -$3.08" on the very next screen, from the same
+        // numbers. Both were arithmetically true and one of them was answering a question
+        // nobody asked: the printed subtotal plus the printed tax reaching the printed
+        // total only says the bill adds up, which it always does.
+        boolean fromPrinted = reconciliation.statedSubtotalCents() != 0L;
+        binding.reconcileLine.setText(getString(
+                fromPrinted ? R.string.reconcile_equation_from_printed
+                            : R.string.reconcile_equation,
                 money.format(reconciliation.computedTotalCents()),
                 money.format(reconciliation.statedTotalCents())));
 
-        boolean matches = reconciliation.totalMatches();
+        // Green needs both: the arithmetic reaching the printed total, and the rows
+        // reaching the printed subtotal. A tick that only means the first is a tick on a
+        // screen where the rows are short, which is the one case it matters.
+        boolean matches = reconciliation.totalMatches() && reconciliation.subtotalMatches();
         // SPEC 7.7.4: a delta warns, it never blocks, so it is styled as a warning rather
         // than an error, and it carries an icon as well as a colour.
         StateColors.State state = matches
                 ? StateColors.State.SUCCESS : StateColors.State.WARNING;
-        binding.reconcileDelta.setText(matches
-                ? getString(R.string.reconcile_matches)
-                : getString(R.string.reconcile_delta,
-                        money.formatSigned(reconciliation.totalDeltaCents())));
+        // And when the rows are what is short, say that rather than a total delta of zero.
+        final String deltaText;
+        if (matches) {
+            deltaText = getString(R.string.reconcile_matches);
+        } else if (reconciliation.totalMatches()) {
+            deltaText = getString(R.string.reconcile_items_short,
+                    money.format(reconciliation.itemsSubtotalCents()),
+                    money.format(Math.abs(reconciliation.subtotalDeltaCents())));
+        } else {
+            deltaText = getString(R.string.reconcile_delta,
+                    money.formatSigned(reconciliation.totalDeltaCents()));
+        }
+        binding.reconcileDelta.setText(deltaText);
         binding.reconcileDelta.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 matches ? R.drawable.ic_check_circle : R.drawable.ic_alert_circle, 0, 0, 0);
 

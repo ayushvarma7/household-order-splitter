@@ -9,6 +9,7 @@ import com.householdsplitter.core.parse.model.ParsedAdjustments;
 import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.Reconciliation;
 import com.householdsplitter.core.quality.ItemOrigin;
+import com.householdsplitter.data.entity.CorrectionEvent;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.quality.MissDiagnosisService;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
@@ -28,6 +29,7 @@ public class ReviewItemsViewModel extends ViewModel {
 
     /** Optional: without it, rows are still recorded as hand-typed, just not diagnosed. */
     private final MissDiagnosisService diagnosis;
+    private final com.householdsplitter.quality.CorrectionLog corrections;
 
     public ReviewItemsViewModel(OrderRepository repository, long orderId) {
         this(repository, null, orderId);
@@ -35,10 +37,50 @@ public class ReviewItemsViewModel extends ViewModel {
 
     public ReviewItemsViewModel(OrderRepository repository, MissDiagnosisService diagnosis,
                                 long orderId) {
+        this(repository, diagnosis, null, orderId);
+    }
+
+    public ReviewItemsViewModel(OrderRepository repository, MissDiagnosisService diagnosis,
+                                com.householdsplitter.quality.CorrectionLog corrections,
+                                long orderId) {
         this.diagnosis = diagnosis;
+        this.corrections = corrections;
         this.repository = repository;
         this.orderId = orderId;
         this.bundle = repository.observeBundle(orderId);
+    }
+
+    /**
+     * The entry just written, so the screen can offer to annotate it.
+     *
+     * <p>Carries the id and what kind of correction it was, because the question worth
+     * asking differs: a row typed in by hand wants to know which image it was missed from,
+     * and a row whose price was corrected does not, since the reader already knows where
+     * that one was.
+     */
+    public static final class Logged {
+
+        public final long eventId;
+        public final String kind;
+        public final String name;
+
+        Logged(long eventId, String kind, String name) {
+            this.eventId = eventId;
+            this.kind = kind;
+            this.name = name;
+        }
+    }
+
+    private final androidx.lifecycle.MutableLiveData<Logged> lastLogged =
+            new androidx.lifecycle.MutableLiveData<>();
+
+    /** Set once after a correction is recorded, then cleared when the screen has shown it. */
+    public LiveData<Logged> lastLogged() {
+        return lastLogged;
+    }
+
+    public void clearLastLogged() {
+        lastLogged.setValue(null);
     }
 
     public long orderId() {
@@ -102,6 +144,7 @@ public class ReviewItemsViewModel extends ViewModel {
 
     public void save(LineItem item) {
         final boolean isNewAndTypedByHand = item.id == 0L && item.origin == ItemOrigin.MANUAL;
+        final String name = item.name;
         repository.saveItem(item, result -> {
             // Asked now rather than later: the screenshots are referenced by URI, and a URI
             // stops resolving once the picture leaves the gallery. This is the moment they
@@ -109,12 +152,72 @@ public class ReviewItemsViewModel extends ViewModel {
             if (isNewAndTypedByHand && diagnosis != null && item.id != 0L) {
                 diagnosis.diagnose(item.id);
             }
+            if (corrections == null || item.id == 0L) {
+                return;
+            }
+            if (isNewAndTypedByHand) {
+                corrections.recordAdded(item.id, eventId -> {
+                    if (eventId != 0L) {
+                        lastLogged.setValue(new Logged(eventId,
+                                CorrectionEvent.ADDED_BY_HAND, name));
+                    }
+                });
+                return;
+            }
+            corrections.recordEdit(item, eventId -> {
+                if (eventId != 0L) {
+                    lastLogged.setValue(new Logged(eventId, kindOf(item), name));
+                }
+            });
         });
+    }
+
+    public void annotate(long eventId, int imageIndex, String reason) {
+        if (corrections != null) {
+            corrections.annotate(eventId, imageIndex, reason);
+        }
+    }
+
+    /**
+     * What the reader originally produced for the row behind this entry, for showing back.
+     *
+     * <p>Matched by the corrected name, which is what the entry carries, and read off the
+     * row in hand rather than the log so the sheet opens without a database round trip.
+     * Null for a row the reader never produced or got right, which is the case where there
+     * is nothing worth showing back.
+     */
+    public String whatTheReaderSaid(String correctedName) {
+        OrderBundle value = bundle.getValue();
+        if (value == null || correctedName == null) {
+            return null;
+        }
+        for (LineItemWithAssignments row : value.items) {
+            if (!correctedName.equals(row.item.name)) {
+                continue;
+            }
+            String read = row.item.parsedName;
+            return read == null || read.isEmpty() || read.equals(row.item.name) ? null : read;
+        }
+        return null;
+    }
+
+    /** Mirrors what the log decided, so the prompt can word itself for the right mistake. */
+    private static String kindOf(LineItem item) {
+        boolean amountChanged = item.parsedCents != 0L && item.parsedCents != item.lineTotalCents;
+        return amountChanged
+                ? CorrectionEvent.AMOUNT_CORRECTED : CorrectionEvent.NAME_CORRECTED;
     }
 
     /** SPEC 7.6.8: delete with an Undo that really restores the row. */
     public void delete(LineItem item) {
         lastDeleted.setValue(item);
+        // Recorded before the delete, while the row still exists to be read. A row the
+        // reader produced and the user removed is a charge that was invented, which is the
+        // most serious thing this parser can do and the most useful thing to have written
+        // down.
+        if (corrections != null) {
+            corrections.recordDeleted(item);
+        }
         repository.deleteItem(item, result -> {
         });
     }

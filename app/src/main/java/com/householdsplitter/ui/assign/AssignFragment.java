@@ -62,6 +62,14 @@ public class AssignFragment extends BaseFragment {
                 NavHostFragment.findNavController(this).popBackStack());
         binding.toolbar.inflateMenu(R.menu.menu_assign);
         binding.toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_continue_later) {
+                // The draft already records which item it was on and the home screen
+                // already resumes there, so this adds no state: it says out loud that
+                // leaving is safe, which is the part that was missing. Going home rather
+                // than back one screen, because back leads into the review flow again.
+                leaveForNow();
+                return true;
+            }
             if (item.getItemId() == R.id.action_all_common) {
                 confirmAssignRemaining();
                 return true;
@@ -274,6 +282,26 @@ public class AssignFragment extends BaseFragment {
             }
             binding.readout.setText(out.toString());
         }
+    }
+
+    /**
+     * Saves where the user had got to and returns to the list of orders.
+     *
+     * <p>Nothing here is new. The position is already written on every move, and a draft
+     * already reopens at the item it was left on. What was missing was anywhere that said
+     * so, which on a twenty-seven item shop is the difference between stopping and feeling
+     * obliged to finish.
+     */
+    private void leaveForNow() {
+        model.rememberPosition();
+        com.google.android.material.snackbar.Snackbar.make(binding.getRoot(),
+                R.string.assign_continue_later_done,
+                com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+        NavHostFragment.findNavController(this).navigate(R.id.homeFragment,
+                null,
+                new androidx.navigation.NavOptions.Builder()
+                        .setPopUpTo(R.id.homeFragment, true)
+                        .build());
     }
 
     /** SPEC 7.9.3.3: a menu of participants for single-person assignment. */

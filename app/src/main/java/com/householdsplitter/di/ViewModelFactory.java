@@ -86,7 +86,7 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
 
         if (modelClass == ReviewItemsViewModel.class) {
             return (T) new ReviewItemsViewModel(locator.orderRepository(),
-                    locator.missDiagnosisService(), orderId);
+                    locator.missDiagnosisService(), locator.correctionLog(), orderId);
         }
         if (modelClass == OrderDetailsViewModel.class) {
             return (T) new OrderDetailsViewModel(locator.orderRepository(), orderId);

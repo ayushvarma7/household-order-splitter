@@ -13,6 +13,7 @@ import com.householdsplitter.R;
 import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.core.quality.MissDiagnosis;
 import com.householdsplitter.core.quality.ParserScorecard;
+import com.householdsplitter.data.entity.CorrectionEvent;
 import com.householdsplitter.data.entity.DiscardedRow;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.databinding.SheetParserReportBinding;
@@ -109,7 +110,51 @@ public class ParserReportSheet extends BottomSheetDialogFragment {
             }
             out.append('\n');
         }
+
+        appendCorrectionLog(out, value.log);
         return out.toString();
+    }
+
+    /**
+     * The correction log, which is the part of this report that can be acted on.
+     *
+     * <p>Everything above is a count: how often the reader was right, and which rows it was
+     * wrong about. A count has never once suggested a fix. Every improvement to this parser
+     * came from one receipt somebody looked at, and these are the entries that say which
+     * receipt, which page of it, and what the person who was there thought had gone wrong.
+     *
+     * <p>Printed newest first and capped, because a log nobody can read is the same as no
+     * log. The whole of it is in the database for anyone who wants to query it.
+     */
+    private void appendCorrectionLog(StringBuilder out,
+                                     java.util.List<CorrectionEvent> log) {
+        appendList(out, "LOG, what went wrong and where", log == null ? 0 : log.size());
+        if (log == null || log.isEmpty()) {
+            return;
+        }
+        java.text.DateFormat when =
+                java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT,
+                        java.text.DateFormat.SHORT);
+        for (CorrectionEvent event : log) {
+            out.append("  ").append(when.format(new java.util.Date(event.createdAt)))
+                    .append("  ").append(event.store == null ? "?" : event.store)
+                    .append("  ").append(event.kind).append('\n');
+            if (event.parsedName != null && !event.parsedName.isEmpty()) {
+                out.append("       read:  ").append(money(event.parsedCents)).append("  ")
+                        .append(event.parsedName).append('\n');
+            }
+            out.append("       kept:  ").append(money(event.finalCents)).append("  ")
+                    .append(event.finalName == null ? "" : event.finalName).append('\n');
+            if (event.imageIndex >= 0) {
+                out.append("       photo: ").append(event.imageIndex + 1).append('\n');
+            }
+            if (event.reason != null && !event.reason.isEmpty()) {
+                out.append("       said:  ").append(event.reason).append('\n');
+            }
+            if (event.missVerdict != null && !event.missVerdict.isEmpty()) {
+                out.append("       stage: ").append(event.missVerdict).append('\n');
+            }
+        }
     }
 
     private void appendScorecard(StringBuilder out, String heading, ParserScorecard card) {

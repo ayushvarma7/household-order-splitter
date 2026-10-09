@@ -518,6 +518,18 @@ public class AssignViewModel extends ViewModel {
     }
 
     /** SPEC 7.9.11: jump to any item out of order. */
+    /**
+     * Writes down where the user had got to, so leaving now reopens here.
+     *
+     * <p>The same call every move already makes. It is repeated on the way out because a
+     * move that was in flight, or an item answered and not yet advanced past, would
+     * otherwise be the one thing not recorded.
+     */
+    public void rememberPosition() {
+        Integer at = index.getValue();
+        repository.updateProgress(orderId, DraftStep.ASSIGN, at == null ? 0 : at);
+    }
+
     public void jumpTo(int position) {
         if (position < 0 || position >= items().size()) {
             return;
