@@ -10,7 +10,7 @@
     android:focusable="true"
     app:cardCornerRadius="@dimen/radius_m"
     app:cardElevation="0dp"
-    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="@dimen/stroke_width">
 
     <!-- The card carries the description ("Screenshot 2"), so the image itself stays out

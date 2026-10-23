@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.R;
 import com.householdsplitter.core.money.CurrencyFormat;
@@ -258,7 +259,7 @@ public class EditGroupFragment extends BaseFragment {
                             Snackbar.LENGTH_LONG).show();
                     return;
                 }
-                new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setTitle(getString(R.string.edit_group_delete_title, household.name))
                         .setMessage(R.string.edit_group_delete_message)
                         .setNegativeButton(R.string.action_cancel, null)

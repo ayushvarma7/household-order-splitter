@@ -8,7 +8,7 @@
       Material component and a hand-written view resolve to the same palette, and so the
       night variant is a colour swap with no theme duplication.
     -->
-    <style name="Theme.HouseholdSplitter" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.HouseholdSplitter" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
 
         <!--
@@ -75,12 +75,48 @@
              never hidden under the status bar or the gesture bar. -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <!--
+          Popup menus, which do not inherit the way the rest of Material 3 does.
+
+          AppCompat's PopupMenu reads android:popupMenuStyle, and a Material 3 theme sets
+          only the unprefixed popupMenuStyle, so the twelve menus in this app were drawing
+          themselves with the framework default: square corners, framework elevation, and
+          a surface colour owned by nobody here. Both attributes are named below, plus the
+          overflow variant, because they are three separate lookups and missing one leaves
+          one menu looking unlike the others.
+        -->
+        <item name="popupMenuStyle">@style/Widget.Splitter.PopupMenu</item>
+        <item name="android:popupMenuStyle">@style/Widget.Splitter.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Splitter.PopupMenu</item>
 
         <item name="shapeAppearanceCornerSmall">@style/Shape.Small</item>
         <item name="shapeAppearanceCornerMedium">@style/Shape.Medium</item>
         <item name="shapeAppearanceCornerLarge">@style/Shape.Large</item>
+    </style>
+
+    <!--
+      The theme the app is actually set to, in light mode.
+
+      Everything above is shared and everything here is the difference, which is two
+      attributes. It used to be two complete copies of the same theme, one per folder, and
+      they had already drifted: the night copy was missing the whole typography block that
+      the comment above goes to some length to explain, so in dark mode every Material
+      component fell back to the system typeface while the hand written styles stayed on
+      Inter. Nobody saw it, because the app is used in dark mode and there was nothing
+      beside it to compare against. A theme with a parent cannot drift like that.
+
+      ThemeParityTest holds this shape in place.
+    -->
+    <style name="Theme.HouseholdSplitter" parent="Base.Theme.HouseholdSplitter">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
+    <style name="Widget.Splitter.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:popupElevation">@dimen/popup_elevation</item>
+        <item name="android:dropDownVerticalOffset">@dimen/space_xs</item>
     </style>
 
     <style name="Shape.Small" parent="ShapeAppearance.Material3.Corner.Small">

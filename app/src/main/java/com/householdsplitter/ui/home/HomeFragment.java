@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,6 +19,7 @@ import com.householdsplitter.core.parse.StoreKind;
 import com.householdsplitter.prefs.SettingsStore;
 import com.householdsplitter.R;
 import com.householdsplitter.ui.MainActivity;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.core.calc.SplitCalculator;
 import com.householdsplitter.core.calc.result.SplitResult;
@@ -334,7 +334,7 @@ public class HomeFragment extends BaseFragment {
         layout.setHint(getString(R.string.hint_order_label));
         field.setText(row.order.label);
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.action_rename)
                 .setView(content)
                 .setPositiveButton(R.string.action_save, (dialog, which) -> model.rename(
@@ -345,7 +345,7 @@ public class HomeFragment extends BaseFragment {
     }
 
     private void confirmDelete(OrderWithMembers row) {
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.delete_order_title, row.order.label))
                 .setMessage(R.string.delete_order_message)
                 .setPositiveButton(R.string.action_delete,

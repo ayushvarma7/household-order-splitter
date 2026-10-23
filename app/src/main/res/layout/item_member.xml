@@ -27,21 +27,23 @@
     <!-- 48dp minimum touch targets throughout. -->
     <!-- The adapter replaces these with the member's name. The defaults exist so the
          control is never unlabelled, whatever path renders it. -->
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/editButton"
-        style="?attr/borderlessButtonStyle"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="@dimen/touch_target_min"
         android:layout_height="@dimen/touch_target_min"
         android:contentDescription="@string/action_rename"
-        android:src="@drawable/ic_edit"
-        app:tint="?attr/colorOnSurfaceVariant" />
+        app:icon="@drawable/ic_edit"
+        app:iconSize="20dp"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/deleteButton"
-        style="?attr/borderlessButtonStyle"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="@dimen/touch_target_min"
         android:layout_height="@dimen/touch_target_min"
         android:contentDescription="@string/action_delete"
-        android:src="@drawable/ic_delete"
-        app:tint="?attr/colorOnSurfaceVariant" />
+        app:icon="@drawable/ic_delete"
+        app:iconSize="20dp"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
 </LinearLayout>

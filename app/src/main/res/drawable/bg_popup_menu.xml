@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The background behind a popup menu.
+
+  Material 3's own popup style is set by the parent theme, and on this app it still arrives
+  square: AppCompat's PopupMenu resolves its background from android:popupMenuStyle, which
+  a Material 3 theme does not set, so the framework default wins and the only menu in the
+  app looks like it belongs to a different one. Pointing both popup attributes at a style
+  that names this drawable is what actually changes the shape.
+
+  Inset on every side so the elevation shadow has somewhere to fall.
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetBottom="@dimen/space_xs"
+    android:insetLeft="@dimen/space_xs"
+    android:insetRight="@dimen/space_xs"
+    android:insetTop="@dimen/space_xs">
+
+    <shape android:shape="rectangle">
+        <corners android:radius="@dimen/radius_m" />
+        <solid android:color="?attr/colorSurfaceContainerHigh" />
+    </shape>
+</inset>

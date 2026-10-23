@@ -43,15 +43,16 @@
             android:textSize="@dimen/avatar_text_small"
             android:textStyle="bold" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/removeButton"
-            style="?attr/borderlessButtonStyle"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="@dimen/touch_target_min"
             android:layout_height="@dimen/touch_target_min"
             android:layout_gravity="top|end"
             android:contentDescription="@string/action_remove_screenshot"
-            android:src="@drawable/ic_close"
-            app:tint="@color/viewer_foreground" />
+            app:icon="@drawable/ic_close"
+            app:iconSize="20dp"
+            app:iconTint="@color/viewer_foreground" />
 
         <ImageView
             android:id="@+id/dragHandle"

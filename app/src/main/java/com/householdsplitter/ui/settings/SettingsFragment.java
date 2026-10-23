@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.BuildConfig;
 
@@ -377,7 +378,7 @@ public class SettingsFragment extends BaseFragment {
         if (uri == null) {
             return;
         }
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.restore_title)
                 .setMessage(R.string.restore_message)
                 .setPositiveButton(R.string.restore_replace, (d, w) -> restore(uri, true))
@@ -406,7 +407,7 @@ public class SettingsFragment extends BaseFragment {
                 content.findViewById(R.id.dialogInputLayout);
         layout.setHint(getString(R.string.wipe_confirm_hint));
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.wipe_title)
                 .setMessage(R.string.wipe_message)
                 .setView(content)

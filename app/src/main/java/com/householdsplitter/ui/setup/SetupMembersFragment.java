@@ -8,11 +8,11 @@ import android.view.inputmethod.EditorInfo;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.householdsplitter.R;
@@ -160,7 +160,7 @@ public class SetupMembersFragment extends BaseFragment {
         field.setText(member.name);
         field.setSelection(member.name.length());
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.dialog_rename_member)
                 .setView(content)
                 .setPositiveButton(R.string.action_save, (dialog, which) -> {
@@ -182,7 +182,7 @@ public class SetupMembersFragment extends BaseFragment {
             field.setText(model.household().getValue().name);
         }
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.action_rename_group)
                 .setView(content)
                 .setPositiveButton(R.string.action_save, (dialog, which) -> {
@@ -210,7 +210,7 @@ public class SetupMembersFragment extends BaseFragment {
                 return;
             }
             if (Boolean.TRUE.equals(hasHistory)) {
-                new AlertDialog.Builder(requireContext())
+                new MaterialAlertDialogBuilder(requireContext())
                         .setTitle(getString(R.string.dialog_remove_member_title, member.name))
                         .setMessage(R.string.dialog_remove_member_message)
                         .setPositiveButton(R.string.action_archive,

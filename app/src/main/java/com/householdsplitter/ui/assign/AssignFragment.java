@@ -8,12 +8,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.R;
 import com.householdsplitter.core.calc.Scope;
@@ -370,7 +370,7 @@ public class AssignFragment extends BaseFragment {
         if (count == 0) {
             return;
         }
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.assign_all_common_title)
                 .setMessage(getResources().getQuantityString(
                         R.plurals.assign_all_common_message, count, count))
@@ -390,7 +390,7 @@ public class AssignFragment extends BaseFragment {
             labels[i] = (i + 1) + ". " + row.item.name + "  ("
                     + describe(row) + ")";
         }
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.assign_jump_title)
                 .setItems(labels, (dialog, which) -> model.jumpTo(which))
                 .show();

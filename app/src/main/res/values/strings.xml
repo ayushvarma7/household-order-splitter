@@ -92,6 +92,15 @@
     <string name="from_screenshot">From screenshot</string>
     <string name="reconcile_equation">Items plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
     <string name="reconcile_equation_from_printed">Printed subtotal plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
+    <!--
+      The mark on the home list. Short enough to sit under a total, specific enough to be
+      worth reading: the amount is the useful part, the icon is what catches the eye.
+    -->
+    <string name="home_flag_rows_short">Missing %1$s</string>
+    <string name="home_flag_total_off">Off by %1$s</string>
+    <string name="home_flag_rows_short_description">The items on this order are %1$s short of the subtotal printed on the bill.</string>
+    <string name="home_flag_total_off_description">This order\'s figures are off by %1$s against the total printed on the bill.</string>
+
     <string name="reconcile_items_short">The rows only add up to %1$s, so %2$s of this is unaccounted for.</string>
     <string name="reconcile_matches">Matches the bill</string>
     <string name="reconcile_delta">Off by %1$s. You can still carry on.</string>
@@ -139,7 +148,28 @@
     <string name="payer_none">Nobody yet</string>
     <string name="action_share">Share as text</string>
     <string name="action_export_csv">Export CSV</string>
+    <!-- The Material date picker's header. -->
+    <string name="order_date_picker_title">Date on the bill</string>
+    <string name="action_view_assignments">View assignments</string>
     <string name="action_edit_assignments">Edit assignments</string>
+    <!--
+      The itemised breakdown, opened from the summary. Until this existed the only way to
+      read it was to share the order into a group chat, which meant posting your own
+      spending to a group to find out what you had spent it on.
+    -->
+    <string name="assignments_title">Assignments</string>
+    <!-- The toolbar already carries the order label, so this says only the new part. -->
+    <string name="assignments_subtitle">Split %1$d ways</string>
+    <string name="breakdown_shared_by_everyone">Shared by everyone</string>
+    <string name="breakdown_shared_by_everyone_counted">Shared by everyone (%1$d items)</string>
+    <string name="breakdown_share_of_shared">Share of shared items</string>
+    <string name="breakdown_own_items">Own items</string>
+    <string name="breakdown_tax_and_fees">Tax and fees</string>
+    <string name="breakdown_total">Total</string>
+    <string name="breakdown_nothing_shared">Nothing on this order is shared by everyone</string>
+    <string name="breakdown_ways">%1$d ways</string>
+    <string name="breakdown_ways_with_shares">%1$d ways, %2$d shares</string>
+    
     <string name="action_edit_participants">Edit participants</string>
     <string name="action_mark_settled">Mark as settled</string>
     <string name="action_reopen">Reopen</string>

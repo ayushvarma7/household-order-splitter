@@ -32,6 +32,9 @@
 
     <!-- Touch targets. 48dp is the floor for anything tappable. -->
     <dimen name="touch_target_min">48dp</dimen>
+
+    <!-- Material 3 level 2, which is where a menu sits above the screen it covers. -->
+    <dimen name="popup_elevation">3dp</dimen>
     <dimen name="button_height">52dp</dimen>
     <dimen name="button_height_large">56dp</dimen>
 

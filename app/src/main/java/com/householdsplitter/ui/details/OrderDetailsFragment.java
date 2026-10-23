@@ -1,6 +1,5 @@
 package com.householdsplitter.ui.details;
 
-import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +13,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.householdsplitter.R;
 import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.core.money.TipCalculator;
+import com.householdsplitter.core.time.PickerDates;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.OrderField;
 import com.householdsplitter.core.parse.model.ParsedAdjustments;
@@ -29,6 +30,7 @@ import com.householdsplitter.ui.common.CurrencyInput;
 import com.householdsplitter.ui.parsing.ParsingArgs;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -223,18 +225,29 @@ public class OrderDetailsFragment extends BaseFragment {
                 .format(new java.util.Date(orderDateMillis)));
     }
 
+    /**
+     * The Material date picker, which works in UTC while an order date is local midnight.
+     *
+     * <p>{@link PickerDates} is the conversion, and it is not decoration: handing the
+     * stored value straight to the picker opens it on the wrong day for anybody who is not
+     * on UTC, and handing the selection straight back stores the wrong day. See that class
+     * for which direction each timezone fails in.
+     */
     private void pickDate() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(orderDateMillis);
-        new DatePickerDialog(requireContext(), (picker, year, month, day) -> {
-            Calendar chosen = Calendar.getInstance();
-            chosen.set(year, month, day, 0, 0, 0);
-            chosen.set(Calendar.MILLISECOND, 0);
-            orderDateMillis = chosen.getTimeInMillis();
+        ZoneId zone = ZoneId.systemDefault();
+        MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(R.string.order_date_picker_title)
+                .setSelection(PickerDates.toPickerUtc(orderDateMillis, zone))
+                .build();
+        picker.addOnPositiveButtonClickListener(selection -> {
+            if (selection == null) {
+                return;
+            }
+            orderDateMillis = PickerDates.fromPickerUtc(selection, zone);
             model.markEdited(OrderField.ORDER_DATE);
             renderDate();
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)).show();
+        });
+        picker.show(getChildFragmentManager(), "order-date");
     }
 
     /** SPEC 7.7.3: the live strip, green with a tick at zero, red otherwise. */

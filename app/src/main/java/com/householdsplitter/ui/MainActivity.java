@@ -1,5 +1,6 @@
 package com.householdsplitter.ui;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -199,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 controller.navigate(R.id.importFragment, args);
                 return;
             }
-            new androidx.appcompat.app.AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.share_draft_title)
                     .setMessage(getString(R.string.share_draft_message, draft.label))
                     .setPositiveButton(R.string.share_draft_add, (dialog, which) -> {

@@ -117,6 +117,28 @@
         <item name="cardBackgroundColor">?attr/colorSurfaceContainerLowest</item>
     </style>
 
+    <!--
+      A card you can tap, which is a different requirement from a card you can read.
+
+      The outline above is Material 3's own choice for a card, and against this surface it
+      measures 1.71:1 in the light palette and 2.07:1 in the dark one. The fill does not
+      help: a card sits 1.03:1 from the page behind it, and the strongest tonal step
+      available reaches only 1.28:1, because that is what a tonal surface is. So on a card
+      whose whole purpose is to be pressed, the only thing that can carry its boundary to
+      the 3:1 that WCAG 1.4.11 asks of a control is the stroke. colorOutline measures
+      4.08:1 and 5.44:1.
+
+      Only the tappable ones. Applying this everywhere would make twenty-three cards
+      heavier to fix a requirement that applies to three of them, and a quiet edge is the
+      right answer on a card that is only holding text still.
+    -->
+    <style name="Widget.Splitter.Card.Interactive">
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="rippleColor">?attr/colorPrimary</item>
+    </style>
+
     <style name="Widget.Splitter.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="titleTextAppearance">@style/Text.ScreenTitle</item>
         <item name="android:background">@android:color/transparent</item>

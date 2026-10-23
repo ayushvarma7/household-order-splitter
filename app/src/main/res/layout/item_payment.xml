@@ -33,12 +33,13 @@
         android:layout_marginStart="@dimen/space_s"
         android:textAppearance="@style/Text.MoneySmall" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/undoButton"
-        style="?attr/borderlessButtonStyle"
+        style="@style/Widget.Material3.Button.IconButton"
         android:layout_width="@dimen/touch_target_min"
         android:layout_height="@dimen/touch_target_min"
         android:contentDescription="@string/settle_undo_payment"
-        android:src="@drawable/ic_delete"
-        app:tint="?attr/colorOnSurfaceVariant" />
+        app:icon="@drawable/ic_delete"
+        app:iconSize="20dp"
+        app:iconTint="?attr/colorOnSurfaceVariant" />
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.householdsplitter.ui.parsing;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -98,7 +98,7 @@ public class ParsingFragment extends BaseFragment {
             if (existing == null) {
                 return;
             }
-            new AlertDialog.Builder(requireContext())
+            new MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.duplicate_order_title)
                     .setMessage(getString(R.string.duplicate_order_message, existing.label))
                     .setPositiveButton(R.string.action_open_existing, (dialog, which) -> {

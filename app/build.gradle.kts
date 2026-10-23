@@ -153,3 +153,25 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
     androidTestImplementation(libs.room.testing)
 }
+
+/*
+ * The architecture tests read source files, so source files are test inputs.
+ *
+ * FirstGroupQueryTest scans src/main/java and ThemeParityTest scans src/main/res. Gradle
+ * has no way to know that: a unit test task's declared inputs are its classpath and its
+ * own compiled classes, so editing a layout, a theme or a file that is read as text rather
+ * than compiled against leaves the task up to date and the build cache replays the last
+ * result. A guard that passes because nothing re-ran it is worse than no guard, and this
+ * one did exactly that: a deliberate violation of the theme rule came back green.
+ *
+ * Declaring the two trees as inputs costs nothing on a normal build and makes a changed
+ * source file re-run the tests that read it.
+ */
+tasks.withType<Test>().configureEach {
+    inputs.dir(layout.projectDirectory.dir("src/main/java"))
+        .withPropertyName("mainJavaSourcesReadByArchitectureTests")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir(layout.projectDirectory.dir("src/main/res"))
+        .withPropertyName("mainResourcesReadByArchitectureTests")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
