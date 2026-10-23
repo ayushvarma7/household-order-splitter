@@ -33,6 +33,7 @@ import com.householdsplitter.data.mapper.CalcMapper;
 import com.householdsplitter.data.relation.LineItemWithAssignments;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderItemNames;
+import com.householdsplitter.data.relation.OrderItemTally;
 import com.householdsplitter.data.relation.OrderWithMembers;
 import com.householdsplitter.util.AppExecutors;
 import com.householdsplitter.util.Callback;
@@ -76,6 +77,11 @@ public class OrderRepository {
     /** Item names per order, so the home list can search inside orders. */
     public LiveData<List<OrderItemNames>> observeItemNames(long householdId) {
         return lineItemDao.observeItemNames(householdId);
+    }
+
+    /** What each order's rows add up to, so the home list can mark the ones that do not. */
+    public LiveData<List<OrderItemTally>> observeItemTallies(long householdId) {
+        return lineItemDao.observeItemTallies(householdId);
     }
 
     public LiveData<OrderBundle> observeBundle(long orderId) {

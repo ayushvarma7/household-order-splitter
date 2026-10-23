@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.householdsplitter.R;
+import com.householdsplitter.core.browse.OrderFlag;
 import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.OrderStatus;
@@ -70,7 +71,12 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
                                 && a.orderCount == b.orderCount
                                 && a.totalCents == b.totalCents;
                     }
-                    return Objects.equals(a.order.order.label, b.order.order.label)
+                    // Objects.equals on the enum, as the status line below does: an
+                    // identity check on an enum is correct, and lint's DiffUtilEquals
+                    // cannot tell it apart from the String case that is not.
+                    return Objects.equals(a.flag.kind(), b.flag.kind())
+                            && a.flag.deltaCents() == b.flag.deltaCents()
+                            && Objects.equals(a.order.order.label, b.order.order.label)
                             && Objects.equals(a.order.order.status, b.order.order.status)
                             && a.order.order.statedTotalCents == b.order.order.statedTotalCents
                             && a.order.order.orderDate == b.order.order.orderDate
@@ -99,7 +105,7 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
         if (holder instanceof HeaderViewHolder) {
             ((HeaderViewHolder) holder).bind(row, money);
         } else {
-            ((OrderViewHolder) holder).bind(row.order, listener, money);
+            ((OrderViewHolder) holder).bind(row, listener, money);
         }
     }
 
@@ -147,7 +153,8 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
             this.binding = binding;
         }
 
-        void bind(OrderWithMembers row, Listener listener, CurrencyFormat money) {
+        void bind(HomeRow item, Listener listener, CurrencyFormat money) {
+            OrderWithMembers row = item.order;
             binding.orderLabel.setText(row.order.label);
             binding.orderDate.setText(new SimpleDateFormat("d MMM yyyy", Locale.getDefault())
                     .format(new java.util.Date(row.order.orderDate)));
@@ -161,6 +168,7 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
             StateColors.applyContainer(binding.statusChip, binding.statusChip,
                     statusState(row.order.status));
 
+            renderFlag(item.flag, money);
             renderAvatars(row);
 
             binding.getRoot().setOnClickListener(v -> listener.onOpen(row));
@@ -168,6 +176,32 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
                 listener.onLongPress(row, v);
                 return true;
             });
+        }
+
+        /**
+         * The mark for an order whose figures disagree, and nothing at all otherwise.
+         *
+         * <p>The wording differs by what is wrong, because the two cases need different
+         * answers from the user: a total that is off means a figure somewhere is mistyped
+         * or unread, while rows short of a printed subtotal nearly always means an item
+         * was missed, and sending the user to look for the wrong thing wastes the warning.
+         */
+        private void renderFlag(OrderFlag flag, CurrencyFormat money) {
+            if (!flag.isFlagged()) {
+                binding.discrepancyFlag.setVisibility(View.GONE);
+                return;
+            }
+            Context context = binding.getRoot().getContext();
+            boolean rowsShort = flag.kind() == OrderFlag.Kind.ROWS_SHORT;
+            String amount = money.format(Math.abs(flag.deltaCents()));
+            binding.discrepancyFlag.setVisibility(View.VISIBLE);
+            binding.discrepancyFlag.setText(context.getString(
+                    rowsShort ? R.string.home_flag_rows_short : R.string.home_flag_total_off,
+                    amount));
+            binding.discrepancyFlag.setContentDescription(context.getString(
+                    rowsShort ? R.string.home_flag_rows_short_description
+                              : R.string.home_flag_total_off_description,
+                    amount));
         }
 
         /** Overlapping avatars, however many participants there are. */

@@ -1,5 +1,6 @@
 package com.householdsplitter.ui.home;
 
+import com.householdsplitter.core.browse.OrderFlag;
 import com.householdsplitter.data.relation.OrderWithMembers;
 
 import java.time.YearMonth;
@@ -38,25 +39,34 @@ public final class HomeRow {
     public final int orderCount;
     public final long totalCents;
 
-    // Order-row field.
+    // Order-row fields.
     public final OrderWithMembers order;
 
+    /**
+     * Whether this order's own figures disagree, never null on an order row.
+     *
+     * <p>Carried on the row rather than worked out while binding, because binding happens
+     * on the scroll and this needs the order's items, which the view holder has not got.
+     */
+    public final OrderFlag flag;
+
     private HomeRow(int type, Heading heading, YearMonth month, int orderCount,
-                    long totalCents, OrderWithMembers order) {
+                    long totalCents, OrderWithMembers order, OrderFlag flag) {
         this.type = type;
         this.heading = heading;
         this.month = month;
         this.orderCount = orderCount;
         this.totalCents = totalCents;
         this.order = order;
+        this.flag = flag == null ? OrderFlag.NONE : flag;
     }
 
     public static HomeRow header(Heading heading, YearMonth month, int orderCount, long totalCents) {
-        return new HomeRow(TYPE_HEADER, heading, month, orderCount, totalCents, null);
+        return new HomeRow(TYPE_HEADER, heading, month, orderCount, totalCents, null, null);
     }
 
-    public static HomeRow of(OrderWithMembers order) {
-        return new HomeRow(TYPE_ORDER, null, null, 0, 0L, order);
+    public static HomeRow of(OrderWithMembers order, OrderFlag flag) {
+        return new HomeRow(TYPE_ORDER, null, null, 0, 0L, order, flag);
     }
 
     /** Stable enough for DiffUtil: a month appears once, an order has an id. */

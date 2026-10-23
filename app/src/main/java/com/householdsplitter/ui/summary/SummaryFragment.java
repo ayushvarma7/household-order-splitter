@@ -11,11 +11,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.householdsplitter.R;
 import com.householdsplitter.core.calc.AdjustmentType;
@@ -153,6 +153,7 @@ public class SummaryFragment extends BaseFragment {
         binding.payerButton.setOnClickListener(this::showPayerMenu);
         binding.saveButton.setOnClickListener(v -> saveAndClose());
         binding.shareButton.setOnClickListener(v -> shareAsText());
+        binding.viewAssignmentsButton.setOnClickListener(v -> openAssignments());
         binding.exportButton.setOnClickListener(v -> exportCsv());
         binding.editAssignmentsButton.setOnClickListener(v -> navigate(R.id.assignFragment));
         binding.editItemsButton.setOnClickListener(v -> navigate(R.id.reviewItemsFragment));
@@ -347,6 +348,18 @@ public class SummaryFragment extends BaseFragment {
         menu.show();
     }
 
+    /**
+     * Every assignment on this order, in full, on its own screen.
+     *
+     * <p>Only the order id travels. The screen rebuilds the split from it, so there is one
+     * place that decides what the figures are and no snapshot to go stale behind a back
+     * stack.
+     */
+    private void openAssignments() {
+        NavHostFragment.findNavController(this).navigate(R.id.assignmentsFragment,
+                AssignmentsFragment.argsFor(orderId));
+    }
+
     /** SPEC 7.11.1. */
     private void shareAsText() {
         OrderBundle bundle = model.bundle().getValue();
@@ -411,7 +424,7 @@ public class SummaryFragment extends BaseFragment {
             return;
         }
         if (bundle.order.status == OrderStatus.SETTLED) {
-            new AlertDialog.Builder(requireContext())
+            new MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.reopen_title)
                     .setMessage(R.string.reopen_message)
                     .setPositiveButton(R.string.action_reopen, (d, w) -> model.reopen())

@@ -98,6 +98,13 @@
         android:label="@string/menu_settings"
         tools:layout="@layout/fragment_settings" />
 
+    <!-- Every assignment on one order, read-only, reached from the summary. -->
+    <fragment
+        android:id="@+id/assignmentsFragment"
+        android:name="com.householdsplitter.ui.summary.AssignmentsFragment"
+        android:label="@string/assignments_title"
+        tools:layout="@layout/fragment_assignments" />
+
     <fragment
         android:id="@+id/imageViewerFragment"
         android:name="com.householdsplitter.ui.summary.ImageViewerFragment"

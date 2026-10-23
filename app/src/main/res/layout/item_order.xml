@@ -3,13 +3,10 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="@style/Widget.Splitter.Card"
+    style="@style/Widget.Splitter.Card.Interactive"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/space_s"
-    android:clickable="true"
-    android:focusable="true"
-    app:rippleColor="?attr/colorPrimary">
+    android:layout_marginBottom="@dimen/space_s">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -68,6 +65,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/Text.Money" />
+
+            <!--
+              The mark for an order whose own figures disagree.
+
+              It sits under the total because the total is the figure it disputes, and it
+              carries the amount as well as the icon: "something is wrong here" sends the
+              user into the order to find out what, while "short by $3.08" is frequently
+              the whole answer. Colour is never the only signal, so there is an icon and a
+              number beside it.
+            -->
+            <TextView
+                android:id="@+id/discrepancyFlag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:drawablePadding="@dimen/space_xxs"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/Text.Caption"
+                android:textColor="@color/danger"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_alert_circle_small"
+                app:drawableTint="@color/danger" />
 
             <TextView
                 android:id="@+id/statusChip"

@@ -122,6 +122,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_m" />
 
+                    <!--
+                      The itemised view, which until now you could only read by sharing the
+                      order into a group chat. It sits directly under the people it is
+                      about, rather than down with Share and Export, because it answers a
+                      question about the split and not about getting the split out of the
+                      app.
+                    -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/viewAssignmentsButton"
+                        style="@style/Widget.Splitter.Button.Text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/action_view_assignments" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/payerButton"
                         style="@style/Widget.Splitter.Button.Outlined"

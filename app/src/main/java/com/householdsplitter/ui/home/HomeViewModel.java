@@ -7,15 +7,20 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.householdsplitter.core.browse.MonthBucket;
+import com.householdsplitter.core.browse.OrderFlag;
 import com.householdsplitter.core.browse.SearchMatch;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderItemNames;
+import com.householdsplitter.data.relation.OrderItemTally;
 import com.householdsplitter.data.relation.OrderWithMembers;
+import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
+import com.householdsplitter.core.parse.Reconciler;
+import com.householdsplitter.core.parse.model.ParsedAdjustments;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -40,6 +45,7 @@ public class HomeViewModel extends ViewModel {
     private final LiveData<List<Member>> members;
     private final LiveData<List<OrderWithMembers>> orders;
     private final LiveData<List<OrderItemNames>> itemNames;
+    private final LiveData<List<OrderItemTally>> itemTallies;
 
     private final MutableLiveData<String> query = new MutableLiveData<>("");
     private final MutableLiveData<Filter> filter = new MutableLiveData<>(Filter.ALL);
@@ -74,9 +80,17 @@ public class HomeViewModel extends ViewModel {
             return orderRepository.observeItemNames(value.id);
         });
 
+        this.itemTallies = Transformations.switchMap(household, value -> {
+            if (value == null) {
+                return new MutableLiveData<>(Collections.<OrderItemTally>emptyList());
+            }
+            return orderRepository.observeItemTallies(value.id);
+        });
+
         rows.setValue(new ArrayList<>());
         rows.addSource(orders, value -> rebuild());
         rows.addSource(itemNames, value -> rebuild());
+        rows.addSource(itemTallies, value -> rebuild());
         rows.addSource(query, value -> rebuild());
         rows.addSource(filter, value -> rebuild());
     }
@@ -152,6 +166,13 @@ public class HomeViewModel extends ViewModel {
                 names.put(entry.orderId, entry.names);
             }
         }
+        Map<Long, OrderItemTally> tallies = new HashMap<>();
+        List<OrderItemTally> counted = itemTallies.getValue();
+        if (counted != null) {
+            for (OrderItemTally tally : counted) {
+                tallies.put(tally.orderId, tally);
+            }
+        }
         String text = query.getValue();
         Filter active = filter.getValue() == null ? Filter.ALL : filter.getValue();
         ZoneId zone = ZoneId.systemDefault();
@@ -179,10 +200,29 @@ public class HomeViewModel extends ViewModel {
             }
             monthCount++;
             monthTotal += order.order.statedTotalCents;
-            next.add(HomeRow.of(order));
+            next.add(HomeRow.of(order, flagFor(order.order, tallies.get(order.order.id))));
         }
         closeMonth(next, headerAt, monthCount, monthTotal);
         rows.setValue(next);
+    }
+
+    /**
+     * Whether this order's figures disagree, by exactly the arithmetic the details screen
+     * uses. The tally is null until the items query has emitted, and an order with no
+     * items has no tally row at all, which {@link OrderFlag} treats as nothing to say.
+     */
+    private OrderFlag flagFor(Order order, OrderItemTally tally) {
+        if (tally == null) {
+            return OrderFlag.NONE;
+        }
+        return OrderFlag.of(Reconciler.reconcile(tally.chargeableCents, new ParsedAdjustments(
+                order.statedSubtotalCents,
+                order.taxCents,
+                order.deliveryFeeCents,
+                order.tipCents,
+                order.otherFeeCents,
+                order.discountCents,
+                order.statedTotalCents)), tally.itemCount);
     }
 
     private void closeMonth(List<HomeRow> rowsSoFar, int headerAt, int count, long totalCents) {

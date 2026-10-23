@@ -8,6 +8,7 @@ import com.householdsplitter.core.calc.SplitCalculator;
 import com.householdsplitter.core.calc.result.SplitResult;
 import com.householdsplitter.core.export.CsvExporter;
 import com.householdsplitter.core.export.ExportOrder;
+import com.householdsplitter.core.export.ItemisedBreakdown;
 import com.householdsplitter.core.export.ShareTextBuilder;
 import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.data.mapper.CalcMapper;
@@ -45,6 +46,19 @@ public class ExportService {
         ExportOrder order = toExportOrder(bundle, groupName, result);
         return ShareTextBuilder.build(order,
                 new CurrencyFormat(settings.currencySymbol(), settings.locale()));
+    }
+
+    /**
+     * The itemised breakdown the summary shows on screen.
+     *
+     * <p>Built from the same {@code ExportOrder} as the share text and the CSV, so the
+     * three cannot disagree about who was charged for what. The group name is not part of
+     * it: this one never leaves the device.
+     */
+    public List<ItemisedBreakdown.Line> buildBreakdown(OrderBundle bundle, SplitResult result,
+                                                       String sharedHeading,
+                                                       ItemisedBreakdown.Labels labels) {
+        return ItemisedBreakdown.build(toExportOrder(bundle, "", result), sharedHeading, labels);
     }
 
     /** SPEC 10.1. */
