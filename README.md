@@ -4,6 +4,16 @@
 
 ### Reads a grocery order or a restaurant bill and works out what each person owes
 
+<br />
+
+### ▶&nbsp; Watch it in action
+
+https://github.com/user-attachments/assets/2f320037-baaa-4377-af69-5c594070cdaa
+
+<sub>A Walmart screenshot in, everyone's exact share out, in 22 seconds. Sound on. Every screen is the real app, running on made-up data.</sub>
+
+<br />
+
 **One person pays for the shop. Everyone owes a different amount, because half the items were not for everyone.**
 
 Share in a Walmart or Amazon Fresh screenshot, or photograph a restaurant bill. It reads every item and the price you were actually charged, you tap who each one was for, and it hands back per-person totals that add up to the printed bill to the penny. Entirely on your phone, with no account and no network permission.
