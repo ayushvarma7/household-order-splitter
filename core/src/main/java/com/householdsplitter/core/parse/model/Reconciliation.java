@@ -75,4 +75,23 @@ public final class Reconciliation {
     public boolean allMatched() {
         return statedTotalCents != 0L && totalMatches() && subtotalMatches();
     }
+
+    /**
+     * What the order costs: the printed total when one was read or typed, otherwise what
+     * the subtotal, tax and fees come to.
+     *
+     * <p>A zero printed total means the figure was never obtained, not that the order was
+     * free, so showing it as $0.00 states something false. An order imported without its
+     * last screenshot, with the subtotal typed in by hand, is the common way to get here.
+     * The stored total is left at zero all the same, so the checks above still treat it as
+     * a figure nobody printed rather than one the arithmetic can be checked against.
+     */
+    public long effectiveTotalCents() {
+        return statedTotalCents != 0L ? statedTotalCents : computedTotalCents;
+    }
+
+    /** True when {@link #effectiveTotalCents()} is a printed figure rather than a sum. */
+    public boolean totalIsStated() {
+        return statedTotalCents != 0L;
+    }
 }

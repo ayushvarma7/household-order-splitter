@@ -266,6 +266,15 @@ public class OrderDetailsFragment extends BaseFragment {
 
         Reconciliation reconciliation = Reconciler.reconcile(itemsSubtotalCents, adjustments);
 
+        // An empty total is a figure nobody read, not a free order. Say what it will count
+        // as, which is what Home and the group screens now show for it.
+        if (!reconciliation.totalIsStated() && reconciliation.effectiveTotalCents() > 0L) {
+            binding.statedTotalLayout.setHelperText(getString(R.string.details_total_worked_out,
+                    money.format(reconciliation.effectiveTotalCents())));
+        } else {
+            binding.statedTotalLayout.setHelperText(marker(OrderField.TOTAL));
+        }
+
         // Which subtotal the arithmetic actually used, said plainly.
         //
         // This line claimed "items plus tax" while computing from the printed subtotal
@@ -276,11 +285,20 @@ public class OrderDetailsFragment extends BaseFragment {
         // nobody asked: the printed subtotal plus the printed tax reaching the printed
         // total only says the bill adds up, which it always does.
         boolean fromPrinted = reconciliation.statedSubtotalCents() != 0L;
-        binding.reconcileLine.setText(getString(
-                fromPrinted ? R.string.reconcile_equation_from_printed
-                            : R.string.reconcile_equation,
-                money.format(reconciliation.computedTotalCents()),
-                money.format(reconciliation.statedTotalCents())));
+        if (reconciliation.totalIsStated()) {
+            binding.reconcileLine.setText(getString(
+                    fromPrinted ? R.string.reconcile_equation_from_printed
+                                : R.string.reconcile_equation,
+                    money.format(reconciliation.computedTotalCents()),
+                    money.format(reconciliation.statedTotalCents())));
+        } else {
+            // No total was read, so there is nothing to quote: "the bill says $0.00" would
+            // state a figure nobody printed.
+            binding.reconcileLine.setText(getString(
+                    fromPrinted ? R.string.reconcile_equation_from_printed_no_total
+                                : R.string.reconcile_equation_no_total,
+                    money.format(reconciliation.computedTotalCents())));
+        }
 
         // Green needs both: the arithmetic reaching the printed total, and the rows
         // reaching the printed subtotal. A tick that only means the first is a tick on a

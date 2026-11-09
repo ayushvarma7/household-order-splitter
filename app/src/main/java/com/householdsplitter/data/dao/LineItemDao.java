@@ -59,6 +59,18 @@ public interface LineItemDao {
             + "GROUP BY orderId")
     LiveData<List<OrderItemTally>> observeItemTallies(long householdId);
 
+    /** {@link #observeItemTallies(long)} once, for code already on a disk thread. */
+    @Query("SELECT orderId AS orderId, "
+            + "COALESCE(SUM(CASE WHEN scope <> 'EXCLUDED' THEN lineTotalCents ELSE 0 END), 0) "
+            + "  AS chargeableCents, "
+            + "COUNT(*) AS itemCount, "
+            + "COALESCE(SUM(CASE WHEN scope = 'UNASSIGNED' THEN 1 ELSE 0 END), 0) "
+            + "  AS unansweredCount "
+            + "FROM line_items "
+            + "WHERE orderId IN (SELECT id FROM orders WHERE householdId = :householdId) "
+            + "GROUP BY orderId")
+    List<OrderItemTally> getItemTalliesSync(long householdId);
+
     /** SPEC 7.10.6: the blocking panel needs the offenders, not just a count. */
     @Query("SELECT * FROM line_items WHERE orderId = :orderId AND scope = 'UNASSIGNED' "
             + "ORDER BY position, id")

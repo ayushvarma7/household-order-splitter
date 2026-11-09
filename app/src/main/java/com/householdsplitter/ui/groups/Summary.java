@@ -7,9 +7,12 @@ import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderStatus;
+import com.householdsplitter.data.mapper.OrderTotals;
+import com.householdsplitter.data.relation.OrderItemTally;
 import com.householdsplitter.di.ServiceLocator;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 
 /**
@@ -41,11 +44,13 @@ final class Summary {
     static Summary of(ServiceLocator locator, Household group) {
         int people = locator.database().memberDao().getActiveSync(group.id).size();
         List<Order> orders = locator.database().orderDao().getAllSync(group.id);
+        Map<Long, OrderItemTally> tallies = OrderTotals.byOrder(
+                locator.database().lineItemDao().getItemTalliesSync(group.id));
         int drafts = 0;
         long total = 0L;
         for (Order order : orders) {
             if (order.status == OrderStatus.SETTLED) {
-                total += order.statedTotalCents;
+                total += OrderTotals.effectiveTotalCents(order, tallies.get(order.id));
             } else {
                 drafts++;
             }

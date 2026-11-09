@@ -90,8 +90,12 @@
     <string name="hint_stated_total">Total printed on the bill</string>
     <string name="action_add_adjustment">Add fee, tip or discount</string>
     <string name="from_screenshot">From screenshot</string>
+    <!-- Under an empty "Total printed on the bill": what the order counts as without one. -->
+    <string name="details_total_worked_out">Not on the screenshots. Leave it empty and this order counts as %1$s.</string>
     <string name="reconcile_equation">Items plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
     <string name="reconcile_equation_from_printed">Printed subtotal plus tax and fees, less discount: %1$s. The bill says %2$s.</string>
+    <string name="reconcile_equation_no_total">Items plus tax and fees, less discount: %1$s. No total was read from the bill.</string>
+    <string name="reconcile_equation_from_printed_no_total">Printed subtotal plus tax and fees, less discount: %1$s. No total was read from the bill.</string>
     <!--
       The mark on the home list. Short enough to sit under a total, specific enough to be
       worth reading: the amount is the useful part, the icon is what catches the eye.

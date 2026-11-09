@@ -19,6 +19,8 @@ import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderStatus;
+import com.householdsplitter.data.mapper.OrderTotals;
+import com.householdsplitter.data.relation.OrderItemTally;
 import com.householdsplitter.databinding.FragmentEditGroupBinding;
 import com.householdsplitter.databinding.ItemEditGroupRowBinding;
 import com.householdsplitter.ui.MainActivity;
@@ -31,6 +33,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * One group: what it is worth, what it has bought, and who is in it.
@@ -100,11 +103,15 @@ public class EditGroupFragment extends BaseFragment {
             Household group = locator().database().householdDao().getByIdSync(householdId);
             List<Member> people = locator().database().memberDao().getActiveSync(householdId);
             List<Order> orders = locator().database().orderDao().getAllSync(householdId);
-            locator().executors().mainThread().execute(() -> render(group, people, orders));
+            Map<Long, OrderItemTally> tallies = OrderTotals.byOrder(
+                    locator().database().lineItemDao().getItemTalliesSync(householdId));
+            locator().executors().mainThread().execute(
+                    () -> render(group, people, orders, tallies));
         });
     }
 
-    private void render(Household group, List<Member> people, List<Order> orders) {
+    private void render(Household group, List<Member> people, List<Order> orders,
+                        Map<Long, OrderItemTally> tallies) {
         if (binding == null || group == null) {
             return;
         }
@@ -122,10 +129,11 @@ public class EditGroupFragment extends BaseFragment {
         long open = 0L;
         List<Order> recent = new ArrayList<>();
         for (Order order : orders) {
+            long total = OrderTotals.effectiveTotalCents(order, tallies.get(order.id));
             if (order.status == OrderStatus.SETTLED) {
-                settled += order.statedTotalCents;
+                settled += total;
             } else {
-                open += order.statedTotalCents;
+                open += total;
             }
             if (recent.size() < 5) {
                 recent.add(order);
@@ -139,7 +147,8 @@ public class EditGroupFragment extends BaseFragment {
                 : getString(R.string.edit_group_orders_count, orders.size()));
         binding.orderList.removeAllViews();
         for (Order order : recent) {
-            binding.orderList.addView(orderRow(order, money));
+            binding.orderList.addView(orderRow(order,
+                    OrderTotals.effectiveTotalCents(order, tallies.get(order.id)), money));
         }
 
         binding.peopleLabel.setText(getString(R.string.edit_group_people_count, people.size()));
@@ -149,7 +158,7 @@ public class EditGroupFragment extends BaseFragment {
         }
     }
 
-    private View orderRow(Order order, CurrencyFormat money) {
+    private View orderRow(Order order, long totalCents, CurrencyFormat money) {
         ItemEditGroupRowBinding row = ItemEditGroupRowBinding.inflate(
                 getLayoutInflater(), binding.orderList, false);
         row.rowTitle.setText(order.label);
@@ -160,7 +169,7 @@ public class EditGroupFragment extends BaseFragment {
                         ? getString(R.string.edit_group_settled)
                         : getString(R.string.edit_group_draft)));
         row.rowAmount.setVisibility(View.VISIBLE);
-        row.rowAmount.setText(money.format(order.statedTotalCents));
+        row.rowAmount.setText(money.format(totalCents));
         row.rowAction.setIconResource(R.drawable.ic_back);
         row.rowAction.setRotation(180f);
         row.rowAction.setContentDescription(getString(R.string.edit_group_open_order));

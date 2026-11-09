@@ -50,8 +50,15 @@ public final class HomeRow {
      */
     public final OrderFlag flag;
 
+    /**
+     * What the order costs: the printed total, or what its figures add up to when no total
+     * was read. Worked out here for the same reason as the flag.
+     */
+    public final long orderTotalCents;
+
     private HomeRow(int type, Heading heading, YearMonth month, int orderCount,
-                    long totalCents, OrderWithMembers order, OrderFlag flag) {
+                    long totalCents, OrderWithMembers order, OrderFlag flag,
+                    long orderTotalCents) {
         this.type = type;
         this.heading = heading;
         this.month = month;
@@ -59,14 +66,15 @@ public final class HomeRow {
         this.totalCents = totalCents;
         this.order = order;
         this.flag = flag == null ? OrderFlag.NONE : flag;
+        this.orderTotalCents = orderTotalCents;
     }
 
     public static HomeRow header(Heading heading, YearMonth month, int orderCount, long totalCents) {
-        return new HomeRow(TYPE_HEADER, heading, month, orderCount, totalCents, null, null);
+        return new HomeRow(TYPE_HEADER, heading, month, orderCount, totalCents, null, null, 0L);
     }
 
-    public static HomeRow of(OrderWithMembers order, OrderFlag flag) {
-        return new HomeRow(TYPE_ORDER, null, null, 0, 0L, order, flag);
+    public static HomeRow of(OrderWithMembers order, OrderFlag flag, long orderTotalCents) {
+        return new HomeRow(TYPE_ORDER, null, null, 0, 0L, order, flag, orderTotalCents);
     }
 
     /** Stable enough for DiffUtil: a month appears once, an order has an id. */

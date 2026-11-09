@@ -9,18 +9,17 @@ import androidx.lifecycle.ViewModel;
 import com.householdsplitter.core.browse.MonthBucket;
 import com.householdsplitter.core.browse.OrderFlag;
 import com.householdsplitter.core.browse.SearchMatch;
+import com.householdsplitter.core.parse.model.Reconciliation;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.OrderStatus;
+import com.householdsplitter.data.mapper.OrderTotals;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderItemNames;
 import com.householdsplitter.data.relation.OrderItemTally;
 import com.householdsplitter.data.relation.OrderWithMembers;
-import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.repo.HouseholdRepository;
 import com.householdsplitter.data.repo.OrderRepository;
-import com.householdsplitter.core.parse.Reconciler;
-import com.householdsplitter.core.parse.model.ParsedAdjustments;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -166,13 +165,7 @@ public class HomeViewModel extends ViewModel {
                 names.put(entry.orderId, entry.names);
             }
         }
-        Map<Long, OrderItemTally> tallies = new HashMap<>();
-        List<OrderItemTally> counted = itemTallies.getValue();
-        if (counted != null) {
-            for (OrderItemTally tally : counted) {
-                tallies.put(tally.orderId, tally);
-            }
-        }
+        Map<Long, OrderItemTally> tallies = OrderTotals.byOrder(itemTallies.getValue());
         String text = query.getValue();
         Filter active = filter.getValue() == null ? Filter.ALL : filter.getValue();
         ZoneId zone = ZoneId.systemDefault();
@@ -198,9 +191,12 @@ public class HomeViewModel extends ViewModel {
                 next.add(HomeRow.header(headingFor(order.order.orderDate, now, zone),
                         MonthBucket.of(order.order.orderDate, zone), 0, 0L));
             }
+            OrderItemTally tally = tallies.get(order.order.id);
+            Reconciliation check = OrderTotals.reconcile(order.order,
+                    tally == null ? 0L : tally.chargeableCents);
             monthCount++;
-            monthTotal += order.order.statedTotalCents;
-            next.add(HomeRow.of(order, flagFor(order.order, tallies.get(order.order.id))));
+            monthTotal += check.effectiveTotalCents();
+            next.add(HomeRow.of(order, flagFor(check, tally), check.effectiveTotalCents()));
         }
         closeMonth(next, headerAt, monthCount, monthTotal);
         rows.setValue(next);
@@ -211,18 +207,8 @@ public class HomeViewModel extends ViewModel {
      * uses. The tally is null until the items query has emitted, and an order with no
      * items has no tally row at all, which {@link OrderFlag} treats as nothing to say.
      */
-    private OrderFlag flagFor(Order order, OrderItemTally tally) {
-        if (tally == null) {
-            return OrderFlag.NONE;
-        }
-        return OrderFlag.of(Reconciler.reconcile(tally.chargeableCents, new ParsedAdjustments(
-                order.statedSubtotalCents,
-                order.taxCents,
-                order.deliveryFeeCents,
-                order.tipCents,
-                order.otherFeeCents,
-                order.discountCents,
-                order.statedTotalCents)), tally.itemCount);
+    private OrderFlag flagFor(Reconciliation check, OrderItemTally tally) {
+        return tally == null ? OrderFlag.NONE : OrderFlag.of(check, tally.itemCount);
     }
 
     private void closeMonth(List<HomeRow> rowsSoFar, int headerAt, int count, long totalCents) {

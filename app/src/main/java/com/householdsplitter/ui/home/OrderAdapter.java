@@ -78,7 +78,7 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
                             && a.flag.deltaCents() == b.flag.deltaCents()
                             && Objects.equals(a.order.order.label, b.order.order.label)
                             && Objects.equals(a.order.order.status, b.order.order.status)
-                            && a.order.order.statedTotalCents == b.order.order.statedTotalCents
+                            && a.orderTotalCents == b.orderTotalCents
                             && a.order.order.orderDate == b.order.order.orderDate
                             && a.order.participants.size() == b.order.participants.size();
                 }
@@ -158,7 +158,7 @@ public class OrderAdapter extends ListAdapter<HomeRow, RecyclerView.ViewHolder> 
             binding.orderLabel.setText(row.order.label);
             binding.orderDate.setText(new SimpleDateFormat("d MMM yyyy", Locale.getDefault())
                     .format(new java.util.Date(row.order.orderDate)));
-            binding.orderTotal.setText(money.format(row.order.statedTotalCents));
+            binding.orderTotal.setText(money.format(item.orderTotalCents));
 
             // Outlined, so store identity never reads as a state. See StorePill.
             StorePill.apply(binding.storeChip, row.order.store);
