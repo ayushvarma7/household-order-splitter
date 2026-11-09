@@ -61,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private volatile boolean startDestinationResolved;
 
+    /**
+     * The start screen, decided but not yet shown, because the activity stopped before the
+     * database read came back. Run from {@link #onStart()}.
+     */
+    private Runnable pendingStart;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         // Must run before super.onCreate. Holds the app's mark on screen until the first
@@ -117,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             if (hasHousehold) {
                 locator.currentHouseholdId(household.id);
             }
-            locator.executors().mainThread().execute(() -> {
+            locator.executors().mainThread().execute(() -> showStart(() -> {
                 if (binding == null || isFinishing()) {
                     startDestinationResolved = true;
                     return;
@@ -156,8 +162,36 @@ public class MainActivity extends AppCompatActivity {
                 if (hasHousehold) {
                     openRequestedScreen(controller, getIntent());
                 }
-            });
+            }));
         });
+    }
+
+    /**
+     * Shows the start screen now, or as soon as the activity can.
+     *
+     * <p>The start screen is decided after a database read, and the activity can stop before
+     * that read returns: launched behind the lock screen, or left within a moment of
+     * opening. Navigation then ignores the move to the start screen, deliberately, because
+     * the fragments have already saved their state, and nothing tried again afterwards, so
+     * the app came back to an empty screen with only the bottom bar until it was restarted.
+     * Installing an update onto a locked phone was enough to cause it.
+     */
+    private void showStart(Runnable start) {
+        if (getSupportFragmentManager().isStateSaved()) {
+            pendingStart = start;
+        } else {
+            start.run();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (pendingStart != null) {
+            Runnable start = pendingStart;
+            pendingStart = null;
+            start.run();
+        }
     }
 
     /**
