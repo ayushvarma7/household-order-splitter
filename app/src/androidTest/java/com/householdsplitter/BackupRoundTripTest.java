@@ -14,6 +14,8 @@ import androidx.test.filters.MediumTest;
 import com.householdsplitter.backup.BackupService;
 import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.data.db.AppDatabase;
+import com.householdsplitter.data.entity.CorrectionEvent;
+import com.householdsplitter.data.entity.DiscardedRow;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.ItemAssignment;
 import com.householdsplitter.data.entity.LineItem;
@@ -55,6 +57,8 @@ public class BackupRoundTripTest {
     private long householdId;
     private long anaId;
     private long benId;
+    private long orderId;
+    private long itemId;
 
     @Before
     public void setUp() {
@@ -82,7 +86,7 @@ public class BackupRoundTripTest {
         order.statedTotalCents = 2270L;
         order.taxCents = 129L;
         order.payerMemberId = anaId;
-        long orderId = database.orderDao().insert(order);
+        orderId = database.orderDao().insert(order);
         database.participantDao().insertAll(Arrays.asList(
                 new OrderParticipant(orderId, anaId),
                 new OrderParticipant(orderId, benId)));
@@ -95,7 +99,7 @@ public class BackupRoundTripTest {
         item.quantity = 1;
         item.scope = Scope.SUBSET;
         item.position = 0;
-        long itemId = database.lineItemDao().insert(item);
+        itemId = database.lineItemDao().insert(item);
         database.assignmentDao().insertAll(Arrays.asList(
                 new ItemAssignment(itemId, anaId, 1)));
 
@@ -105,6 +109,28 @@ public class BackupRoundTripTest {
         database.settlementDao().insert(payment);
         database.memberRuleDao().insert(
                 new MemberRule(householdId, benId, "beer", MemberRule.Kind.EXCLUDE));
+
+        CorrectionEvent renamed = new CorrectionEvent();
+        renamed.householdId = householdId;
+        renamed.orderId = orderId;
+        renamed.lineItemId = itemId;
+        renamed.kind = CorrectionEvent.NAME_CORRECTED;
+        renamed.parsedName = "Cofee bens";
+        renamed.finalName = "Coffee beans";
+        renamed.parsedCents = 1299L;
+        renamed.finalCents = 1299L;
+        renamed.imageIndex = 1;
+        renamed.reason = "Blurry";
+        renamed.createdAt = 1_700_000_200_000L;
+        database.correctionEventDao().insert(renamed);
+
+        DiscardedRow discarded = new DiscardedRow();
+        discarded.orderId = orderId;
+        discarded.lineItemId = 999L;
+        discarded.name = "Freshness Guaranteed";
+        discarded.lineTotalCents = 997L;
+        discarded.discardedAt = 1_700_000_300_000L;
+        database.discardedRowDao().insert(discarded);
     }
 
     @Test
@@ -240,6 +266,121 @@ public class BackupRoundTripTest {
         assertEquals("both copies are present, and nothing threw", 2, countOf("households"));
         assertEquals(2, countOf("settlement_payments"));
         assertEquals(2, countOf("member_rules"));
+    }
+
+    /**
+     * Format 2 wrote only the first household. Anyone with a second group lost it from
+     * every backup, including the automatic daily ones, and found out only on restore.
+     */
+    @Test
+    public void everyGroupComesBack() throws Exception {
+        long second = database.householdDao().insert(new Household("Office lunch", 2L));
+        database.memberDao().insert(new Member(second, "Cara", "#1F7A5A", 0));
+        Order lunch = new Order();
+        lunch.householdId = second;
+        lunch.label = "Friday lunch";
+        lunch.orderDate = 1_700_000_500_000L;
+        lunch.createdAt = 1_700_000_500_000L;
+        database.orderDao().insert(lunch);
+
+        export();
+        TestData.wipe();
+        restore(false);
+
+        assertEquals("both groups", 2, countOf("households"));
+        Household office = null;
+        for (Household household : database.householdDao().getAllSync()) {
+            if ("Office lunch".equals(household.name)) {
+                office = household;
+            }
+        }
+        assertNotNull("the second group was left out of the backup", office);
+        assertEquals(1, database.memberDao().getAllSync(office.id).size());
+        assertEquals("Friday lunch",
+                database.orderDao().getAllBundlesSync(office.id).get(0).order.label);
+    }
+
+    /** The reader's error log is what the file is for when it is exported for analysis. */
+    @Test
+    public void theCorrectionLogComesBackPointingAtTheRestoredRows() throws Exception {
+        export();
+        TestData.wipe();
+        restore(false);
+
+        Household household = database.householdDao().getHouseholdSync();
+        List<CorrectionEvent> log = database.correctionEventDao().forHouseholdSync(household.id);
+        assertEquals(1, log.size());
+        CorrectionEvent event = log.get(0);
+        assertEquals("Cofee bens", event.parsedName);
+        assertEquals("Coffee beans", event.finalName);
+        assertEquals(1, event.imageIndex);
+        assertEquals("Blurry", event.reason);
+
+        var bundle = database.orderDao().getAllBundlesSync(household.id).get(0);
+        assertEquals("the entry follows its order to its new id",
+                bundle.order.id, event.orderId);
+        assertEquals("and its row", bundle.items.get(0).item.id, event.lineItemId);
+    }
+
+    @Test
+    public void discardedRowsComeBack() throws Exception {
+        export();
+        TestData.wipe();
+        restore(false);
+
+        Household household = database.householdDao().getHouseholdSync();
+        List<DiscardedRow> rows = database.discardedRowDao().allForHouseholdSync(household.id);
+        assertEquals(1, rows.size());
+        assertEquals("Freshness Guaranteed", rows.get(0).name);
+        assertEquals(997L, rows.get(0).lineTotalCents);
+        assertEquals("the deleted row's own id cannot survive the move", 0L, rows.get(0).lineItemId);
+    }
+
+    /** A format 2 file, written before the logs and groups existed, still restores. */
+    @Test
+    public void aFormatTwoBackupStillRestores() throws Exception {
+        String legacy = "{\"version\":2,\"exportedAt\":1700000000000,"
+                + "\"household\":{\"id\":5,\"name\":\"Old Flat\",\"createdAt\":1},"
+                + "\"members\":[{\"id\":7,\"householdId\":5,\"name\":\"Ana\","
+                + "\"colorHex\":\"#1F6FB2\",\"sortOrder\":0,\"archived\":false}],"
+                + "\"orders\":[],\"participants\":[],\"lineItems\":[],"
+                + "\"assignments\":[],\"images\":[],\"memory\":[],"
+                + "\"payments\":[],\"rules\":[]}";
+        try (FileOutputStream stream = new FileOutputStream(file)) {
+            stream.write(legacy.getBytes(StandardCharsets.UTF_8));
+        }
+        TestData.wipe();
+
+        restore(false);
+
+        Household household = database.householdDao().getHouseholdSync();
+        assertNotNull(household);
+        assertEquals("Old Flat", household.name);
+        assertEquals(1, database.memberDao().getAllSync(household.id).size());
+    }
+
+    /**
+     * The correction log has no foreign key, so deleting the households does not clear it.
+     * A replacing restore must, or the old install's item names linger next to the new.
+     */
+    @Test
+    public void replaceClearsTheOldCorrectionLog() throws Exception {
+        export();
+
+        restore(true);
+
+        assertEquals("only the restored copy of the log", 1, countOf("correction_events"));
+    }
+
+    @Test
+    public void wipeClearsTheCorrectionLogToo() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        backups.wipe(result -> latch.countDown());
+        assertTrue(latch.await(20, TimeUnit.SECONDS));
+
+        assertEquals(0, countOf("households"));
+        assertEquals("deleting everything leaves no item names behind",
+                0, countOf("correction_events"));
     }
 
     private int countOf(String table) {

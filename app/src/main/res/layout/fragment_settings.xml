@@ -427,6 +427,14 @@
                             android:layout_marginTop="@dimen/space_s"
                             android:text="@string/settings_restore" />
 
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_s"
+                            android:text="@string/settings_backup_body"
+                            android:textAppearance="@style/Text.Caption"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/clearSuggestionsButton"
                             style="@style/Widget.Splitter.Button.Outlined"

@@ -45,4 +45,11 @@ public interface CorrectionEventDao {
 
     @Query("DELETE FROM correction_events WHERE householdId = :householdId")
     void clearForHousehold(long householdId);
+
+    /**
+     * Every entry, for a whole-install wipe or a replacing restore. The table has no foreign
+     * key by design, so deleting the households leaves these rows behind on their own.
+     */
+    @Query("DELETE FROM correction_events")
+    void deleteAll();
 }

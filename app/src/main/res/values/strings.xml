@@ -202,7 +202,9 @@
     <string name="settings_currency">Currency</string>
     <string name="settings_currency_symbol">Symbol</string>
     <string name="settings_data">Your data</string>
-    <string name="settings_backup">Back up to a file</string>
+    <string name="settings_backup">Back up everything to a file</string>
+    <!-- Under the backup buttons: what the file holds, and that it can be analysed as well as restored. -->
+    <string name="settings_backup_body">One JSON file with every group, order, item, assignment and payment, plus the log of what the reader got wrong and what you corrected. Restore it into the app, or load it into a spreadsheet or notebook for analysis.</string>
     <string name="settings_restore">Restore from a file</string>
     <string name="settings_clear_suggestions">Clear suggestion history</string>
     <string name="settings_suggestions_cleared">Suggestion history cleared</string>

@@ -55,9 +55,7 @@ public class FirstGroupQueryTest {
             // Declares the queries.
             "data/dao/HouseholdDao.java",
             // Offers both, and is where the distinction is documented.
-            "data/repo/HouseholdRepository.java",
-            // Writes a backup of the install; multi-group backup is a separate change.
-            "backup/BackupService.java");
+            "data/repo/HouseholdRepository.java");
 
     @Test
     public void onlyTheFilesThatMeanItAskForTheFirstGroup() throws IOException {
