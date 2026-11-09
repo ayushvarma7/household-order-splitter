@@ -54,6 +54,18 @@
             app:iconSize="20dp"
             app:iconTint="@color/viewer_foreground" />
 
+        <!-- On a screenshot the order already has: it was read, so it cannot be removed or
+             moved, only seen, which is what tells the user where a new one will go. -->
+        <TextView
+            android:id="@+id/readBadge"
+            style="@style/Widget.Splitter.Pill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="@dimen/space_s"
+            android:text="@string/import_already_read"
+            android:visibility="gone" />
+
         <ImageView
             android:id="@+id/dragHandle"
             android:layout_width="@dimen/touch_target_min"

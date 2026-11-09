@@ -130,5 +130,20 @@
             android:enabled="false"
             android:maxWidth="@dimen/content_max_width"
             android:text="@string/action_continue" />
+
+        <!--
+          Only when adding to an order that already has screenshots. Continue reads just the
+          new ones; this reads every screenshot again as one page, which is what a new
+          screenshot needs when it belongs between two old ones. Rows the order already has,
+          and rows the user deleted as wrong, are not added a second time.
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/readAllButton"
+            style="@style/Widget.Splitter.Button.Text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:maxWidth="@dimen/content_max_width"
+            android:visibility="gone" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,12 +12,14 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.NavBackStackEntry;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.householdsplitter.R;
+import com.householdsplitter.data.entity.OrderImage;
 import com.householdsplitter.databinding.FragmentImportBinding;
 import com.householdsplitter.ui.common.BaseFragment;
 import com.householdsplitter.ui.common.Insets;
@@ -115,10 +117,6 @@ public class ImportFragment extends BaseFragment {
 
         binding.toolbar.setNavigationOnClickListener(v ->
                 NavHostFragment.findNavController(this).popBackStack());
-        if (getArguments() != null
-                && getArguments().getLong(ParsingArgs.ARG_ORDER_ID, 0L) != 0L) {
-            binding.toolbar.setTitle(R.string.import_add_to_order);
-        }
 
         adapter = new ImagePreviewAdapter(new ImagePreviewAdapter.Listener() {
             @Override
@@ -139,9 +137,20 @@ public class ImportFragment extends BaseFragment {
         touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(
                 ItemTouchHelper.START | ItemTouchHelper.END, 0) {
             @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                                        @NonNull RecyclerView.ViewHolder holder) {
+                // A screenshot already read is part of the order; it is shown, not moved.
+                return adapter.isRead(holder.getBindingAdapterPosition())
+                        ? 0 : super.getMovementFlags(recyclerView, holder);
+            }
+
+            @Override
             public boolean onMove(@NonNull RecyclerView recyclerView,
                                   @NonNull RecyclerView.ViewHolder source,
                                   @NonNull RecyclerView.ViewHolder target) {
+                if (adapter.isRead(target.getBindingAdapterPosition())) {
+                    return false;
+                }
                 model.move(source.getBindingAdapterPosition(), target.getBindingAdapterPosition());
                 return true;
             }
@@ -159,36 +168,33 @@ public class ImportFragment extends BaseFragment {
 
         applyStoreFraming();
 
-        model.uris().observe(getViewLifecycleOwner(), uris -> {
-            adapter.submitList(new ArrayList<>(uris));
-            int count = uris.size();
-            binding.previewStrip.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
-            binding.stripLabel.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
-            binding.emptyHint.setVisibility(count == 0 ? View.VISIBLE : View.GONE);
-            // SPEC 7.4.2: Continue shows the count. SPEC 7.4.5: one image minimum.
-            binding.continueButton.setText(count == 0
-                    ? getString(R.string.action_continue)
-                    : getResources().getQuantityString(R.plurals.continue_with_images, count, count));
-            binding.continueButton.setEnabled(count > 0);
-        });
+        model.previews().observe(getViewLifecycleOwner(), this::render);
 
-        binding.continueButton.setOnClickListener(v -> {
-            Bundle args = new Bundle();
-            args.putStringArrayList(ParsingArgs.ARG_URIS, new ArrayList<>(model.current()));
-            // The store the picker chose travels with the import, so the parsing screen
-            // builds the reader for this order rather than for whichever store is default.
-            if (getArguments() != null && getArguments().getString(ParsingArgs.ARG_STORE) != null) {
-                args.putString(ParsingArgs.ARG_STORE, getArguments().getString(ParsingArgs.ARG_STORE));
-            }
-            // Carried through when the user came here to add to an order that already
-            // exists, rather than to start a new one (SPEC 8.1.3).
-            long existingOrderId = getArguments() == null
-                    ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID, 0L);
-            if (existingOrderId != 0L) {
-                args.putLong(ParsingArgs.ARG_ORDER_ID, existingOrderId);
-            }
-            NavHostFragment.findNavController(this).navigate(R.id.parsingFragment, args);
-        });
+        // Adding to an order from its own item list: show what it already has.
+        long orderToAddTo = getArguments() == null
+                ? 0L : getArguments().getLong(ParsingArgs.ARG_ORDER_ID, 0L);
+        if (orderToAddTo != 0L && model.appendOrderId() == 0L) {
+            loadOrderScreenshots(orderToAddTo);
+        }
+
+        // Back here after these screenshots were read: they are now part of that order, so
+        // what is added next joins it rather than starting the whole read again.
+        // By destination rather than getCurrentBackStackEntry(): while a pop is still
+        // settling, the current entry can be the screen being left, whose result this is not.
+        NavBackStackEntry self = ownBackStackEntry();
+        if (self != null) {
+            self.getSavedStateHandle().<Long>getLiveData(ParsingArgs.RESULT_READ_INTO_ORDER)
+                    .observe(getViewLifecycleOwner(), orderId -> {
+                        if (orderId == null || orderId == 0L) {
+                            return;
+                        }
+                        model.markAllRead(orderId);
+                        self.getSavedStateHandle().remove(ParsingArgs.RESULT_READ_INTO_ORDER);
+                    });
+        }
+
+        binding.readAllButton.setOnClickListener(v -> readScreenshots(model.all(), true));
+        binding.continueButton.setOnClickListener(v -> readScreenshots(model.current(), false));
 
         // SPEC 8.1.2: images shared in from another app arrive already loaded.
         if (savedInstanceState == null && getArguments() != null) {
@@ -202,6 +208,91 @@ public class ImportFragment extends BaseFragment {
                 getArguments().remove(ARG_SHARED_URIS);
             }
         }
+    }
+
+    /**
+     * Opens the reading screen.
+     *
+     * @param readAll true to read every screenshot again as one page, false to read only
+     *                the ones being added (or, for a new order, all of them)
+     */
+    private void readScreenshots(List<String> uris, boolean readAll) {
+        Bundle args = new Bundle();
+        args.putStringArrayList(ParsingArgs.ARG_URIS, new ArrayList<>(uris));
+        // The store the picker chose travels with the import, so the parsing screen
+        // builds the reader for this order rather than for whichever store is default.
+        if (getArguments() != null && getArguments().getString(ParsingArgs.ARG_STORE) != null) {
+            args.putString(ParsingArgs.ARG_STORE, getArguments().getString(ParsingArgs.ARG_STORE));
+        }
+        // Adding to an order that already exists, rather than starting a new one (SPEC
+        // 8.1.3): either the one this screen was opened for, or the one its screenshots
+        // were just read into.
+        long existingOrderId = model.appendOrderId();
+        if (existingOrderId != 0L) {
+            args.putLong(ParsingArgs.ARG_ORDER_ID, existingOrderId);
+            args.putBoolean(ParsingArgs.ARG_READ_ALL, readAll);
+        }
+        NavHostFragment.findNavController(this).navigate(R.id.parsingFragment, args);
+    }
+
+    private void render(List<ImportViewModel.Preview> previews) {
+        if (binding == null) {
+            return;
+        }
+        adapter.submitList(new ArrayList<>(previews));
+        int total = previews.size();
+        int fresh = model.current().size();
+        boolean appending = model.appendOrderId() != 0L;
+
+        binding.toolbar.setTitle(appending ? R.string.import_add_to_order : R.string.import_title);
+        binding.previewStrip.setVisibility(total == 0 ? View.GONE : View.VISIBLE);
+        binding.stripLabel.setVisibility(total == 0 ? View.GONE : View.VISIBLE);
+        binding.emptyHint.setVisibility(total == 0 || appending ? View.VISIBLE : View.GONE);
+        binding.emptyHint.setText(appending ? R.string.import_add_hint : R.string.import_hint);
+
+        // SPEC 7.4.2: Continue shows the count. SPEC 7.4.5: one image minimum, and when
+        // adding to an order, one new image: reading everything again is the other button.
+        if (fresh == 0) {
+            binding.continueButton.setText(R.string.action_continue);
+        } else if (appending) {
+            binding.continueButton.setText(
+                    getResources().getQuantityString(R.plurals.import_read_new, fresh, fresh));
+        } else {
+            binding.continueButton.setText(
+                    getResources().getQuantityString(R.plurals.continue_with_images, fresh, fresh));
+        }
+        binding.continueButton.setEnabled(fresh > 0);
+
+        boolean canReadAll = appending && total > fresh;
+        binding.readAllButton.setVisibility(canReadAll ? View.VISIBLE : View.GONE);
+        binding.readAllButton.setText(
+                getResources().getQuantityString(R.plurals.import_read_all_again, total, total));
+    }
+
+    private NavBackStackEntry ownBackStackEntry() {
+        try {
+            return NavHostFragment.findNavController(this).getBackStackEntry(R.id.importFragment);
+        } catch (IllegalArgumentException notOnTheStack) {
+            return null;
+        }
+    }
+
+    /** The order's own screenshots, in their stored order, shown as already read. */
+    private void loadOrderScreenshots(long orderId) {
+        locator().executors().diskIO().execute(() -> {
+            List<OrderImage> images = new ArrayList<>(
+                    locator().database().orderImageDao().getForOrderSync(orderId));
+            images.sort((first, second) -> Integer.compare(first.position, second.position));
+            List<String> uris = new ArrayList<>();
+            for (OrderImage image : images) {
+                uris.add(image.uri);
+            }
+            locator().executors().mainThread().execute(() -> {
+                if (binding != null) {
+                    model.addTo(orderId, uris);
+                }
+            });
+        });
     }
 
     /** SPEC 7.4.6: persistable permission, so the URIs survive a restart. */

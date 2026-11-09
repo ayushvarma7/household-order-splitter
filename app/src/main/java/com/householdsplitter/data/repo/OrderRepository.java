@@ -181,6 +181,17 @@ public class OrderRepository {
      */
     public void appendParse(long orderId, ParsedOrder parsed, List<String> imageUris,
                             Callback<Result<Integer>> callback) {
+        appendParse(orderId, parsed, imageUris, false, callback);
+    }
+
+    /**
+     * @param imageUris the screenshots that were parsed, in reading order
+     * @param readAll   true when {@code imageUris} is every screenshot of the order, the
+     *                  ones already stored first and in their stored order, read again as
+     *                  one page; false when it is only the screenshots being added
+     */
+    public void appendParse(long orderId, ParsedOrder parsed, List<String> imageUris,
+                            boolean readAll, Callback<Result<Integer>> callback) {
         executors.diskIO().execute(() -> {
             Order order = orderDao.getByIdSync(orderId);
             if (order == null) {
@@ -188,10 +199,32 @@ public class OrderRepository {
                 return;
             }
 
+            // A row is already accounted for if the order holds it now, or held it as the
+            // reader first wrote it before the user renamed or repriced it, or if the user
+            // deleted it as wrong. Without the last two, reading the screenshots again
+            // would put back every phantom row the user had already cleaned up.
             Set<String> existing = new LinkedHashSet<>();
             for (LineItemWithAssignments row : lineItemDao.getForOrderSync(orderId)) {
                 existing.add(dedupeKey(row.item.name, row.item.lineTotalCents));
+                if (row.item.parsedName != null && !row.item.parsedName.isEmpty()) {
+                    existing.add(dedupeKey(row.item.parsedName, row.item.parsedCents));
+                }
             }
+            for (DiscardedRow discarded : discardedRowDao.forOrderSync(orderId)) {
+                existing.add(dedupeKey(discarded.name, discarded.lineTotalCents));
+            }
+
+            // A row's screenshot number is its position in the batch that was parsed. When
+            // only the new screenshots were read, that batch starts after the ones the
+            // order already has, so the number has to move with it: left alone, a row read
+            // from the order's thirteenth screenshot would open the first.
+            List<String> stored = imageUris == null ? new ArrayList<>() : imageUris;
+            int alreadyStored = imageDao.getForOrderSync(orderId).size();
+            int imageOffset = readAll ? 0 : alreadyStored;
+            List<String> added = readAll
+                    ? new ArrayList<>(stored.subList(Math.min(alreadyStored, stored.size()),
+                            stored.size()))
+                    : stored;
 
             int position = lineItemDao.maxPositionSync(orderId) + 1;
             List<LineItem> fresh = new ArrayList<>();
@@ -199,12 +232,16 @@ public class OrderRepository {
                 if (!existing.add(dedupeKey(parsedItem.name(), parsedItem.lineTotalCents()))) {
                     continue;
                 }
-                fresh.add(toLineItem(orderId, parsedItem, position++));
+                LineItem row = toLineItem(orderId, parsedItem, position++);
+                if (row.sourceImageIndex >= 0) {
+                    row.sourceImageIndex += imageOffset;
+                }
+                fresh.add(row);
             }
             if (!fresh.isEmpty()) {
                 lineItemDao.insertAll(fresh);
             }
-            saveImages(orderId, imageUris);
+            saveImages(orderId, added);
 
             // Only fill what is still missing. A user's correction outranks a later parse.
             boolean changed = false;

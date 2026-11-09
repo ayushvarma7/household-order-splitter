@@ -47,6 +47,8 @@ public class ParsingViewModel extends ViewModel {
     private final AtomicBoolean cancelled = new AtomicBoolean(false);
 
     private final long existingOrderId;
+    /** See {@link ParsingArgs#ARG_READ_ALL}. */
+    private final boolean readAll;
     private boolean started;
     private ParsedOrder pending;
     private List<String> pendingUris;
@@ -58,13 +60,19 @@ public class ParsingViewModel extends ViewModel {
      */
     public ParsingViewModel(OrderRepository orderRepository, HouseholdRepository householdRepository,
                             ReceiptParser parser, StoreKind store, AppExecutors executors,
-                            long householdId, long existingOrderId) {
+                            long householdId, long existingOrderId, boolean readAll) {
         this.store = store == null ? StoreKind.WALMART : store;
         this.orderRepository = orderRepository;
         this.parser = parser;
         this.executors = executors;
         this.householdId = householdId;
         this.existingOrderId = existingOrderId;
+        this.readAll = readAll;
+    }
+
+    /** True when these screenshots are being added to an order that already exists. */
+    public boolean isAppending() {
+        return existingOrderId != 0L;
     }
 
     public LiveData<Progress> progress() {
@@ -149,7 +157,7 @@ public class ParsingViewModel extends ViewModel {
 
     private void save(ParsedOrder parsed, List<String> uris) {
         if (existingOrderId != 0L) {
-            orderRepository.appendParse(existingOrderId, parsed, uris,
+            orderRepository.appendParse(existingOrderId, parsed, uris, readAll,
                     (Result<Integer> result) -> {
                         if (result.isOk()) {
                             orderCreated.setValue(existingOrderId);

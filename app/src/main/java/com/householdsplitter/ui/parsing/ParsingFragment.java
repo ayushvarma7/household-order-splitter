@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.NavBackStackEntry;
+import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -65,13 +67,30 @@ public class ParsingFragment extends BaseFragment {
             if (orderId == null) {
                 return;
             }
+            NavController controller = NavHostFragment.findNavController(this);
+
+            // The import screen behind this one still holds the screenshots it sent. Tell
+            // it which order they are now part of, so that going back to it to add one
+            // more adds to this order, rather than reading every screenshot again into a
+            // second copy of it.
+            NavBackStackEntry previous = controller.getPreviousBackStackEntry();
+            if (previous != null && previous.getDestination().getId() == R.id.importFragment) {
+                previous.getSavedStateHandle().set(ParsingArgs.RESULT_READ_INTO_ORDER, orderId);
+            }
+
+            // Added from that order's own item list: go back to it. It observes the rows,
+            // so the new ones are already there, and the back stack does not gain a second
+            // copy of the same screen.
+            if (model.isAppending() && reviewIsBehind(controller, orderId)) {
+                controller.popBackStack(R.id.reviewItemsFragment, false);
+                return;
+            }
             Bundle args = new Bundle();
             args.putLong(ParsingArgs.ARG_ORDER_ID, orderId);
             NavOptions options = new NavOptions.Builder()
                     .setPopUpTo(R.id.parsingFragment, true)
                     .build();
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.reviewItemsFragment, args, options);
+            controller.navigate(R.id.reviewItemsFragment, args, options);
         });
 
         // SPEC 7.5.3: on failure, offer Retry, Choose different images, or Enter manually.
@@ -117,6 +136,17 @@ public class ParsingFragment extends BaseFragment {
 
         if (savedInstanceState == null) {
             model.start(uris);
+        }
+    }
+
+    /** True when the item list for this order is further back on the stack. */
+    private static boolean reviewIsBehind(NavController controller, long orderId) {
+        try {
+            NavBackStackEntry review = controller.getBackStackEntry(R.id.reviewItemsFragment);
+            Bundle args = review.getArguments();
+            return args != null && args.getLong(ParsingArgs.ARG_ORDER_ID, 0L) == orderId;
+        } catch (IllegalArgumentException notOnTheStack) {
+            return false;
         }
     }
 

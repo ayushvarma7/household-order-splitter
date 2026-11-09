@@ -7,14 +7,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 
 import com.householdsplitter.core.calc.Scope;
+import com.householdsplitter.core.parse.model.ItemBounds;
 import com.householdsplitter.core.parse.model.ParsedAdjustments;
 import com.householdsplitter.core.parse.model.ParsedItem;
 import com.householdsplitter.core.parse.model.ParsedOrder;
 import com.householdsplitter.data.db.AppDatabase;
+import com.householdsplitter.data.entity.DiscardedRow;
 import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.data.entity.Member;
 import com.householdsplitter.data.entity.Order;
+import com.householdsplitter.data.entity.OrderImage;
 import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.util.Result;
 
@@ -179,5 +182,122 @@ public class AppendParseTest {
                 });
         assertTrue(latch.await(15, TimeUnit.SECONDS));
         return added.get();
+    }
+
+    /** A parsed row read from the {@code index}-th screenshot of its batch. */
+    private static ParsedItem fromScreenshot(String name, long cents, int index) {
+        return ParsedItem.builder()
+                .name(name)
+                .rawOcrText(name)
+                .lineTotalCents(cents)
+                .scope(Scope.UNASSIGNED)
+                .bounds(new ItemBounds(index, 100, 200, 900, 260))
+                .build();
+    }
+
+    private void addImages(String... uris) {
+        List<OrderImage> images = new ArrayList<>();
+        int start = database.orderImageDao().getForOrderSync(orderId).size();
+        for (int i = 0; i < uris.length; i++) {
+            images.add(new OrderImage(orderId, uris[i], start + i));
+        }
+        database.orderImageDao().insertAll(images);
+    }
+
+    private int append(ParsedOrder parsed, List<String> uris, boolean readAll) throws Exception {
+        AtomicInteger added = new AtomicInteger();
+        CountDownLatch latch = new CountDownLatch(1);
+        repository.appendParse(orderId, parsed, uris, readAll, (Result<Integer> result) -> {
+            added.set(result.isOk() ? result.value() : -1);
+            latch.countDown();
+        });
+        assertTrue(latch.await(15, TimeUnit.SECONDS));
+        return added.get();
+    }
+
+    private LineItem row(String name) {
+        for (var row : database.lineItemDao().getForOrderSync(orderId)) {
+            if (name.equals(row.item.name)) {
+                return row.item;
+            }
+        }
+        throw new AssertionError("no row called " + name);
+    }
+
+    /**
+     * Only the new screenshots were read, so a row's screenshot number counts from the
+     * first of them. It has to count from the order's first screenshot instead, or "View
+     * on screenshot" opens the wrong page.
+     */
+    @Test
+    public void aRowFromAnAddedScreenshotPointsAtThatScreenshot() throws Exception {
+        addImages("content://shots/1", "content://shots/2", "content://shots/3");
+        ParsedOrder parsed = ParsedOrder.builder()
+                .items(Arrays.asList(fromScreenshot("Coffee beans", 899L, 0),
+                        fromScreenshot("Tea bags", 415L, 1)))
+                .adjustments(ParsedAdjustments.empty()).build();
+
+        append(parsed, Arrays.asList("content://shots/4", "content://shots/5"), false);
+
+        assertEquals("the order's fourth screenshot, not its first", 3,
+                row("Coffee beans").sourceImageIndex);
+        assertEquals(4, row("Tea bags").sourceImageIndex);
+        List<OrderImage> images = database.orderImageDao().getForOrderSync(orderId);
+        assertEquals(5, images.size());
+    }
+
+    /** Reading everything again stores only the screenshots the order did not have. */
+    @Test
+    public void readingAllAgainStoresOnlyTheNewScreenshots() throws Exception {
+        addImages("content://shots/1", "content://shots/2");
+        ParsedOrder parsed = ParsedOrder.builder()
+                .items(Arrays.asList(fromScreenshot("Coffee beans", 899L, 2)))
+                .adjustments(ParsedAdjustments.empty()).build();
+
+        append(parsed, Arrays.asList("content://shots/1", "content://shots/2",
+                "content://shots/3"), true);
+
+        List<OrderImage> images = database.orderImageDao().getForOrderSync(orderId);
+        assertEquals("no screenshot stored twice", 3, images.size());
+        assertEquals("indices already count from the order's first screenshot", 2,
+                row("Coffee beans").sourceImageIndex);
+    }
+
+    /**
+     * The user renamed what the reader wrote. Reading the screenshot again produces the
+     * reader's name, which no longer matches any row, and must not come back as a second.
+     */
+    @Test
+    public void aRowTheUserRenamedIsNotReadBackInAgain() throws Exception {
+        LineItem chicken = new LineItem();
+        chicken.orderId = orderId;
+        chicken.name = "Freshness Guaranteed Chicken";
+        chicken.parsedName = "Freshness Guaranteed";
+        chicken.parsedCents = 1166L;
+        chicken.lineTotalCents = 1166L;
+        chicken.scope = Scope.UNASSIGNED;
+        chicken.position = 5;
+        database.lineItemDao().insert(chicken);
+
+        int added = append(parseOf(ParsedAdjustments.empty(), new String[][]{
+                {"Freshness Guaranteed", "1166"}}), new ArrayList<>(), true);
+
+        assertEquals(0, added);
+    }
+
+    /** Nor does a row the user deleted as wrong: that is exactly the row they did not want. */
+    @Test
+    public void aRowTheUserDeletedIsNotReadBackInAgain() throws Exception {
+        DiscardedRow phantom = new DiscardedRow();
+        phantom.orderId = orderId;
+        phantom.name = "Boneless, Skinless Chicken Breasts";
+        phantom.lineTotalCents = 4467L;
+        phantom.discardedAt = 1L;
+        database.discardedRowDao().insert(phantom);
+
+        int added = append(parseOf(ParsedAdjustments.empty(), new String[][]{
+                {"Boneless, Skinless Chicken Breasts", "4467"}}), new ArrayList<>(), true);
+
+        assertEquals("the phantom row stays deleted", 0, added);
     }
 }
