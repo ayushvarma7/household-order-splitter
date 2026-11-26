@@ -24,7 +24,7 @@ Share in a Walmart or Amazon Fresh screenshot, or photograph a restaurant bill. 
   <img alt="Offline, no network permission" src="https://img.shields.io/badge/Offline-no_network_permission-6A3FC0?style=for-the-badge" />
 </p>
 <p>
-  <img alt="305 JVM tests, 152 instrumented" src="https://img.shields.io/badge/tests-305_JVM_%2B_152_instrumented-1F6B4A?style=flat-square" />
+  <img alt="401 JVM tests, 184 instrumented" src="https://img.shields.io/badge/tests-401_JVM_%2B_184_instrumented-1F6B4A?style=flat-square" />
   <img alt="Three receipt kinds" src="https://img.shields.io/badge/reads-Walmart_%2B_Amazon_Fresh_%2B_paper-6A3FC0?style=flat-square" />
   <img alt="No INTERNET permission" src="https://img.shields.io/badge/INTERNET_permission-none-BA1A1A?style=flat-square" />
   <img alt="Room schema version 7" src="https://img.shields.io/badge/migrations-7_versions,_hand_written-615B71?style=flat-square" />
@@ -153,6 +153,38 @@ liking plum is not a reason for "settled" to move.
 
 ---
 
+## See what the money went on
+
+<div align="center">
+  <img src="docs/screenshots/25-explore.png" width="215" alt="A month of groceries as packed bubbles, sized by what was spent" />
+  <img src="docs/screenshots/26-explore-zoom.png" width="215" alt="Zoomed into Drinks, showing Soda and Coffee and tea" />
+</div>
+
+The **Explore** tab shows a month of shopping as packed bubbles, one per category,
+sized by what was spent. Tap a bubble to zoom from category to sub-category to single
+item. Above the picture, the month's total counts to the figure for whatever you are
+looking at, with one plain sentence about it and the change since last month. Below it
+you see who each part was for, a ranked list that zooms like the bubbles, a few facts
+worth a look, and one "did you know" a day.
+
+Money the reader could not tie to an item is never hidden in the picture. It gets its own
+amber bubble with a dashed edge, and a panel lists the orders it came from, each one
+opening the review screen so you can fix it.
+
+- **Store brands are left off.** "Great Value Long Grain Rice, 5 lb" shows as Long Grain
+  Rice. There is no brand list in the app: a leading word or phrase counts as a brand
+  once three different products in your own receipts start with it.
+- **Change never relies on colour alone.** It is written as an arrow and a percentage,
+  and only when it is more than about 10%. Spending more is never shown in error red,
+  which is kept for money that is missing.
+- **Everything in the picture is also in a list.** Screen readers use the ranked rows, and
+  the system's "remove animations" setting turns the motion off.
+
+Every figure is exact cents. A bubble is always the sum of the bubbles inside it, so a
+total never changes as you zoom in.
+
+---
+
 ## It keeps score of its own reading
 
 <div align="center">
@@ -274,6 +306,7 @@ A parser that quietly drops a charge produces a total that is short, with nothin
 - Excel workbook, a sheet per order, kept current
 - CSV export and a shareable text summary
 - Spending analytics and settle-up
+- Explore: zoomable bubbles of what you bought, by person and month
 - Balances home-screen widget
 - Dated rotating backups, JSON, on device
 - Light, dark, or follow the system
