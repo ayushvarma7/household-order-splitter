@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Four destinations, which is the whole app at the top level.
+  Five destinations, which is the whole app at the top level.
 
-  Four rather than five: a bar is a promise that these are the places you go, and a fifth
-  entry is usually a sign that one of the other four is really two things. Orders, groups,
-  what it all cost, and everything else.
+  The middle one, Explore, is the odd one out: the others are places you go to do something,
+  and this is where you go to look at what you have already done. It sits in the middle so it
+  is the easy thumb target, since it is the reason to open the app with nothing to enter.
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -17,6 +17,11 @@
         android:id="@+id/groupsFragment"
         android:icon="@drawable/ic_group"
         android:title="@string/nav_groups" />
+
+    <item
+        android:id="@+id/insightsFragment"
+        android:icon="@drawable/ic_nav_explore"
+        android:title="@string/nav_explore" />
 
     <item
         android:id="@+id/analyticsFragment"

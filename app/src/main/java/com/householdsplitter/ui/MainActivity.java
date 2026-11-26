@@ -363,10 +363,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /** The four destinations the bar offers, and the only ones it is shown on. */
+    /** The five destinations the bar offers, and the only ones it is shown on. */
     private static boolean isTopLevel(int destinationId) {
         return destinationId == R.id.homeFragment
                 || destinationId == R.id.groupsFragment
+                || destinationId == R.id.insightsFragment
                 || destinationId == R.id.analyticsFragment
                 || destinationId == R.id.settingsFragment;
     }

@@ -35,11 +35,32 @@ public final class SpendingAnalytics {
         private final long dateMillis;
         private final String label;
         private final SplitResult result;
+        private final long orderId;
+        private final long missingCents;
 
         public OrderPoint(long dateMillis, String label, SplitResult result) {
+            this(dateMillis, label, result, 0L, 0L);
+        }
+
+        /**
+         * @param missingCents what the bill charged beyond what the rows add up to, or 0
+         *                     when they agree or nothing was printed to compare with
+         */
+        public OrderPoint(long dateMillis, String label, SplitResult result, long orderId,
+                          long missingCents) {
             this.dateMillis = dateMillis;
             this.label = label == null ? "" : label;
             this.result = result;
+            this.orderId = orderId;
+            this.missingCents = Math.max(0L, missingCents);
+        }
+
+        public long orderId() {
+            return orderId;
+        }
+
+        public long missingCents() {
+            return missingCents;
         }
 
         public long dateMillis() {
@@ -52,6 +73,38 @@ public final class SpendingAnalytics {
 
         public SplitResult result() {
             return result;
+        }
+    }
+
+    /** One order whose rows add up to less than the bill. */
+    public static final class MissingOrder {
+
+        private final long orderId;
+        private final String label;
+        private final long dateMillis;
+        private final long cents;
+
+        MissingOrder(long orderId, String label, long dateMillis, long cents) {
+            this.orderId = orderId;
+            this.label = label;
+            this.dateMillis = dateMillis;
+            this.cents = cents;
+        }
+
+        public long orderId() {
+            return orderId;
+        }
+
+        public String label() {
+            return label;
+        }
+
+        public long dateMillis() {
+            return dateMillis;
+        }
+
+        public long cents() {
+            return cents;
         }
     }
 
@@ -148,11 +201,16 @@ public final class SpendingAnalytics {
         private final List<MemberTotal> members;
         private final List<MonthPoint> months;
         private final List<String> frequentItems;
+        private final long missingCents;
+        private final List<MissingOrder> missingOrders;
 
         Report(int orderCount, long totalSpentCents, long averageOrderCents,
                long largestOrderCents, String largestOrderLabel, long commonSpendCents,
                long personalSpendCents, long adjustmentsCents, List<MemberTotal> members,
-               List<MonthPoint> months, List<String> frequentItems) {
+               List<MonthPoint> months, List<String> frequentItems, long missingCents,
+               List<MissingOrder> missingOrders) {
+            this.missingCents = missingCents;
+            this.missingOrders = missingOrders;
             this.orderCount = orderCount;
             this.totalSpentCents = totalSpentCents;
             this.averageOrderCents = averageOrderCents;
@@ -168,6 +226,27 @@ public final class SpendingAnalytics {
 
         public boolean isEmpty() {
             return orderCount == 0;
+        }
+
+        /**
+         * What the bills charged beyond what their rows add up to, across every order.
+         *
+         * <p>It is not inside {@link #totalSpentCents()}, which is a sum of what people were
+         * asked to pay for the rows that were read. Keeping it apart is what makes the gap
+         * visible instead of folding it into a number that looks complete.
+         */
+        public long missingCents() {
+            return missingCents;
+        }
+
+        /** The orders behind {@link #missingCents()}, biggest gap first. */
+        public List<MissingOrder> missingOrders() {
+            return missingOrders;
+        }
+
+        /** Spending as the bills have it: what was read plus what was missed. */
+        public long totalWithMissingCents() {
+            return totalSpentCents + missingCents;
         }
 
         public int orderCount() {
@@ -223,7 +302,8 @@ public final class SpendingAnalytics {
     public static Report analyse(List<OrderPoint> orders) {
         if (orders == null || orders.isEmpty()) {
             return new Report(0, 0L, 0L, 0L, "", 0L, 0L, 0L,
-                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0L,
+                    new ArrayList<>());
         }
 
         long total = 0L;
@@ -232,6 +312,8 @@ public final class SpendingAnalytics {
         long common = 0L;
         long personal = 0L;
         long adjustments = 0L;
+        long missing = 0L;
+        List<MissingOrder> missingOrders = new ArrayList<>();
 
         Map<String, long[]> memberSums = new LinkedHashMap<>();
         Map<String, Integer> memberOrders = new LinkedHashMap<>();
@@ -243,6 +325,11 @@ public final class SpendingAnalytics {
 
         for (OrderPoint point : byDate) {
             SplitResult result = point.result();
+            if (point.missingCents() > 0L) {
+                missing += point.missingCents();
+                missingOrders.add(new MissingOrder(point.orderId(), point.label(),
+                        point.dateMillis(), point.missingCents()));
+            }
             total += result.computedTotalCents();
             common += result.commonBucketCents();
             for (AdjustmentType type : AdjustmentType.values()) {
@@ -321,8 +408,12 @@ public final class SpendingAnalytics {
             }
         }
 
+        missingOrders.sort(Comparator.comparingLong(MissingOrder::cents).reversed()
+                .thenComparingLong(MissingOrder::orderId));
+
         long average = total / byDate.size();
         return new Report(byDate.size(), total, average, largest, largestLabel,
-                common, personal, adjustments, members, months, frequent);
+                common, personal, adjustments, members, months, frequent, missing,
+                missingOrders);
     }
 }

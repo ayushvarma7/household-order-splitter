@@ -20,6 +20,7 @@ import com.householdsplitter.core.money.CurrencyFormat;
 import com.householdsplitter.databinding.FragmentAnalyticsBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMemberBinding;
 import com.householdsplitter.databinding.ItemAnalyticsMonthBinding;
+import com.householdsplitter.databinding.ItemMissingOrderBinding;
 import com.householdsplitter.databinding.ItemPaymentBinding;
 import com.householdsplitter.databinding.ItemSettleUpBinding;
 import com.householdsplitter.data.entity.SettlementPayment;
@@ -110,11 +111,57 @@ public class AnalyticsFragment extends BaseFragment {
         binding.largestOrder.setText(money.format(report.largestOrderCents()));
         binding.largestOrderLabel.setText(report.largestOrderLabel());
 
+        renderMissing(report);
+        binding.lookInsideCard.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.insightsFragment));
         renderSharedVersusPersonal(report);
         renderMembers(report.members(), report.totalSpentCents());
         renderMonths(report.months());
         renderFrequentItems(report.frequentItems());
         renderSettleUp(insight.balances);
+    }
+
+    /**
+     * The money the bills charged that the rows do not show.
+     *
+     * <p>It is kept out of the headline total, which is what people were asked to pay for
+     * the rows that were read, and shown on its own with a way into each order. Hiding it
+     * would leave spending looking complete when it is not, which is the one thing this
+     * screen must not do.
+     */
+    private void renderMissing(SpendingAnalytics.Report report) {
+        boolean any = report.missingCents() > 0L;
+        binding.missingSection.setVisibility(any ? View.VISIBLE : View.GONE);
+        binding.missingList.removeAllViews();
+        if (!any) {
+            return;
+        }
+        List<SpendingAnalytics.MissingOrder> orders = report.missingOrders();
+        binding.missingAmount.setText(money.format(report.missingCents()));
+        binding.missingBody.setText(getResources().getQuantityString(
+                R.plurals.analytics_missing_body, orders.size(), orders.size()));
+        binding.missingWithTotal.setText(getString(R.string.analytics_missing_with_total,
+                money.format(report.totalWithMissingCents()),
+                money.format(report.totalSpentCents())));
+        SimpleDateFormat dates = new SimpleDateFormat("d MMM yyyy", Locale.getDefault());
+        for (SpendingAnalytics.MissingOrder order : orders) {
+            ItemMissingOrderBinding row = ItemMissingOrderBinding.inflate(
+                    getLayoutInflater(), binding.missingList, false);
+            row.orderLabel.setText(order.label());
+            row.orderDate.setText(dates.format(new java.util.Date(order.dateMillis())));
+            row.missingAmount.setText(money.format(order.cents()));
+            row.getRoot().setContentDescription(getString(
+                    R.string.analytics_missing_row_description, order.label(),
+                    money.format(order.cents())));
+            row.getRoot().setOnClickListener(v -> {
+                android.os.Bundle args = new android.os.Bundle();
+                args.putLong(com.householdsplitter.ui.parsing.ParsingArgs.ARG_ORDER_ID,
+                        order.orderId());
+                NavHostFragment.findNavController(this)
+                        .navigate(R.id.reviewItemsFragment, args);
+            });
+            binding.missingList.addView(row.getRoot());
+        }
     }
 
     /**

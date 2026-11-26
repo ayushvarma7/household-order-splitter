@@ -1,0 +1,21 @@
+<!-- A bubble with smaller bubbles packed inside it: the zoom the tab opens onto. Untinted,
+     like the other tab glyphs: the colour comes from the bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@android:color/white"
+        android:fillType="evenOdd"
+        android:pathData="M12,2 a10,10 0 1,0 0,20 a10,10 0 1,0 0,-20 z M12,4 a8,8 0 1,1 0,16 a8,8 0 1,1 0,-16 z" />
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M10,6.5 a4,4 0 1,0 0,8 a4,4 0 1,0 0,-8 z" />
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M15.5,12 a2.5,2.5 0 1,0 0,5 a2.5,2.5 0 1,0 0,-5 z" />
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M15,7.2 a1.5,1.5 0 1,0 0,3 a1.5,1.5 0 1,0 0,-3 z" />
+</vector>

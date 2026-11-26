@@ -3,7 +3,10 @@ package com.householdsplitter.data.mapper;
 import com.householdsplitter.core.parse.Reconciler;
 import com.householdsplitter.core.parse.model.ParsedAdjustments;
 import com.householdsplitter.core.parse.model.Reconciliation;
+import com.householdsplitter.core.calc.Scope;
 import com.householdsplitter.data.entity.Order;
+import com.householdsplitter.data.relation.LineItemWithAssignments;
+import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.relation.OrderItemTally;
 
 import java.util.HashMap;
@@ -36,6 +39,25 @@ public final class OrderTotals {
     /** What the order costs, as {@link Reconciliation#effectiveTotalCents()} defines it. */
     public static long effectiveTotalCents(Order order, OrderItemTally tally) {
         return reconcile(order, tally == null ? 0L : tally.chargeableCents).effectiveTotalCents();
+    }
+
+    /**
+     * What the bill charged beyond what the order's rows add up to, from the rows themselves.
+     *
+     * <p>Counted the way the home list's tally counts: every row except excluded ones. An
+     * order with no rows yet is imported but not read, so it is not short of anything.
+     */
+    public static long missingCents(OrderBundle bundle) {
+        if (bundle.items.isEmpty()) {
+            return 0L;
+        }
+        long chargeable = 0L;
+        for (LineItemWithAssignments row : bundle.items) {
+            if (row.item.scope != Scope.EXCLUDED) {
+                chargeable += row.item.lineTotalCents;
+            }
+        }
+        return reconcile(bundle.order, chargeable).missingCents();
     }
 
     /** Tallies keyed by order, for looking up one order's rows in a list. */

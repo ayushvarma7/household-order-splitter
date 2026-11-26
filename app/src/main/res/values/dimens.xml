@@ -80,4 +80,8 @@
     <dimen name="welcome_illustration">156dp</dimen>
     <dimen name="welcome_plate_radius">44dp</dimen>
 
+    <!-- Explore's fact row runs to the screen edges while the rest of the column keeps its
+         margin. The fragment updates it when a wide screen widens the margin. -->
+    <dimen name="insight_bleed">-20dp</dimen>
+    <dimen name="insight_tile_width">248dp</dimen>
 </resources>

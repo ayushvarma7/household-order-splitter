@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The track behind a person-by-person bar. The bar clips to it, so the ends are rounded
+     whichever segments happen to be at either end. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="99dp" />
+    <solid android:color="@color/surface_container_high" />
+</shape>

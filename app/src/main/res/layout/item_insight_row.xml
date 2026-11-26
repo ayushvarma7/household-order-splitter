@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One thing inside the bubble in front, or one order with money missing: its name with a
+     thin bar for its size, and the amount. The whole row is the button. The bar is only a
+     picture of the number beside it, so it is hidden from screen readers. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="-8dp"
+    android:layout_marginEnd="-8dp"
+    android:background="@drawable/bg_insight_row"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingTop="@dimen/space_s"
+    android:paddingEnd="4dp"
+    android:paddingBottom="@dimen/space_s">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/Text.Body" />
+
+        <LinearLayout
+            android:id="@+id/rowBarTrack"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginTop="6dp"
+            android:importantForAccessibility="no"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/rowBar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_insight_bar" />
+
+            <View
+                android:id="@+id/rowBarRest"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_l"
+        android:gravity="end"
+        android:minWidth="72dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.Money" />
+
+        <TextView
+            android:id="@+id/rowDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/Text.MoneySmall" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/rowChevron"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="@dimen/space_xs"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_chevron"
+        app:tint="?attr/colorOnSurfaceVariant" />
+</LinearLayout>

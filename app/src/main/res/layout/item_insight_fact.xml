@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A fact as a tile in the swipeable row: what it is about, one figure, one sentence. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/insight_tile_width"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="@dimen/space_m"
+    android:background="@drawable/bg_insight_tile"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:minHeight="168dp"
+    android:orientation="vertical"
+    android:padding="@dimen/space_l">
+
+    <TextView
+        android:id="@+id/factAbout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        android:maxLines="1"
+        android:textAppearance="@style/Text.Caption" />
+
+    <TextView
+        android:id="@+id/factFigure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_l"
+        android:importantForAccessibility="no"
+        android:includeFontPadding="false"
+        android:textAppearance="@style/TextAppearance.Splitter.InsightFigure" />
+
+    <TextView
+        android:id="@+id/factLine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_s"
+        android:importantForAccessibility="no"
+        android:textAppearance="@style/TextAppearance.Splitter.BodyMedium"
+        android:textColor="?attr/colorOnSurface" />
+</LinearLayout>

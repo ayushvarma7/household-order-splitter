@@ -253,6 +253,15 @@
 
     <!-- S15, spending analytics -->
     <string name="analytics_title">Spending</string>
+    <string name="analytics_missing_title">Missing from your orders</string>
+    <plurals name="analytics_missing_body">
+        <item quantity="one">The bill charged this on %1$d order, but the rows do not show where it went. Open it to add what is missing.</item>
+        <item quantity="other">The bills charged this across %1$d orders, but the rows do not show where it went. Open one to add what is missing.</item>
+    </plurals>
+    <string name="analytics_missing_with_total">With it, spending is %1$s instead of %2$s.</string>
+    <string name="analytics_missing_row_description">%1$s, %2$s missing. Opens the order.</string>
+    <string name="insights_entry_title">Explore your spending</string>
+    <string name="insights_entry_body">Zoom from categories to single items, and see who it was for.</string>
     <string name="menu_analytics">Spending</string>
     <string name="analytics_empty_title">Nothing to show yet</string>
     <string name="analytics_empty_body">Finish assigning an order and its figures will appear here.</string>
@@ -553,6 +562,7 @@
     <!-- Bottom navigation -->
     <string name="nav_home">Orders</string>
     <string name="nav_groups">Groups</string>
+    <string name="nav_explore">Explore</string>
     <string name="nav_spending">Spending</string>
     <string name="nav_settings">Settings</string>
 
@@ -646,4 +656,129 @@
     <string name="assign_continue_later">Save and continue later</string>
     <string name="assign_continue_later_done">Saved. Reopen the order to carry on from here.</string>
 
+
+    <!-- Look inside: zoomable spending and the facts around it. -->
+    <string name="insights_title">Explore</string>
+    <string name="insights_empty_title">Nothing to explore yet</string>
+    <string name="insights_empty_body">Split a few orders and your spending shows up here as bubbles you can zoom into. Want to see how it looks first?</string>
+    <string name="insights_picture_hint">Bigger bubbles cost more. Tap one to look inside, or the space around it to step back.</string>
+    <string name="insights_none_left">You have seen every fact here.</string>
+    <string name="insights_bring_back">Show them again</string>
+    <string name="insights_facts">Worth a look</string>
+    <string name="insights_inside_of">Inside %1$s</string>
+    <string name="insights_section_people">Who it was for</string>
+    <plurals name="insights_show_all">
+        <item quantity="one">Show %1$d more</item>
+        <item quantity="other">Show %1$d more</item>
+    </plurals>
+    <string name="insights_show_fewer">Show fewer</string>
+    <string name="insights_missing_body">Your bills charged this, but no row accounts for it. Open an order to add the difference.</string>
+    <string name="insights_previous_month">Earlier month</string>
+    <string name="insights_next_month">Later month</string>
+    <string name="insights_trivia_title">Did you know?</string>
+    <string name="insights_trivia_next">Tap for another, %1$d of %2$d</string>
+    <string name="insights_trivia_description">Did you know? %1$s. %2$s. Double tap for another.</string>
+    <string name="insights_member_description">%1$s, %2$s, %3$d percent of this</string>
+    <string name="insights_example_button">See an example</string>
+    <string name="insights_example_banner">Example data, not yours</string>
+    <string name="insights_example_exit">Back to mine</string>
+    <string name="insights_someone">Someone</string>
+    <string name="insights_everything">everything</string>
+    <string name="insights_everything_you_bought">everything you bought</string>
+    <string name="insights_canvas_description">Bubbles of spending for %1$s, currently showing %2$s. The rows below do the same thing.</string>
+    <string name="insights_hero_root">%1$s leads, at %2$d%% of everything.</string>
+    <string name="insights_hero_part">%1$s is %2$d%% of %3$s.</string>
+    <string name="insights_hero_missing">Charged on your bills, but not in any row.</string>
+    <string name="insights_card_up">Up %1$d%% on %2$s</string>
+    <string name="insights_card_down">Down %1$d%% on %2$s</string>
+    <string name="insights_card_steady">About the same as %1$s</string>
+    <string name="insights_card_new">New this month</string>
+    <string name="insights_card_no_compare">Your first month here, so nothing to compare yet</string>
+    <string name="insights_bubble_new">New</string>
+    <string name="insights_row_share">%1$d%%</string>
+    <string name="insights_close">Close</string>
+    <string name="insights_swipe_hint">Swipe it away when you are done</string>
+    <string name="insights_show_me">Show me</string>
+    <string name="insights_nice">Done</string>
+    <string name="insights_story_description">Fact: %1$s</string>
+    <string name="insights_fact_description">%1$s. %2$s. Opens the fact.</string>
+    <string name="insights_chip_description">%1$s, %2$s</string>
+
+    <string name="insight_vs_tiny">vs %1$s</string>
+    <string name="insight_vs_chip">%1$s, this month</string>
+    <string name="insight_vs_sub">%1$s vs %2$s</string>
+    <string name="insight_vs_badge_up">Up %1$d%% from %2$s</string>
+    <string name="insight_vs_badge_down">Down %1$d%% from %2$s</string>
+    <string name="insight_vs_badge_steady">About the same as %1$s</string>
+    <string name="insight_vs_fact">%1$s now, %2$s last month.</string>
+    <string name="insight_new_tiny">new</string>
+    <string name="insight_new_chip">%1$s, new</string>
+    <string name="insight_new_sub">%1$s is new this month</string>
+    <string name="insight_new_badge">Not bought in %1$s</string>
+    <string name="insight_new_fact">%1$s so far.</string>
+    <string name="insight_mover_tiny">top mover</string>
+    <string name="insight_mover_chip">%1$s, biggest mover</string>
+    <string name="insight_mover_sub">%1$s moved the most</string>
+    <string name="insight_mover_badge_up">Up %1$d%% (%2$s to %3$s)</string>
+    <string name="insight_mover_badge_down">Down %1$d%% (%2$s to %3$s)</string>
+    <string name="insight_mover_fact">It sits inside %1$s. Tap Show me to find it.</string>
+    <string name="insight_who_tiny">more</string>
+    <string name="insight_who_chip">%1$s, who it was for</string>
+    <string name="insight_who_sub">%1$s was charged %2$s more of %3$s</string>
+    <string name="insight_who_badge">%1$s %2$s  |  %3$s %4$s</string>
+    <string name="insight_who_fact">Out of %1$s in total.</string>
+    <string name="insight_share_tiny">share</string>
+    <string name="insight_share_chip">%1$s, share</string>
+    <string name="insight_share_sub">%1$s is %2$d%% of %3$s</string>
+    <string name="insight_share_badge">%1$s of %2$s</string>
+    <string name="insight_share_fact_big">The biggest slice here.</string>
+    <string name="insight_share_fact_small">A smaller slice of the whole.</string>
+    <string name="insight_slice_tiny">top slice</string>
+    <string name="insight_slice_chip">Your biggest category</string>
+    <string name="insight_slice_sub">%1$s takes the biggest slice</string>
+    <string name="insight_slice_badge">%1$s of %2$s</string>
+    <string name="insight_slice_fact">Tap Show me to look inside.</string>
+    <string name="insight_missing_tiny">missing</string>
+    <string name="insight_missing_chip">Missing from the read</string>
+    <string name="insight_missing_sub">%1$s was charged but is not in your rows</string>
+    <plurals name="insight_missing_badge">
+        <item quantity="one">On %1$d order</item>
+        <item quantity="other">Across %1$d orders</item>
+    </plurals>
+    <string name="insight_missing_fact_root">The reader missed some items. Tap Show me, then open each order to add what is missing.</string>
+    <string name="insight_missing_fact_here">Open each order under Orders to fix and use Add the difference as a row.</string>
+    <plurals name="insight_coffees_tiny">
+        <item quantity="one">coffee</item>
+        <item quantity="other">coffees</item>
+    </plurals>
+    <string name="insight_fun_chip">Fun fact</string>
+    <string name="insight_coffees_sub_up">%1$d coffees more than %2$s</string>
+    <string name="insight_coffees_sub_down">%1$d coffees saved since %2$s</string>
+    <string name="insight_coffees_badge">%1$s difference</string>
+    <string name="insight_coffees_fact">Counting a coffee as %1$s.</string>
+    <string name="insight_day_tiny">a day</string>
+    <string name="insight_day_sub">%1$s comes to this a day</string>
+    <string name="insight_day_badge">%1$s over %2$d days</string>
+    <string name="insight_day_fact">Spread evenly across the month.</string>
+    <string name="insight_times_tiny">times</string>
+    <string name="insight_times_sub">%1$s went into your baskets %2$d times</string>
+    <string name="insight_times_badge">%1$s in all</string>
+    <string name="insight_times_fact">That is what it adds up to this month.</string>
+
+    <string name="trivia_most_title">Most bought: %1$s</string>
+    <string name="trivia_most_body">Bought %1$d times, %2$s in all.</string>
+    <string name="trivia_priciest_title">Priciest single item: %1$s</string>
+    <string name="trivia_priciest_body">It cost %1$s.</string>
+    <string name="trivia_weekday_title">You shop most on %1$s</string>
+    <plurals name="trivia_weekday_body">
+        <item quantity="one">%1$d shopping day fell on one.</item>
+        <item quantity="other">%1$d shopping days fell on one.</item>
+    </plurals>
+    <string name="trivia_average_title">A shopping day costs about %1$s</string>
+    <string name="trivia_average_body">Across %1$d shopping days.</string>
+    <plurals name="trivia_logged_title">
+        <item quantity="one">%1$d thing logged</item>
+        <item quantity="other">%1$d things logged</item>
+    </plurals>
+    <string name="trivia_logged_body">Since %1$s.</string>
 </resources>

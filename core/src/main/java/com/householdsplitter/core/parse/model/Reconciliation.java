@@ -71,6 +71,25 @@ public final class Reconciliation {
         return statedTotalCents == 0L || totalDeltaCents() == 0L;
     }
 
+    /**
+     * What the bill charged for beyond what the rows add up to, or 0.
+     *
+     * <p>The printed subtotal is the better yardstick, because it is the rows' own total
+     * before tax and fees; the printed total is used when only that was read. Rows adding up
+     * to more than the bill is a different problem (a row too many) and is not "missing", so
+     * it is not reported here. This is the amount behind the "Missing $X" flag on the home
+     * list, which is the rows-short case of the same checks.
+     */
+    public long missingCents() {
+        if (statedSubtotalCents != 0L) {
+            return Math.max(0L, -subtotalDeltaCents());
+        }
+        if (statedTotalCents != 0L) {
+            return Math.max(0L, -totalDeltaCents());
+        }
+        return 0L;
+    }
+
     /** True only when there is something to compare against and it agrees. */
     public boolean allMatched() {
         return statedTotalCents != 0L && totalMatches() && subtotalMatches();

@@ -117,6 +117,12 @@
         tools:layout="@layout/fragment_analytics" />
 
     <fragment
+        android:id="@+id/insightsFragment"
+        android:name="com.householdsplitter.ui.insights.InsightsFragment"
+        android:label="@string/insights_title"
+        tools:layout="@layout/fragment_insights" />
+
+    <fragment
         android:id="@+id/bulkAssignFragment"
         android:name="com.householdsplitter.ui.assign.BulkAssignFragment"
         android:label="@string/bulk_title"

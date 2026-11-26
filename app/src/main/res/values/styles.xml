@@ -34,6 +34,15 @@
         <item name="android:letterSpacing">0.01</item>
     </style>
 
+    <!-- Explore's section headings: plain text colour and a little weight, so the page has
+         a rhythm of headings without labels in capitals. -->
+    <style name="Text.InsightSection" parent="TextAppearance.Splitter.TitleMedium">
+        <item name="android:fontFamily">@font/inter_semibold</item>
+        <item name="fontFamily">@font/inter_semibold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
     <style name="Text.Body" parent="TextAppearance.Splitter.BodyLarge">
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:lineSpacingMultiplier">1.2</item>

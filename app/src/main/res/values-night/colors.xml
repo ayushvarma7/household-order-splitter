@@ -100,4 +100,11 @@
     <color name="widget_action">#33D3BBFF</color>
     <color name="widget_action_text">#D3BBFF</color>
 
+    <!-- Explore bubbles: on a dark page the biggest is the brightest, the rest sink back. -->
+    <color name="bubble_deep">#C7ADFF</color>
+    <color name="bubble_pale">#33284A</color>
+    <color name="bubble_ink_light">#F1E8FF</color>
+    <color name="bubble_ink_dark">#21103F</color>
+    <color name="bubble_shadow">#000000</color>
+
 </resources>

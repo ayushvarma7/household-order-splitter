@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One person's part of what is in front: a colour dot, their name, the amount and the
+     share. The words carry the meaning; the dot only matches the bar above. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="44dp"
+    android:orientation="horizontal">
+
+    <View
+        android:id="@+id/dot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginEnd="@dimen/space_m"
+        android:background="@drawable/bg_avatar_circle"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/memberName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/Text.Body" />
+
+    <TextView
+        android:id="@+id/memberShare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/space_m"
+        android:textAppearance="@style/Text.MoneySmall" />
+
+    <TextView
+        android:id="@+id/memberAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Text.Money" />
+</LinearLayout>

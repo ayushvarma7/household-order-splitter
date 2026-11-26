@@ -168,4 +168,13 @@
     <color name="widget_action">#1F6A3FC0</color>
     <color name="widget_action_text">#6A3FC0</color>
 
+    <!-- Explore bubbles. One violet ramp from deep (the biggest) to pale (the smallest), so
+         size and shade say the same thing and change is left to the words on each bubble.
+         Both inks are checked against both ends; the view picks whichever reads better. -->
+    <color name="bubble_deep">#6A3FC0</color>
+    <color name="bubble_pale">#ECE2FC</color>
+    <color name="bubble_ink_light">#FFFFFF</color>
+    <color name="bubble_ink_dark">#250057</color>
+    <color name="bubble_shadow">#3B1E75</color>
+
 </resources>

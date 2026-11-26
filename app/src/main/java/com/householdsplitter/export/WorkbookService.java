@@ -13,6 +13,7 @@ import com.householdsplitter.core.export.OrderWorkbook;
 import com.householdsplitter.core.export.xlsx.Sheet;
 import com.householdsplitter.core.export.xlsx.XlsxWriter;
 import com.householdsplitter.data.mapper.CalcMapper;
+import com.householdsplitter.data.mapper.OrderTotals;
 import com.householdsplitter.data.relation.OrderBundle;
 import com.householdsplitter.data.repo.OrderRepository;
 import com.householdsplitter.data.repo.SettlementRepository;
@@ -150,7 +151,8 @@ public class WorkbookService {
                     continue;
                 }
                 points.add(new SpendingAnalytics.OrderPoint(
-                        bundle.order.orderDate, bundle.order.label, result));
+                        bundle.order.orderDate, bundle.order.label, result,
+                        bundle.order.id, OrderTotals.missingCents(bundle)));
                 orderSettlements.add(new Balances.Settlement(bundle.order.payerMemberId, result));
             }
             SpendingAnalytics.Report spending = SpendingAnalytics.analyse(points);

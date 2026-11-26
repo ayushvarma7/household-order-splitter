@@ -20,7 +20,9 @@ import com.householdsplitter.ui.details.OrderDetailsViewModel;
 import com.householdsplitter.ui.assign.AssignViewModel;
 import com.householdsplitter.ui.assign.BulkAssignViewModel;
 import com.householdsplitter.ui.summary.SummaryViewModel;
+import com.householdsplitter.insight.InsightService;
 import com.householdsplitter.ui.analytics.AnalyticsViewModel;
+import com.householdsplitter.ui.insights.InsightsViewModel;
 import com.householdsplitter.ui.setup.SetupGroupViewModel;
 import com.householdsplitter.ui.setup.SetupMembersViewModel;
 
@@ -60,6 +62,10 @@ public class ViewModelFactory extends AbstractSavedStateViewModelFactory {
         if (modelClass == AnalyticsViewModel.class) {
             return (T) new AnalyticsViewModel(locator.workbookService(),
                     locator.settlementRepository(), locator.currentHouseholdId());
+        }
+        if (modelClass == InsightsViewModel.class) {
+            return (T) new InsightsViewModel(new InsightService(locator.orderRepository(),
+                    locator.executors()), locator.currentHouseholdId());
         }
         if (modelClass == RulesViewModel.class) {
             return (T) new RulesViewModel(locator.ruleService(), locator.householdRepository(),

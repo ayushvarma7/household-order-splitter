@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Explore. Read top to bottom like a short article: one number and one sentence, the
+     picture, then a few quiet sections. No cards with outlines and no chips: spacing and
+     type do the grouping, so the picture is the only thing with weight. -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Splitter.Toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/insights_title" />
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/emptyState"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/screen_margin"
+        android:paddingEnd="@dimen/screen_margin"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintWidth_max="420dp">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_nav_explore"
+            app:tint="?attr/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:gravity="center"
+            android:text="@string/insights_empty_title"
+            android:textAppearance="@style/TextAppearance.Splitter.HeadlineSmall"
+            android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:gravity="center"
+            android:text="@string/insights_empty_body"
+            android:textAppearance="@style/Text.BodyMuted" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/exampleButton"
+            style="@style/Widget.Splitter.Button.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xl"
+            android:text="@string/insights_example_button" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_margin"
+            android:paddingEnd="@dimen/screen_margin"
+            android:paddingBottom="@dimen/space_xxxl">
+
+            <!-- Example mode: one quiet line, so nobody mistakes the numbers for theirs. -->
+            <LinearLayout
+                android:id="@+id/exampleBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_s"
+                android:background="@drawable/bg_insight_tile"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/space_l"
+                android:paddingEnd="@dimen/space_xs"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingTop="@dimen/space_s"
+                    android:paddingBottom="@dimen/space_s"
+                    android:text="@string/insights_example_banner"
+                    android:textAppearance="@style/Text.Caption" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/exampleExit"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/insights_example_exit" />
+            </LinearLayout>
+
+            <!-- The month, small, with its arrows tucked to the right. -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/monthLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleSmall"
+                    android:textColor="?attr/colorOnSurface"
+                    tools:text="November 2026" />
+
+                <ImageButton
+                    android:id="@+id/earlierMonth"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/insights_previous_month"
+                    android:src="@drawable/ic_chevron"
+                    android:scaleX="-1"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/laterMonth"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="-12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/insights_next_month"
+                    android:src="@drawable/ic_chevron"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <!-- Where you are. Each step back up is a tap target of its own. -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-6dp"
+                android:layout_marginTop="@dimen/space_l"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/crumbs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/heroAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:textAppearance="@style/TextAppearance.Splitter.InsightHero"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="$215.30" />
+
+            <TextView
+                android:id="@+id/heroSentence"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:textAppearance="@style/TextAppearance.Splitter.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Drinks leads, at 23% of everything." />
+
+            <TextView
+                android:id="@+id/heroChange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxs"
+                android:textAppearance="@style/Text.BodyMuted"
+                tools:text="Steady against October" />
+
+            <com.householdsplitter.ui.insights.BubbleView
+                android:id="@+id/bubbles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl" />
+
+            <TextView
+                android:id="@+id/pictureHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_m"
+                android:gravity="center"
+                android:text="@string/insights_picture_hint"
+                android:textAppearance="@style/Text.Caption" />
+
+            <!-- Money the bills charged that no row accounts for. The one place on this
+                 screen that uses a warning colour, because it is the one thing to fix. -->
+            <LinearLayout
+                android:id="@+id/missingSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:background="@drawable/bg_insight_missing"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/space_l"
+                android:paddingTop="@dimen/space_l"
+                android:paddingEnd="@dimen/space_l"
+                android:paddingBottom="@dimen/space_s"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/missingAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Splitter.InsightFigure"
+                    android:textColor="@color/on_warning_container" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/insights_missing_body"
+                    android:textAppearance="@style/TextAppearance.Splitter.BodyMedium"
+                    android:textColor="@color/on_warning_container" />
+
+                <LinearLayout
+                    android:id="@+id/missingRows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_s"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/peopleLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:text="@string/insights_section_people"
+                android:textAppearance="@style/Text.InsightSection" />
+
+            <LinearLayout
+                android:id="@+id/splitBar"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="@dimen/space_m"
+                android:background="@drawable/bg_split_bar"
+                android:clipToOutline="true"
+                android:importantForAccessibility="no"
+                android:orientation="horizontal" />
+
+            <LinearLayout
+                android:id="@+id/memberRows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/insideLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:textAppearance="@style/Text.InsightSection"
+                tools:text="Inside All groceries" />
+
+            <LinearLayout
+                android:id="@+id/insideRows"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xs"
+                android:orientation="vertical" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/insideMore"
+                style="@style/Widget.Splitter.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-12dp"
+                android:visibility="gone" />
+
+            <!-- Facts, as a row of tiles to swipe through. Each opens full screen. -->
+            <LinearLayout
+                android:id="@+id/factsHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:gravity="center_vertical"
+                android:minHeight="48dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/factsTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/insights_facts"
+                    android:textAppearance="@style/Text.InsightSection" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/bringBack"
+                    style="@style/Widget.Splitter.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="-12dp"
+                    android:text="@string/insights_bring_back"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:id="@+id/factScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/insight_bleed"
+                android:layout_marginTop="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/insight_bleed"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/screen_margin"
+                android:paddingEnd="@dimen/screen_margin"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/factRow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/noFacts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/insights_none_left"
+                android:textAppearance="@style/Text.BodyMuted"
+                android:visibility="gone" />
+
+            <!-- One "did you know" at a time. Tap it for the next; the first one changes
+                 every day. -->
+            <LinearLayout
+                android:id="@+id/triviaCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:background="@drawable/bg_insight_tile"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:orientation="vertical"
+                android:padding="@dimen/space_xl">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:importantForAccessibility="no"
+                    android:text="@string/insights_trivia_title"
+                    android:textAppearance="@style/Text.SectionLabel" />
+
+                <TextView
+                    android:id="@+id/triviaTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleLarge"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/triviaBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/Text.BodyMuted" />
+
+                <TextView
+                    android:id="@+id/triviaNext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/Text.Caption" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- A fact, opened full screen. It grows out of the tile that was tapped. The page
+         stays the app's surface; a soft glow in the fact's colour is the only decoration. -->
+    <FrameLayout
+        android:id="@+id/story"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:elevation="12dp"
+        android:visibility="gone">
+
+        <com.householdsplitter.ui.insights.ParticlesView
+            android:id="@+id/particles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no" />
+
+        <LinearLayout
+            android:id="@+id/storyColumn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/space_xl"
+            android:paddingTop="@dimen/space_s"
+            android:paddingEnd="@dimen/space_xl"
+            android:paddingBottom="@dimen/space_xl">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/storyChip"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/Text.SectionLabel" />
+
+                <ImageButton
+                    android:id="@+id/storyClose"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="-12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/insights_close"
+                    android:src="@drawable/ic_close"
+                    app:tint="?attr/colorOnSurface" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/storyBig"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:textAppearance="@style/TextAppearance.Splitter.InsightStory" />
+
+                <TextView
+                    android:id="@+id/storySub"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:textAppearance="@style/TextAppearance.Splitter.HeadlineSmall"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <View
+                    android:id="@+id/storyRule"
+                    android:layout_width="32dp"
+                    android:layout_height="2dp"
+                    android:layout_marginTop="@dimen/space_xl"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/storyBadge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/storyFact"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:textAppearance="@style/Text.BodyMuted" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/storyHint"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/insights_swipe_hint"
+                    android:textAppearance="@style/Text.Caption" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/storyAction"
+                    style="@style/Widget.Splitter.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/insights_show_me" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

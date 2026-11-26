@@ -171,4 +171,30 @@
         <item name="android:letterSpacing">-0.01</item>
     </style>
 
+    <!--
+      Explore. One very large figure leads the screen, the way a magazine opens on a number,
+      and the story repeats the move at full-screen size. Tight tracking because figures this
+      big look loose at the default.
+    -->
+    <style name="TextAppearance.Splitter.InsightHero" parent="TextAppearance.Splitter.DisplayLarge">
+        <item name="android:textSize">52sp</item>
+        <item name="android:letterSpacing">-0.04</item>
+        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+    </style>
+
+    <style name="TextAppearance.Splitter.InsightStory" parent="TextAppearance.Splitter.DisplayLarge">
+        <item name="android:textSize">76sp</item>
+        <item name="android:letterSpacing">-0.045</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+    </style>
+
+    <style name="TextAppearance.Splitter.InsightFigure" parent="TextAppearance.Splitter.HeadlineLarge">
+        <item name="android:fontFamily">@font/inter_bold</item>
+        <item name="fontFamily">@font/inter_bold</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:letterSpacing">-0.03</item>
+        <item name="android:lineSpacingMultiplier">1.0</item>
+    </style>
+
 </resources>
