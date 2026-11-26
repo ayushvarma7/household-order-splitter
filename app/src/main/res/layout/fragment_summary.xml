@@ -241,6 +241,22 @@
                             android:text="@string/action_export_csv" />
                     </LinearLayout>
 
+                    <TextView
+                        android:id="@+id/splitwiseSentNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:textAppearance="@style/Text.Caption"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/splitwiseButton"
+                        style="@style/Widget.Splitter.Button.Tonal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:text="@string/action_send_splitwise" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/editAssignmentsButton"
                         style="@style/Widget.Splitter.Button.Text"

@@ -646,4 +646,37 @@
     <string name="assign_continue_later">Save and continue later</string>
     <string name="assign_continue_later_done">Saved. Reopen the order to carry on from here.</string>
 
+
+    <!-- Splitwise -->
+    <string name="splitwise_title">Splitwise</string>
+    <string name="splitwise_body">Push a finished order to Splitwise as one expense instead of typing it in there. This is the only feature that uses the network, and only when you tap Send.</string>
+    <string name="splitwise_status_off">Not connected</string>
+    <string name="splitwise_status_on">Connected as %1$s</string>
+    <string name="splitwise_group_none">No group linked for this household yet</string>
+    <string name="splitwise_group_linked">Group: %1$s</string>
+    <string name="splitwise_connect">Connect with API key</string>
+    <string name="splitwise_disconnect">Disconnect</string>
+    <string name="splitwise_link">Link group and members</string>
+    <string name="splitwise_key_title">Splitwise API key</string>
+    <string name="splitwise_key_hint">Paste the key from your Splitwise app page</string>
+    <string name="splitwise_key_help">Get one at secure.splitwise.com/apps. It is stored encrypted on this phone.</string>
+    <string name="splitwise_connecting">Checking the key</string>
+    <string name="splitwise_connected_toast">Connected to Splitwise</string>
+    <string name="splitwise_disconnected_toast">Disconnected from Splitwise</string>
+    <string name="splitwise_loading_groups">Loading your Splitwise groups</string>
+    <string name="splitwise_no_groups">Your Splitwise account has no groups. Create one there first.</string>
+    <string name="splitwise_pick_group">Which Splitwise group?</string>
+    <string name="splitwise_next">Next</string>
+    <string name="splitwise_map_title">Who is who in %1$s</string>
+    <string name="splitwise_not_linked">Not linked</string>
+    <string name="splitwise_save_link">Save</string>
+    <string name="action_send_splitwise">Send to Splitwise</string>
+    <string name="splitwise_sent_note">Sent to Splitwise on %1$s.</string>
+    <string name="splitwise_send_again">Send again</string>
+    <string name="splitwise_resend_title">Already sent</string>
+    <string name="splitwise_resend_body">This order was sent to Splitwise on %1$s. Sending again replaces that expense with the current split. It does not add a second one.</string>
+    <string name="splitwise_not_connected">Connect Splitwise in Settings first.</string>
+    <string name="splitwise_sending">Sending to Splitwise</string>
+    <string name="splitwise_sent_toast">Sent to Splitwise</string>
+    <string name="splitwise_send_failed">Splitwise: %1$s</string>
 </resources>

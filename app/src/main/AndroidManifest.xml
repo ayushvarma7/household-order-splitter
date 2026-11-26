@@ -3,20 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      SPEC 4.10 and PROMPT hard rule 8: this app declares no network permission at all.
-      SPEC 1.5: offline, single-user, single-device.
+      The one network permission, added for the optional Splitwise push (SPEC 4.10 changed
+      by the owner's decision). The app still works fully offline: nothing is sent unless
+      the user connects Splitwise and taps Send on an order. Receipt reading stays on the
+      device, because ML Kit's bundled recogniser needs no network.
 
-      Removed rather than merely not requested. ML Kit's own manifest declares INTERNET so
-      that its unbundled variant can download models, and a merged manifest would inherit
-      it. This build uses the bundled text recogniser, whose model ships inside the APK, so
-      recognition works with no network whatever. Stripping the permission here is what
-      makes the claim in the README and on the Settings screen literally true of the
-      shipped manifest rather than true of our own intentions.
-
-      Verify it by dumping the built APK's manifest with aapt2 and grepping for
-      permission: the shipped app declares none at all.
+      ACCESS_NETWORK_STATE stays removed. ML Kit's manifest declares it for model
+      downloads this build never does, and HttpURLConnection does not need it.
     -->
-    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <application

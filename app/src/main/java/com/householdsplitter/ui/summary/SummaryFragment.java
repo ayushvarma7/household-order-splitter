@@ -34,7 +34,9 @@ import com.householdsplitter.ui.common.Insets;
 import com.householdsplitter.widget.BalancesWidgetProvider;
 import com.householdsplitter.ui.common.StateColors;
 import com.householdsplitter.databinding.ItemSummaryRowBinding;
+import com.householdsplitter.splitwise.SplitwiseService;
 import com.householdsplitter.ui.parsing.ParsingArgs;
+import com.householdsplitter.ui.splitwise.SplitwiseLinkDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -135,6 +137,7 @@ public class SummaryFragment extends BaseFragment {
             }
             adapter.setPayer(bundle.order.payerMemberId, payer);
             applyReadOnly(bundle);
+            renderSplitwise();
             renderScreenshots(bundle);
             model.recalculate();
         });
@@ -155,6 +158,7 @@ public class SummaryFragment extends BaseFragment {
         binding.shareButton.setOnClickListener(v -> shareAsText());
         binding.viewAssignmentsButton.setOnClickListener(v -> openAssignments());
         binding.exportButton.setOnClickListener(v -> exportCsv());
+        binding.splitwiseButton.setOnClickListener(v -> sendToSplitwise());
         binding.editAssignmentsButton.setOnClickListener(v -> navigate(R.id.assignFragment));
         binding.editItemsButton.setOnClickListener(v -> navigate(R.id.reviewItemsFragment));
         binding.editParticipantsButton.setOnClickListener(v -> navigate(R.id.participantsFragment));
@@ -361,6 +365,87 @@ public class SummaryFragment extends BaseFragment {
     }
 
     /** SPEC 7.11.1. */
+    /** Says whether this order already went to Splitwise, and relabels the button to match. */
+    private void renderSplitwise() {
+        if (binding == null) {
+            return;
+        }
+        SplitwiseService service = locator().splitwiseService();
+        long sentAt = service.sentAt(orderId);
+        boolean sent = service.sentExpenseId(orderId) != 0L;
+        binding.splitwiseSentNote.setVisibility(sent ? View.VISIBLE : View.GONE);
+        if (sent) {
+            binding.splitwiseSentNote.setText(getString(R.string.splitwise_sent_note,
+                    android.text.format.DateFormat.getMediumDateFormat(requireContext())
+                            .format(new java.util.Date(sentAt))));
+        }
+        binding.splitwiseButton.setText(sent ? R.string.splitwise_send_again
+                : R.string.action_send_splitwise);
+    }
+
+    /**
+     * Connect, then link, then send, each step only when it is missing. An order that was
+     * already sent asks first, so a stray tap cannot overwrite the Splitwise expense.
+     */
+    private void sendToSplitwise() {
+        OrderBundle bundle = model.bundle().getValue();
+        SplitResult result = model.result().getValue();
+        if (bundle == null || result == null) {
+            return;
+        }
+        SplitwiseService service = locator().splitwiseService();
+        if (!service.isConnected()) {
+            Snackbar.make(binding.getRoot(), R.string.splitwise_not_connected,
+                    Snackbar.LENGTH_LONG).show();
+            return;
+        }
+        long householdId = bundle.order.householdId;
+        if (service.linkedGroupId(householdId) == 0L || !allLinked(service, result)) {
+            SplitwiseLinkDialog.show(requireContext(), service, householdId,
+                    bundle.participants, this::sendToSplitwise);
+            return;
+        }
+        if (service.sentExpenseId(orderId) != 0L) {
+            String when = android.text.format.DateFormat.getMediumDateFormat(requireContext())
+                    .format(new java.util.Date(service.sentAt(orderId)));
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.splitwise_resend_title)
+                    .setMessage(getString(R.string.splitwise_resend_body, when))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.splitwise_send_again,
+                            (d, w) -> doSend(service, bundle, result, true))
+                    .show();
+            return;
+        }
+        doSend(service, bundle, result, false);
+    }
+
+    private boolean allLinked(SplitwiseService service, SplitResult result) {
+        for (com.householdsplitter.core.calc.result.MemberSplit member : result.members()) {
+            if (service.linkedUser(member.memberId()) == 0L) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void doSend(SplitwiseService service, OrderBundle bundle, SplitResult result,
+                        boolean replace) {
+        binding.splitwiseButton.setEnabled(false);
+        Snackbar.make(binding.getRoot(), R.string.splitwise_sending, Snackbar.LENGTH_SHORT).show();
+        service.send(bundle.order, result, replace, outcome -> {
+            if (binding == null) {
+                return;
+            }
+            binding.splitwiseButton.setEnabled(true);
+            Snackbar.make(binding.getRoot(), outcome.isOk()
+                            ? getString(R.string.splitwise_sent_toast)
+                            : getString(R.string.splitwise_send_failed, outcome.error()),
+                    Snackbar.LENGTH_LONG).show();
+            renderSplitwise();
+        });
+    }
+
     private void shareAsText() {
         OrderBundle bundle = model.bundle().getValue();
         SplitResult result = model.result().getValue();

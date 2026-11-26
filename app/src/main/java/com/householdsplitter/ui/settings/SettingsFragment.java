@@ -239,6 +239,8 @@ public class SettingsFragment extends BaseFragment {
         });
         renderAutoBackup();
 
+        bindSplitwise();
+
         // SPEC 7.14.5
         binding.wipeButton.setOnClickListener(v -> confirmWipe());
 
@@ -247,6 +249,91 @@ public class SettingsFragment extends BaseFragment {
         bindParserReport();
         binding.aboutText.setText(getString(R.string.settings_about,
                 BuildConfig.VERSION_NAME));
+    }
+
+    private void bindSplitwise() {
+        binding.splitwiseConnectButton.setOnClickListener(v -> askForSplitwiseKey());
+        binding.splitwiseDisconnectButton.setOnClickListener(v -> {
+            locator().splitwiseService().disconnect();
+            toast(R.string.splitwise_disconnected_toast);
+            renderSplitwise();
+        });
+        binding.splitwiseLinkButton.setOnClickListener(v -> {
+            long householdId = locator().currentHouseholdId();
+            locator().householdRepository().observeMembers(householdId)
+                    .observe(getViewLifecycleOwner(), new androidx.lifecycle.Observer<
+                            java.util.List<com.householdsplitter.data.entity.Member>>() {
+                        @Override
+                        public void onChanged(java.util.List<com.householdsplitter.data.entity.Member> all) {
+                            locator().householdRepository().observeMembers(householdId)
+                                    .removeObserver(this);
+                            java.util.List<com.householdsplitter.data.entity.Member> active =
+                                    new java.util.ArrayList<>();
+                            for (com.householdsplitter.data.entity.Member member : all) {
+                                if (!member.isArchived) {
+                                    active.add(member);
+                                }
+                            }
+                            com.householdsplitter.ui.splitwise.SplitwiseLinkDialog.show(
+                                    requireContext(), locator().splitwiseService(), householdId,
+                                    active, SettingsFragment.this::renderSplitwise);
+                        }
+                    });
+        });
+        renderSplitwise();
+    }
+
+    private void renderSplitwise() {
+        if (binding == null) {
+            return;
+        }
+        com.householdsplitter.splitwise.SplitwiseService service = locator().splitwiseService();
+        boolean connected = service.isConnected();
+        binding.splitwiseStatus.setText(connected
+                ? getString(R.string.splitwise_status_on, service.connectedName())
+                : getString(R.string.splitwise_status_off));
+        binding.splitwiseStatus.setTextColor(StateColors.content(requireContext(),
+                connected ? StateColors.State.SUCCESS : StateColors.State.NEUTRAL));
+        long householdId = locator().currentHouseholdId();
+        binding.splitwiseGroup.setVisibility(connected ? View.VISIBLE : View.GONE);
+        binding.splitwiseGroup.setText(service.linkedGroupId(householdId) == 0L
+                ? getString(R.string.splitwise_group_none)
+                : getString(R.string.splitwise_group_linked, service.linkedGroupName(householdId)));
+        binding.splitwiseConnectButton.setVisibility(connected ? View.GONE : View.VISIBLE);
+        binding.splitwiseLinkButton.setVisibility(connected ? View.VISIBLE : View.GONE);
+        binding.splitwiseDisconnectButton.setVisibility(connected ? View.VISIBLE : View.GONE);
+    }
+
+    private void askForSplitwiseKey() {
+        android.widget.EditText input = new android.widget.EditText(requireContext());
+        input.setHint(R.string.splitwise_key_hint);
+        input.setSingleLine(true);
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+                | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        android.widget.FrameLayout frame = new android.widget.FrameLayout(requireContext());
+        frame.setPadding(pad, pad / 2, pad, 0);
+        frame.addView(input);
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.splitwise_key_title)
+                .setMessage(R.string.splitwise_key_help)
+                .setView(frame)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.splitwise_connect, (d, w) -> {
+                    toast(R.string.splitwise_connecting);
+                    locator().splitwiseService().connect(input.getText().toString(), result -> {
+                        if (binding == null) {
+                            return;
+                        }
+                        if (result.isOk()) {
+                            toast(R.string.splitwise_connected_toast);
+                        } else {
+                            toastText(result.error());
+                        }
+                        renderSplitwise();
+                    });
+                })
+                .show();
     }
 
     private void renderTheme() {

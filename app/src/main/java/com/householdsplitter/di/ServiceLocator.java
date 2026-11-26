@@ -18,6 +18,7 @@ import com.householdsplitter.suggest.RuleService;
 import com.householdsplitter.parse.ReceiptParser;
 import com.householdsplitter.export.WorkbookService;
 import com.householdsplitter.prefs.SettingsStore;
+import com.householdsplitter.splitwise.SplitwiseService;
 import com.householdsplitter.util.AppExecutors;
 
 /**
@@ -51,6 +52,7 @@ public class ServiceLocator {
     private RuleService ruleService;
     private BackupService backupService;
     private AutoBackupService autoBackupService;
+    private SplitwiseService splitwiseService;
 
     public ServiceLocator(Context context) {
         this.applicationContext = context.getApplicationContext();
@@ -89,6 +91,13 @@ public class ServiceLocator {
 
     public SettingsStore settings() {
         return settings;
+    }
+
+    public synchronized SplitwiseService splitwiseService() {
+        if (splitwiseService == null) {
+            splitwiseService = new SplitwiseService(applicationContext, executors);
+        }
+        return splitwiseService;
     }
 
     public synchronized HouseholdRepository householdRepository() {
