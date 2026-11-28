@@ -55,6 +55,11 @@ public class StorePickerSheet extends BottomSheetDialogFragment {
         for (StoreKind store : ordered()) {
             binding.storeOptions.addView(optionFor(store));
         }
+        // Open fully. Collapsed, a landscape tablet showed the title and one store, and the
+        // rest of the choices sat below the fold waiting for a drag nobody knew to make.
+        dialog.getBehavior().setSkipCollapsed(true);
+        dialog.getBehavior().setState(
+                com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
         return dialog;
     }
 

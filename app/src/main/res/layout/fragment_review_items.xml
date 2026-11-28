@@ -69,19 +69,26 @@
                 android:orientation="horizontal"
                 android:visibility="gone">
 
+                <!--
+                  Equal halves rather than wrap_content: on a 360dp phone the second label
+                  was left too little room and broke mid-word ("screensho / ts"). A fixed
+                  half always holds the longest single word, so it wraps between words.
+                -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/addDifferenceButton"
                     style="@style/Widget.Splitter.Button.Text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="-8dp"
+                    android:layout_weight="1"
                     android:text="@string/reconcile_add_difference" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/addScreenshotsButton"
                     style="@style/Widget.Splitter.Button.Text"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="@string/reconcile_add_screenshots" />
             </LinearLayout>
         </LinearLayout>
