@@ -348,10 +348,16 @@ public class ImportFragment extends BaseFragment {
         // shop it is from, and a receipt saved out of an email is as likely either way.
         binding.filesButton.setOnClickListener(v -> openDocuments.launch(IMAGE_TYPES));
 
-        if (storeIsPaper()) {
-            binding.toolbar.setTitle(R.string.import_title_bill);
-            binding.emptyHint.setText(R.string.import_hint_bill);
-            binding.chooseButton.setText(R.string.action_photograph_bill);
+        com.householdsplitter.core.parse.StoreKind store = chosenStore();
+        if (store != null && store.isPaper()) {
+            // A restaurant hands over a bill; a grocery till hands over a receipt.
+            boolean bill = store == com.householdsplitter.core.parse.StoreKind.RESTAURANT;
+            binding.toolbar.setTitle(bill ? getString(R.string.import_title_bill)
+                    : getString(R.string.import_title_receipt, store.displayName()));
+            binding.emptyHint.setText(bill ? R.string.import_hint_bill
+                    : R.string.import_hint_receipt);
+            binding.chooseButton.setText(bill ? R.string.action_photograph_bill
+                    : R.string.action_photograph_receipt);
             binding.chooseButton.setOnClickListener(v -> launchCamera());
             binding.cameraButton.setText(R.string.action_choose_photo);
             binding.cameraButton.setOnClickListener(v -> choosePhotos.run());
@@ -361,15 +367,14 @@ public class ImportFragment extends BaseFragment {
         binding.cameraButton.setOnClickListener(v -> launchCamera());
     }
 
-    /** True when this order is a photograph of paper rather than a set of screenshots. */
-    private boolean storeIsPaper() {
+    /** The store chosen in the picker, or null when none was passed in. */
+    @androidx.annotation.Nullable
+    private com.householdsplitter.core.parse.StoreKind chosenStore() {
         if (getArguments() == null) {
-            return false;
+            return null;
         }
         String store = getArguments().getString(ParsingArgs.ARG_STORE);
-        return store != null
-                && com.householdsplitter.core.parse.StoreKind.fromName(store)
-                        == com.householdsplitter.core.parse.StoreKind.RESTAURANT;
+        return store == null ? null : com.householdsplitter.core.parse.StoreKind.fromName(store);
     }
 
 }

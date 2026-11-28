@@ -60,6 +60,14 @@ public final class StorePill {
                 return R.color.store_amazon_fresh;
             case RESTAURANT:
                 return R.color.store_restaurant;
+            case COSTCO:
+                return R.color.store_costco;
+            case TARGET:
+                return R.color.store_target;
+            case ALDI:
+                return R.color.store_aldi;
+            case STAR_MARKET:
+                return R.color.store_star_market;
             case WALMART:
             default:
                 return R.color.store_walmart;

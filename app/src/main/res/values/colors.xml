@@ -164,6 +164,22 @@
     -->
     <color name="store_restaurant">#008184</color>
 
+    <!--
+      Costco, Target, Aldi, Star Market. Found by the same kind of search: a greedy maximin
+      over CIELAB hue and chroma, each candidate required to clear 4.5:1 against the card
+      in both themes and to keep its night twin at the same hue, separated by CIEDE2000
+      from the semantic colours, all six palette primaries, the three earlier stores and
+      each other. Four more colours in an already crowded space cost separation: the
+      closest pairs are now 14.9 (Star Market to Graphite) and 15.3 (Target to Plum), against
+      16.6 for Restaurant. The pill also carries the store's name, so colour is never the
+      only cue. Target took the red and Aldi the orange because those happen to echo the
+      stores; nothing else here is a brand colour.
+    -->
+    <color name="store_costco">#CB1FC2</color>
+    <color name="store_target">#D5375B</color>
+    <color name="store_aldi">#B75B07</color>
+    <color name="store_star_market">#6C71A4</color>
+
     <!-- The widget's scan action: a tinted pill, readable on the widget's own background. -->
     <color name="widget_action">#1F6A3FC0</color>
     <color name="widget_action_text">#6A3FC0</color>
