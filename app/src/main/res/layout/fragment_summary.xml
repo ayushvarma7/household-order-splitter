@@ -144,6 +144,37 @@
                         android:layout_marginTop="@dimen/space_m"
                         android:text="@string/action_choose_payer" />
 
+                    <!--
+                      A note for everyone on the order. Shown as text with a button rather
+                      than as a live text field, so it is saved once, deliberately, and does
+                      not rewrite the workbook on every keystroke.
+                    -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xl"
+                        android:text="@string/summary_notes"
+                        android:textAppearance="@style/Text.SectionLabel" />
+
+                    <TextView
+                        android:id="@+id/orderNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:background="@drawable/bg_banner"
+                        android:padding="@dimen/space_m"
+                        android:textAppearance="@style/Text.Body"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/orderNoteButton"
+                        style="@style/Widget.Splitter.Button.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_s"
+                        android:text="@string/action_add_order_note"
+                        app:icon="@drawable/ic_note" />
+
                     <!-- SPEC 7.10.3: the workings, as a table rather than a paragraph. -->
                     <TextView
                         android:layout_width="match_parent"

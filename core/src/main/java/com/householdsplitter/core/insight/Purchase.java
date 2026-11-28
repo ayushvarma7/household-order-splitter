@@ -31,14 +31,16 @@ public final class Purchase {
     private final long cents;
     private final Map<Long, Long> centsByMember;
     private final ItemCategorizer.Placement placement;
+    private final String store;
 
     public Purchase(long dateMillis, String name, long cents, Map<Long, Long> centsByMember) {
-        this(dateMillis, name, cents, centsByMember, null);
+        this(dateMillis, name, cents, centsByMember, null, "");
     }
 
     private Purchase(long dateMillis, String name, long cents, Map<Long, Long> centsByMember,
-                     ItemCategorizer.Placement placement) {
+                     ItemCategorizer.Placement placement, String store) {
         this.placement = placement;
+        this.store = store == null ? "" : store;
         this.dateMillis = dateMillis;
         this.name = name == null ? "" : name;
         this.cents = cents;
@@ -55,6 +57,16 @@ public final class Purchase {
 
     public long cents() {
         return cents;
+    }
+
+    /** Where it was bought, as the store names itself, or empty when not known. */
+    public String store() {
+        return store;
+    }
+
+    /** The same purchase, recorded as bought at {@code store}. */
+    public Purchase atStore(String store) {
+        return new Purchase(dateMillis, name, cents, centsByMember, placement, store);
     }
 
     /** Where this row was put by hand rather than by its name, or null to read the name. */
@@ -88,7 +100,7 @@ public final class Purchase {
                 CalcLineItem.common(0L, ItemCategorizer.MISSING_ITEM, missingCents), members);
         return Collections.singletonList(new Purchase(dateMillis, ItemCategorizer.MISSING_ITEM,
                 missingCents, shares, new ItemCategorizer.Placement(
-                        ItemCategorizer.MISSING, ItemCategorizer.MISSING_SUB)));
+                        ItemCategorizer.MISSING, ItemCategorizer.MISSING_SUB), ""));
     }
 
     /**

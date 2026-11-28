@@ -29,6 +29,7 @@ import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.ItemAssignment;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.data.entity.Member;
+import com.householdsplitter.data.entity.MemberNote;
 import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderImage;
@@ -58,9 +59,10 @@ import com.householdsplitter.data.entity.SettlementPayment;
                 SettlementPayment.class,
                 MemberRule.class,
                 DiscardedRow.class,
-                CorrectionEvent.class
+                CorrectionEvent.class,
+                MemberNote.class
         },
-        version = 8,
+        version = 9,
         exportSchema = true)
 @TypeConverters(Converters.class)
 public abstract class AppDatabase extends RoomDatabase {
@@ -111,7 +113,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public static Migration[] migrations() {
         return new Migration[]{
                 MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
-                MIGRATION_6_7, MIGRATION_7_8
+                MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9
         };
     }
 
@@ -168,6 +170,30 @@ public abstract class AppDatabase extends RoomDatabase {
             database.execSQL("CREATE INDEX IF NOT EXISTS "
                     + "`index_correction_events_createdAt` ON `correction_events` "
                     + "(`createdAt`)");
+        }
+    };
+
+    /**
+     * Notes on a split: one column for the whole order, and a table for a note per member.
+     *
+     * <p>Nothing to backfill. Every existing order simply has no note yet, which is what a
+     * null column and an empty table say.
+     */
+    public static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `orders` ADD COLUMN `note` TEXT");
+            database.execSQL("CREATE TABLE IF NOT EXISTS `order_member_notes` ("
+                    + "`orderId` INTEGER NOT NULL, "
+                    + "`memberId` INTEGER NOT NULL, "
+                    + "`text` TEXT NOT NULL, "
+                    + "PRIMARY KEY(`orderId`, `memberId`), "
+                    + "FOREIGN KEY(`orderId`) REFERENCES `orders`(`id`) "
+                    + "ON UPDATE NO ACTION ON DELETE CASCADE , "
+                    + "FOREIGN KEY(`memberId`) REFERENCES `members`(`id`) "
+                    + "ON UPDATE NO ACTION ON DELETE NO ACTION )");
+            database.execSQL("CREATE INDEX IF NOT EXISTS "
+                    + "`index_order_member_notes_memberId` ON `order_member_notes` (`memberId`)");
         }
     };
 

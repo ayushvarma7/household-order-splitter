@@ -27,7 +27,7 @@
 
     <!-- S3, SPEC 7.3 -->
     <string name="home_empty_title">No orders yet</string>
-    <string name="home_empty_body">Share in a grocery order screenshot, photograph a restaurant bill, or start one from scratch.</string>
+    <string name="home_empty_body">Share in a grocery order screenshot, photograph a store receipt or restaurant bill, or start one from scratch.</string>
     <string name="action_new_order">New order</string>
     <string name="menu_members">Members</string>
     <string name="menu_settings">Settings</string>
@@ -241,6 +241,43 @@
     <string name="parsing_subtitle">Reading names and prices on this device. Nothing leaves your phone.</string>
     <string name="details_totals_label">What the bill says</string>
     <string name="summary_workings">How this was worked out</string>
+    <!-- Explore: patterns across every finished order. -->
+    <string name="patterns_title">Patterns</string>
+    <string name="patterns_subtitle">Across every finished order, not just this month.</string>
+    <string name="patterns_web_title">Who buys with whom</string>
+    <string name="patterns_web_top">%1$s and %2$s buy the most together: %3$s across %4$s the rest of the order was not in on.</string>
+    <plurals name="patterns_web_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="patterns_web_more">Next: %1$s and %2$s, %3$s.</string>
+    <string name="patterns_web_none">Nobody has bought anything with just some of the others yet. Lines appear when two people share an item the rest of the order is not on.</string>
+    <string name="patterns_web_small">The web needs at least three people on an order. With two, everything shared is shared by everyone.</string>
+    <string name="patterns_web_description">A web of who buys with whom. %1$s</string>
+    <string name="patterns_calendar_title">When the money goes out</string>
+    <string name="patterns_calendar_summary">%1$d shopping days in the last %2$d weeks. %3$ss carry the most, %4$s in all. The longest break between shops was %5$d days.</string>
+    <string name="patterns_calendar_one">One shopping day in the last %1$d weeks, on a %2$s.</string>
+    <string name="patterns_calendar_description">A calendar of spending, one square per day. %1$s</string>
+    <string name="patterns_price_title">What things cost</string>
+    <string name="patterns_price_summary">Bought %1$d times, from %2$s to %3$s. %4$s</string>
+    <string name="patterns_price_up">Up %1$s since the first time.</string>
+    <string name="patterns_price_down">Down %1$s since the first time.</string>
+    <string name="patterns_price_same">The same price as the first time.</string>
+    <string name="patterns_price_cheapest">Cheapest at %1$s.</string>
+    <string name="patterns_price_none">Buy something twice and its price shows up here, with each shop in its own colour.</string>
+    <string name="patterns_price_description">%1$s, price each time it was bought. %2$s</string>
+    <!-- Notes on a split: one for everyone, and one per person. -->
+    <string name="summary_notes">Notes</string>
+    <string name="action_add_order_note">Add a note for everyone</string>
+    <string name="action_edit_order_note">Edit the note</string>
+    <string name="action_add_member_note">Add note</string>
+    <string name="action_edit_member_note">Edit note</string>
+    <string name="dialog_order_note_title">Note for everyone</string>
+    <string name="dialog_member_note_title">Note for %1$s</string>
+    <string name="hint_note">Anything the others should know</string>
+    <string name="action_add_member_note_description">Add a note for %1$s</string>
+    <string name="action_edit_member_note_description">Edit the note for %1$s</string>
+    <string name="member_note_description">Note for %1$s: %2$s</string>
     <string name="edit_item_title">Edit item</string>
     <string name="settings_danger_zone">Danger zone</string>
     <string name="currency_prefix"></string>
@@ -358,6 +395,9 @@
     <string name="import_files_empty">Nothing was chosen from files.</string>
     <string name="action_photograph_bill">Take a photo of the bill</string>
     <string name="action_choose_photo">Choose a photo instead</string>
+    <string name="import_title_receipt">Photograph the %1$s receipt</string>
+    <string name="import_hint_receipt">Lay the receipt flat and fill the frame. A slight angle is fine: the app straightens the page before reading it. A long receipt can be several photos, taken top to bottom.</string>
+    <string name="action_photograph_receipt">Take a photo of the receipt</string>
     <string name="import_add_to_order">Add to this order</string>
     <!-- On a screenshot tile the order already has. -->
     <string name="import_already_read">Read</string>
@@ -476,7 +516,7 @@
     <string name="welcome_start">Get started</string>
     <string name="welcome_page_of">Page %1$d of %2$d</string>
     <string name="welcome_1_title">Point it at the bill</string>
-    <string name="welcome_1_body">Screenshot a Walmart or Amazon Fresh order, or photograph a restaurant bill. It reads every item and the price you were actually charged. Nothing to type.</string>
+    <string name="welcome_1_body">Screenshot a Walmart or Amazon Fresh order, or photograph a receipt from Costco, Target, Aldi, Star Market or a restaurant. It reads every item and the price you were actually charged. Nothing to type.</string>
     <string name="welcome_2_title">Tap who it was for</string>
     <string name="welcome_2_body">One item at a time. Something two of you shared is split between those two, not the whole house.</string>
     <string name="welcome_3_title">Everyone owes an exact amount</string>

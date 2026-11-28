@@ -76,6 +76,14 @@ public class Order {
     @Nullable
     public Long payerMemberId;
 
+    /**
+     * Anything the household wants to say about the order as a whole, written on the
+     * summary. Null until somebody writes one. Travels with the split into the shared
+     * message, the workbook and backups.
+     */
+    @Nullable
+    public String note;
+
     @ColumnInfo(defaultValue = "0")
     public long taxCents;
 

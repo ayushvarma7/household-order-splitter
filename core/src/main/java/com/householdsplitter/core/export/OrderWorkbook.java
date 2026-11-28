@@ -152,13 +152,16 @@ public final class OrderWorkbook {
         ExportOrder order = entry.order();
         SplitResult result = order.result();
         Sheet sheet = new Sheet(order.orderLabel());
-        sheet.widths(38, 8, 12, 26, 12);
+        sheet.widths(38, 8, 12, 26, 12, 40);
 
         sheet.row(Cell.label(order.orderLabel()));
         sheet.row(Cell.text("Date"), Cell.text(date(entry.orderDateMillis())));
         sheet.row(Cell.text("Status"), Cell.text(entry.status()));
         if (order.payerName() != null && !order.payerName().isEmpty()) {
             sheet.row(Cell.text("Paid by"), Cell.text(order.payerName()));
+        }
+        if (!order.orderNote().isEmpty()) {
+            sheet.row(Cell.text("Note"), Cell.text(order.orderNote()));
         }
         sheet.blank();
 
@@ -186,15 +189,35 @@ public final class OrderWorkbook {
         }
         sheet.blank();
 
-        sheet.row(Cell.header("Person"), Cell.header("Shared"), Cell.header("Own items"),
-                Cell.header("Tax and fees"), Cell.header("Owes"));
+        boolean anyMemberNote = false;
         for (MemberSplit member : result.members()) {
-            sheet.row(
-                    Cell.text(member.memberName()),
-                    Cell.money(member.commonShareCents()),
-                    Cell.money(member.itemsTotalCents()),
-                    Cell.money(member.adjustmentsTotalCents()),
-                    Cell.moneyTotal(member.finalCents()));
+            anyMemberNote |= !order.memberNote(member.memberId()).isEmpty();
+        }
+        if (anyMemberNote) {
+            sheet.row(Cell.header("Person"), Cell.header("Shared"), Cell.header("Own items"),
+                    Cell.header("Tax and fees"), Cell.header("Owes"), Cell.header("Note"));
+        } else {
+            sheet.row(Cell.header("Person"), Cell.header("Shared"), Cell.header("Own items"),
+                    Cell.header("Tax and fees"), Cell.header("Owes"));
+        }
+        for (MemberSplit member : result.members()) {
+            String note = order.memberNote(member.memberId());
+            if (note.isEmpty()) {
+                sheet.row(
+                        Cell.text(member.memberName()),
+                        Cell.money(member.commonShareCents()),
+                        Cell.money(member.itemsTotalCents()),
+                        Cell.money(member.adjustmentsTotalCents()),
+                        Cell.moneyTotal(member.finalCents()));
+            } else {
+                sheet.row(
+                        Cell.text(member.memberName()),
+                        Cell.money(member.commonShareCents()),
+                        Cell.money(member.itemsTotalCents()),
+                        Cell.money(member.adjustmentsTotalCents()),
+                        Cell.moneyTotal(member.finalCents()),
+                        Cell.text(note));
+            }
         }
         sheet.blank();
 

@@ -58,6 +58,28 @@
                 android:textAppearance="@style/Text.MoneyLarge" />
         </LinearLayout>
 
+        <!-- What somebody wrote for this person on this order. Gone when nothing was. -->
+        <TextView
+            android:id="@+id/memberNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_s"
+            android:background="@drawable/bg_banner"
+            android:padding="@dimen/space_s"
+            android:textAppearance="@style/Text.Body"
+            android:textStyle="italic"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/noteButton"
+            style="@style/Widget.Splitter.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="@string/action_add_member_note"
+            app:icon="@drawable/ic_note"
+            app:iconSize="18dp" />
+
         <TextView
             android:id="@+id/breakdown"
             android:layout_width="match_parent"

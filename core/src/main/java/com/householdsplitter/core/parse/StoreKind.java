@@ -51,22 +51,70 @@ public enum StoreKind {
      * and measures its own columns, and the recogniser strips card data before the parser
      * sees it.
      */
-    RESTAURANT("Restaurant") {
+    RESTAURANT("Restaurant", true) {
         @Override
         public StoreVocabulary vocabulary() {
             return new RestaurantVocabulary();
         }
+    },
+
+    /*
+     * Grocery stores whose receipt is usually paper. Each is read by the till-receipt
+     * vocabulary, labelled with its own name, until it has a vocabulary measured off its
+     * own receipts the way Walmart and Amazon Fresh were. Appended rather than inserted
+     * because rows are stored by name, and order matters only to the picker.
+     */
+    COSTCO("Costco", true) {
+        @Override
+        public StoreVocabulary vocabulary() {
+            return new RestaurantVocabulary(displayName(), null);
+        }
+    },
+
+    TARGET("Target", true) {
+        @Override
+        public StoreVocabulary vocabulary() {
+            return new RestaurantVocabulary(displayName(), null);
+        }
+    },
+
+    ALDI("Aldi", true) {
+        @Override
+        public StoreVocabulary vocabulary() {
+            return new RestaurantVocabulary(displayName(), null);
+        }
+    },
+
+    STAR_MARKET("Star Market", true) {
+        @Override
+        public StoreVocabulary vocabulary() {
+            return new RestaurantVocabulary(displayName(), null);
+        }
     };
 
     private final String displayName;
+    private final boolean paper;
 
     StoreKind(String displayName) {
+        this(displayName, false);
+    }
+
+    StoreKind(String displayName, boolean paper) {
         this.displayName = displayName;
+        this.paper = paper;
     }
 
     /** The store's name as a person writes it. */
     public String displayName() {
         return displayName;
+    }
+
+    /**
+     * True when this store's receipt is a photograph of paper rather than a screenshot,
+     * so import offers the camera first and the page is straightened before reading.
+     */
+    public boolean isPaper() {
+        return paper;
     }
 
     /** The wording and geometry for reading this store's pages. */

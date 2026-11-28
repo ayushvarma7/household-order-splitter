@@ -54,12 +54,37 @@ public final class StorePill {
                 context.getString(R.string.store_pill_description, kind.displayName()));
     }
 
+    /** The store's identity colour, for anything else that marks a store, such as a chart. */
+    @ColorInt
+    public static int colour(Context context, StoreKind store) {
+        return ContextCompat.getColor(context, colourRes(store == null ? StoreKind.WALMART : store));
+    }
+
+    /** The store a display name belongs to, or null for a name the app does not know. */
+    @androidx.annotation.Nullable
+    public static StoreKind byDisplayName(String name) {
+        for (StoreKind kind : StoreKind.values()) {
+            if (kind.displayName().equalsIgnoreCase(name == null ? "" : name.trim())) {
+                return kind;
+            }
+        }
+        return null;
+    }
+
     private static int colourRes(StoreKind store) {
         switch (store) {
             case AMAZON_FRESH:
                 return R.color.store_amazon_fresh;
             case RESTAURANT:
                 return R.color.store_restaurant;
+            case COSTCO:
+                return R.color.store_costco;
+            case TARGET:
+                return R.color.store_target;
+            case ALDI:
+                return R.color.store_aldi;
+            case STAR_MARKET:
+                return R.color.store_star_market;
             case WALMART:
             default:
                 return R.color.store_walmart;

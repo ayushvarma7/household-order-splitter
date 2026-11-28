@@ -376,6 +376,45 @@ public class MigrationTest {
     }
 
     /** Opening the real database through Room applies every migration end to end. */
+    /** An order from before notes existed keeps everything and simply has no note yet. */
+    @Test
+    public void anOlderOrderHasNoNotes() throws IOException {
+        SupportSQLiteDatabase database = helper.createDatabase(NAME, 8);
+        ContentValues household = new ContentValues();
+        household.put("id", 1L);
+        household.put("name", "Fixture Group");
+        household.put("createdAt", 1L);
+        database.insert("households", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT,
+                household);
+
+        ContentValues order = new ContentValues();
+        order.put("id", 1L);
+        order.put("householdId", 1L);
+        order.put("label", "Weekly shop");
+        order.put("orderDate", 1L);
+        order.put("status", "SETTLED");
+        order.put("createdAt", 1L);
+        order.put("draftStep", "SUMMARY");
+        order.put("store", "WALMART");
+        database.insert("orders", android.database.sqlite.SQLiteDatabase.CONFLICT_ABORT, order);
+        database.close();
+
+        SupportSQLiteDatabase migrated = helper.runMigrationsAndValidate(NAME, 9, true,
+                AppDatabase.MIGRATION_8_9);
+
+        try (Cursor cursor = migrated.query("SELECT label, status, note FROM orders")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the order survives", "Weekly shop", cursor.getString(0));
+            assertEquals("SETTLED", cursor.getString(1));
+            assertTrue("and has no note", cursor.isNull(2));
+        }
+        try (Cursor cursor = migrated.query("SELECT COUNT(*) FROM order_member_notes")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals("the member notes table exists and is empty", 0, cursor.getInt(0));
+        }
+        migrated.close();
+    }
+
     @Test
     public void theAppOpensAMigratedDatabase() throws IOException {
         helper.createDatabase(NAME, 1).close();

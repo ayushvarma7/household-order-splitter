@@ -209,18 +209,33 @@ public final class RestaurantVocabulary implements StoreVocabulary {
             Pattern.compile("\\b(\\d{4})-(\\d{1,2})-(\\d{1,2})\\b");
 
     private final ParseTuning tuning;
+    private final String storeName;
 
     public RestaurantVocabulary() {
         this(ParseTuning.restaurant());
     }
 
     public RestaurantVocabulary(ParseTuning tuning) {
+        this(STORE_NAME, tuning);
+    }
+
+    /**
+     * A till receipt from a named shop, read with this same vocabulary.
+     *
+     * <p>Grocery stores that hand over paper (Costco, Target, Aldi, Star Market) print the
+     * same furniture a restaurant till does: items, a subtotal, tax, a total, a payment
+     * line. Until a store has a vocabulary measured off its own receipts, this one reads
+     * it, and only the name it labels the order with differs.
+     */
+    public RestaurantVocabulary(String storeName, ParseTuning tuning) {
+        this.storeName = storeName == null || storeName.trim().isEmpty()
+                ? STORE_NAME : storeName;
         this.tuning = tuning == null ? ParseTuning.restaurant() : tuning;
     }
 
     @Override
     public String storeName() {
-        return STORE_NAME;
+        return storeName;
     }
 
     @Override
@@ -379,7 +394,7 @@ public final class RestaurantVocabulary implements StoreVocabulary {
     public String defaultLabel(long epochMillis) {
         LocalDate date = java.time.Instant.ofEpochMilli(epochMillis)
                 .atZone(ZoneId.systemDefault()).toLocalDate();
-        return date.format(LABEL_FORMAT) + " " + STORE_NAME;
+        return date.format(LABEL_FORMAT) + " " + storeName;
     }
 
     /**

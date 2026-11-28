@@ -134,6 +134,7 @@ public class SummaryFragment extends BaseFragment {
                 }
             }
             adapter.setPayer(bundle.order.payerMemberId, payer);
+            renderNotes(bundle);
             applyReadOnly(bundle);
             renderScreenshots(bundle);
             model.recalculate();
@@ -159,6 +160,65 @@ public class SummaryFragment extends BaseFragment {
         binding.editItemsButton.setOnClickListener(v -> navigate(R.id.reviewItemsFragment));
         binding.editParticipantsButton.setOnClickListener(v -> navigate(R.id.participantsFragment));
         binding.settleButton.setOnClickListener(v -> toggleSettled());
+    }
+
+    /**
+     * The note for everyone, and one per member.
+     *
+     * <p>Editable on a settled order too, because "paid in cash on Friday" is exactly the
+     * kind of thing written after settling. Only the read-only view (SPEC 7.12.1) locks
+     * them, and it still shows them.
+     */
+    private void renderNotes(OrderBundle bundle) {
+        String note = bundle.order.note == null ? "" : bundle.order.note.trim();
+        binding.orderNote.setVisibility(note.isEmpty() ? View.GONE : View.VISIBLE);
+        binding.orderNote.setText(note);
+        binding.orderNoteButton.setVisibility(readOnly ? View.GONE : View.VISIBLE);
+        binding.orderNoteButton.setText(note.isEmpty()
+                ? R.string.action_add_order_note : R.string.action_edit_order_note);
+        binding.orderNoteButton.setOnClickListener(v -> showNoteDialog(
+                getString(R.string.dialog_order_note_title), note, ORDER_NOTE_LIMIT,
+                model::setOrderNote));
+        adapter.setNotes(bundle.memberNotesById(), !readOnly,
+                (memberId, memberName, current) -> showNoteDialog(
+                        getString(R.string.dialog_member_note_title, memberName), current,
+                        MEMBER_NOTE_LIMIT, text -> model.setMemberNote(memberId, text)));
+    }
+
+    /** Long enough for a sentence or two, short enough to stay readable in a chat. */
+    private static final int ORDER_NOTE_LIMIT = 500;
+    private static final int MEMBER_NOTE_LIMIT = 200;
+
+    private interface NoteSaver {
+        void save(String text);
+    }
+
+    private void showNoteDialog(String title, String current, int limit, NoteSaver saver) {
+        View content = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_single_input, null, false);
+        com.google.android.material.textfield.TextInputEditText field =
+                content.findViewById(R.id.dialogInput);
+        com.google.android.material.textfield.TextInputLayout layout =
+                content.findViewById(R.id.dialogInputLayout);
+        layout.setHint(getString(R.string.hint_note));
+        layout.setCounterEnabled(true);
+        layout.setCounterMaxLength(limit);
+        field.setInputType(android.text.InputType.TYPE_CLASS_TEXT
+                | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        field.setFilters(new android.text.InputFilter[]{
+                new android.text.InputFilter.LengthFilter(limit)});
+        field.setMaxLines(6);
+        field.setText(current);
+        field.setSelection(current.length());
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(title)
+                .setView(content)
+                .setPositiveButton(R.string.action_save, (dialog, which) ->
+                        saver.save(field.getText() == null ? "" : field.getText().toString()))
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+        field.requestFocus();
     }
 
     private void renderHeader(OrderBundle bundle) {

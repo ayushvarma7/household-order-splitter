@@ -95,6 +95,11 @@
     <color name="store_walmart">#A6C8FF</color>
     <color name="store_amazon_fresh">#A9D673</color>
     <color name="store_restaurant">#00C0C4</color>
+    <!-- Same hues as the light four, lightened to 6.5:1 on the dark card. -->
+    <color name="store_costco">#F250E7</color>
+    <color name="store_target">#FE5E7B</color>
+    <color name="store_aldi">#DF7D2F</color>
+    <color name="store_star_market">#8E92C7</color>
 
     <!-- The widget's scan action: a tinted pill, readable on the widget's own background. -->
     <color name="widget_action">#33D3BBFF</color>

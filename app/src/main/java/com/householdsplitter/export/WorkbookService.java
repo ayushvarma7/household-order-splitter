@@ -183,7 +183,8 @@ public class WorkbookService {
             }
             ExportOrder order = new ExportOrder(groupName, bundle.order.label,
                     CalcMapper.commonItems(bundle), result,
-                    CalcMapper.memberName(bundle, bundle.order.payerMemberId));
+                    CalcMapper.memberName(bundle, bundle.order.payerMemberId))
+                    .withNotes(bundle.order.note, bundle.memberNotesById());
             entries.add(new OrderWorkbook.Entry(order, bundle.order.orderDate,
                     friendlyStatus(bundle)));
         }

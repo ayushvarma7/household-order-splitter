@@ -3,7 +3,9 @@ package com.householdsplitter.core.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import com.householdsplitter.core.parse.layout.StoreVocabulary;
 
@@ -34,7 +36,22 @@ public class StoreKindTest {
         // unreadable value means an old row rather than a store the app has never heard of.
         assertSame(StoreKind.WALMART, StoreKind.fromName(null));
         assertSame(StoreKind.WALMART, StoreKind.fromName(""));
-        assertSame(StoreKind.WALMART, StoreKind.fromName("COSTCO"));
+        assertSame(StoreKind.WALMART, StoreKind.fromName("KROGER"));
+    }
+
+    @Test
+    public void paperStoresReadTillReceiptsUnderTheirOwnName() {
+        StoreKind[] paper = {StoreKind.RESTAURANT, StoreKind.COSTCO, StoreKind.TARGET,
+                StoreKind.ALDI, StoreKind.STAR_MARKET};
+        for (StoreKind kind : paper) {
+            assertTrue(kind + " is photographed", kind.isPaper());
+            assertTrue(kind + " straightens the page", kind.vocabulary().needsDeskew());
+            assertTrue("an order is labelled with the store it came from",
+                    kind.vocabulary().defaultLabel(1788436800000L)
+                            .endsWith(" " + kind.displayName()));
+        }
+        assertFalse(StoreKind.WALMART.isPaper());
+        assertFalse(StoreKind.AMAZON_FRESH.isPaper());
     }
 
     @Test
