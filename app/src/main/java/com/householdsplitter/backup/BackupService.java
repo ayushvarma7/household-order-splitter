@@ -14,6 +14,7 @@ import com.householdsplitter.data.entity.Household;
 import com.householdsplitter.data.entity.ItemAssignment;
 import com.householdsplitter.data.entity.LineItem;
 import com.householdsplitter.data.entity.Member;
+import com.householdsplitter.data.entity.MemberNote;
 import com.householdsplitter.data.entity.MemberRule;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderImage;
@@ -103,6 +104,8 @@ public class BackupService {
         public List<CorrectionEvent> corrections = new ArrayList<>();
         /** Parsed rows the user deleted as wrong. */
         public List<DiscardedRow> discardedRows = new ArrayList<>();
+        /** What was written for each member on each order. Absent before database 9. */
+        public List<MemberNote> memberNotes = new ArrayList<>();
     }
 
     private final AppDatabase database;
@@ -210,6 +213,7 @@ public class BackupService {
                 group.assignments.addAll(row.assignments);
             }
             group.images.addAll(bundle.images);
+            group.memberNotes.addAll(bundle.memberNotes);
         }
         group.memory = database.assignmentMemoryDao().getAllSync(household.id);
         group.payments = database.settlementDao().getForHouseholdSync(household.id);
@@ -388,6 +392,16 @@ public class BackupService {
             row.lineItemId = remapped(lineItemIds, row.lineItemId);
             database.discardedRowDao().insert(row);
         }
+
+        List<MemberNote> notes = new ArrayList<>();
+        for (MemberNote note : orEmpty(group.memberNotes)) {
+            Long orderId = orderIds.get(note.orderId);
+            Long memberId = memberIds.get(note.memberId);
+            if (orderId != null && memberId != null && note.text != null) {
+                notes.add(new MemberNote(orderId, memberId, note.text));
+            }
+        }
+        database.orderDao().insertMemberNotes(notes);
     }
 
     private static long remapped(Map<Long, Long> ids, long oldId) {

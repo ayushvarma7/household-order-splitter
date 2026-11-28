@@ -3,11 +3,13 @@ package com.householdsplitter.data.dao;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.householdsplitter.data.entity.DraftStep;
+import com.householdsplitter.data.entity.MemberNote;
 import com.householdsplitter.data.entity.Order;
 import com.householdsplitter.data.entity.OrderStatus;
 import com.householdsplitter.data.relation.OrderBundle;
@@ -68,6 +70,19 @@ public interface OrderDao {
 
     @Query("UPDATE orders SET label = :label WHERE id = :orderId")
     void rename(long orderId, String label);
+
+    /** Null clears it. */
+    @Query("UPDATE orders SET note = :note WHERE id = :orderId")
+    void updateNote(long orderId, String note);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void upsertMemberNote(MemberNote note);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertMemberNotes(List<MemberNote> notes);
+
+    @Query("DELETE FROM order_member_notes WHERE orderId = :orderId AND memberId = :memberId")
+    void deleteMemberNote(long orderId, long memberId);
 
     /** Plain rows, for working out which store each order came from. */
     @Query("SELECT * FROM orders WHERE householdId = :householdId")

@@ -241,6 +241,18 @@
     <string name="parsing_subtitle">Reading names and prices on this device. Nothing leaves your phone.</string>
     <string name="details_totals_label">What the bill says</string>
     <string name="summary_workings">How this was worked out</string>
+    <!-- Notes on a split: one for everyone, and one per person. -->
+    <string name="summary_notes">Notes</string>
+    <string name="action_add_order_note">Add a note for everyone</string>
+    <string name="action_edit_order_note">Edit the note</string>
+    <string name="action_add_member_note">Add note</string>
+    <string name="action_edit_member_note">Edit note</string>
+    <string name="dialog_order_note_title">Note for everyone</string>
+    <string name="dialog_member_note_title">Note for %1$s</string>
+    <string name="hint_note">Anything the others should know</string>
+    <string name="action_add_member_note_description">Add a note for %1$s</string>
+    <string name="action_edit_member_note_description">Edit the note for %1$s</string>
+    <string name="member_note_description">Note for %1$s: %2$s</string>
     <string name="edit_item_title">Edit item</string>
     <string name="settings_danger_zone">Danger zone</string>
     <string name="currency_prefix"></string>

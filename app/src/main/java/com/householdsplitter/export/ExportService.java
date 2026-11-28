@@ -111,6 +111,7 @@ public class ExportService {
                 bundle.order.label,
                 CalcMapper.commonItems(bundle),
                 result,
-                CalcMapper.memberName(bundle, bundle.order.payerMemberId));
+                CalcMapper.memberName(bundle, bundle.order.payerMemberId))
+                .withNotes(bundle.order.note, bundle.memberNotesById());
     }
 }

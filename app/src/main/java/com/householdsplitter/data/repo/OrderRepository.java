@@ -724,6 +724,26 @@ public class OrderRepository {
         executors.diskIO().execute(() -> orderDao.updateStatus(orderId, status));
     }
 
+    /** The note on the whole order. Blank clears it. */
+    public void setOrderNote(long orderId, String note) {
+        String text = note == null ? "" : note.trim();
+        executors.diskIO().execute(() ->
+                orderDao.updateNote(orderId, text.isEmpty() ? null : text));
+    }
+
+    /** The note left for one member on this order. Blank removes it. */
+    public void setMemberNote(long orderId, long memberId, String note) {
+        String text = note == null ? "" : note.trim();
+        executors.diskIO().execute(() -> {
+            if (text.isEmpty()) {
+                orderDao.deleteMemberNote(orderId, memberId);
+            } else {
+                orderDao.upsertMemberNote(
+                        new com.householdsplitter.data.entity.MemberNote(orderId, memberId, text));
+            }
+        });
+    }
+
     public void rename(long orderId, String label) {
         executors.diskIO().execute(() -> orderDao.rename(orderId, label));
     }

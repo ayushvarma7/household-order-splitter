@@ -83,6 +83,16 @@ public class SummaryViewModel extends ViewModel {
         repository.setPayer(orderId, memberId);
     }
 
+    /** The note for everyone on this order. Blank clears it. */
+    public void setOrderNote(String note) {
+        repository.setOrderNote(orderId, note);
+    }
+
+    /** The note for one member on this order. Blank removes it. */
+    public void setMemberNote(long memberId, String note) {
+        repository.setMemberNote(orderId, memberId, note);
+    }
+
     /** SPEC 7.10.7. */
     public void markSettled() {
         repository.setStatus(orderId, OrderStatus.SETTLED);

@@ -77,8 +77,22 @@ public final class ShareTextBuilder {
                         .append("tax & fees ").append(money.format(member.adjustmentsTotalCents()))
                         .append('\n');
             }
+            String note = order.memberNote(member.memberId());
+            if (!note.isEmpty()) {
+                out.append("  note: ").append(oneLine(note)).append('\n');
+            }
+        }
+        // Notes are what somebody chose to tell the group, so they survive the soft limit;
+        // only the arithmetic detail is dropped for length.
+        if (!order.orderNote().isEmpty()) {
+            out.append('\n').append("Note: ").append(order.orderNote()).append('\n');
         }
         return out.toString();
+    }
+
+    /** A member's note sits under their name, so a line break in it would read as a new row. */
+    private static String oneLine(String text) {
+        return text.replaceAll("\\s*\\R\\s*", " ");
     }
 
     /** SPEC 7.10.4: "<member> owes <payer> $X.XX", or "paid $Y.YY" on the payer's own row. */
