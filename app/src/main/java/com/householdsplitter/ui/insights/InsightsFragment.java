@@ -210,6 +210,110 @@ public class InsightsFragment extends BaseFragment implements BubbleView.Listene
         binding.bubbles.setTree(data.tree, model.focusPath());
         showFocus(binding.bubbles.focus());
         renderTrivia(data.trivia, false);
+        renderPatterns(data);
+    }
+
+    /** The three pictures across every finished order, each followed by its facts in words. */
+    private void renderPatterns(InsightData data) {
+        boolean any = data.calendar != null && data.calendar.shoppingDays > 0;
+        binding.patternsSection.setVisibility(any ? View.VISIBLE : View.GONE);
+        if (!any) {
+            return;
+        }
+        renderWeb(data);
+        renderCalendar(data.calendar);
+        renderPrices(data.prices);
+    }
+
+    private void renderWeb(InsightData data) {
+        com.householdsplitter.core.insight.Patterns.Web web = data.web;
+        binding.webView.setWeb(web, data.members);
+        String text;
+        if (web == null || web.nodes.size() < 3) {
+            text = getString(R.string.patterns_web_small);
+        } else if (web.edges.isEmpty()) {
+            text = getString(R.string.patterns_web_none);
+        } else {
+            com.householdsplitter.core.insight.Patterns.Edge top = web.edges.get(0);
+            text = getString(R.string.patterns_web_top, nameOf(data, top.a), nameOf(data, top.b),
+                    money.format(top.cents),
+                    getResources().getQuantityString(R.plurals.patterns_web_items, top.items,
+                            top.items));
+            if (web.edges.size() > 1) {
+                com.householdsplitter.core.insight.Patterns.Edge next = web.edges.get(1);
+                text += " " + getString(R.string.patterns_web_more, nameOf(data, next.a),
+                        nameOf(data, next.b), money.format(next.cents));
+            }
+        }
+        binding.webSummary.setText(text);
+        binding.webView.setContentDescription(getString(R.string.patterns_web_description, text));
+        binding.webSummary.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+    }
+
+    private String nameOf(InsightData data, long memberId) {
+        com.householdsplitter.data.entity.Member member = data.members.get(memberId);
+        return member == null ? "?" : member.name;
+    }
+
+    private void renderCalendar(com.householdsplitter.core.insight.Patterns.Calendar calendar) {
+        binding.calendarView.setCalendar(calendar);
+        String weekday = calendar.busiestWeekday == null ? ""
+                : calendar.busiestWeekday.getDisplayName(java.time.format.TextStyle.FULL,
+                        Locale.getDefault());
+        String text = calendar.shoppingDays == 1
+                ? getString(R.string.patterns_calendar_one, calendar.weeks(), weekday)
+                : getString(R.string.patterns_calendar_summary, calendar.shoppingDays,
+                        calendar.weeks(), weekday, money.format(calendar.busiestWeekdayCents),
+                        calendar.longestGap);
+        binding.calendarSummary.setText(text);
+        binding.calendarView.setContentDescription(
+                getString(R.string.patterns_calendar_description, text));
+        binding.calendarSummary.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+    }
+
+    private void renderPrices(List<com.householdsplitter.core.insight.Patterns.PriceSeries> prices) {
+        binding.priceChips.removeAllViews();
+        boolean none = prices == null || prices.isEmpty();
+        binding.priceView.setVisibility(none ? View.GONE : View.VISIBLE);
+        if (none) {
+            binding.priceSummary.setText(R.string.patterns_price_none);
+            return;
+        }
+        for (int i = 0; i < prices.size(); i++) {
+            com.householdsplitter.core.insight.Patterns.PriceSeries series = prices.get(i);
+            com.google.android.material.chip.Chip chip =
+                    new com.google.android.material.chip.Chip(requireContext());
+            chip.setText(ItemNames.shortName(series.name));
+            chip.setCheckable(true);
+            chip.setId(View.generateViewId());
+            chip.setOnCheckedChangeListener((button, checked) -> {
+                if (checked) {
+                    showPrice(series);
+                }
+            });
+            binding.priceChips.addView(chip);
+            if (i == 0) {
+                chip.setChecked(true);
+            }
+        }
+    }
+
+    private void showPrice(com.householdsplitter.core.insight.Patterns.PriceSeries series) {
+        binding.priceView.setSeries(series, money);
+        long change = series.change();
+        String trend = change > 0L ? getString(R.string.patterns_price_up, money.format(change))
+                : change < 0L ? getString(R.string.patterns_price_down, money.format(-change))
+                : getString(R.string.patterns_price_same);
+        String cheapest = series.cheapestStore();
+        if (cheapest != null) {
+            trend += " " + getString(R.string.patterns_price_cheapest, cheapest);
+        }
+        String text = getString(R.string.patterns_price_summary, series.points.size(),
+                money.format(series.lowest()), money.format(series.highest()), trend);
+        binding.priceSummary.setText(text);
+        binding.priceView.setContentDescription(
+                getString(R.string.patterns_price_description, series.name, text));
+        binding.priceSummary.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
     /** Everything that depends on which bubble is in front. */

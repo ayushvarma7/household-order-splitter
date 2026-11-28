@@ -27,6 +27,11 @@ import java.util.Set;
  */
 public class InsightsViewModel extends ViewModel {
 
+    /** About four months: enough to show a rhythm, few enough squares to read on a phone. */
+    private static final int CALENDAR_WEEKS = 17;
+    /** The items offered in the price tracker, most often bought first. */
+    private static final int PRICE_ITEMS = 8;
+
     private final InsightService service;
     private final long householdId;
     private final MutableLiveData<InsightData> data = new MutableLiveData<>();
@@ -149,6 +154,11 @@ public class InsightsViewModel extends ViewModel {
         List<Trivia.Fact> trivia = Trivia.facts(loaded.purchases, zone,
                 LocalDate.now(zone).toEpochDay());
         data.setValue(new InsightData(tree, month, months(), loaded.members, missing, trivia,
-                example));
+                example,
+                com.householdsplitter.core.insight.Patterns.sharingWeb(loaded.purchases),
+                com.householdsplitter.core.insight.Patterns.calendar(loaded.purchases, zone,
+                        CALENDAR_WEEKS),
+                com.householdsplitter.core.insight.Patterns.priceTracker(loaded.purchases, 2,
+                        PRICE_ITEMS)));
     }
 }

@@ -23,10 +23,27 @@ public final class InsightData {
     public final List<Trivia.Fact> trivia;
     /** True when this is made-up data shown so the screen can be seen before there is any. */
     public final boolean example;
+    /** Across every finished order, not just this month: the web, the calendar, prices. */
+    public final com.householdsplitter.core.insight.Patterns.Web web;
+    public final com.householdsplitter.core.insight.Patterns.Calendar calendar;
+    public final List<com.householdsplitter.core.insight.Patterns.PriceSeries> prices;
 
     InsightData(InsightTree tree, YearMonth month, List<YearMonth> months,
                 Map<Long, Member> members, List<InsightService.MissingOrder> missingOrders,
                 List<Trivia.Fact> trivia, boolean example) {
+        this(tree, month, months, members, missingOrders, trivia, example, null, null,
+                new java.util.ArrayList<>());
+    }
+
+    InsightData(InsightTree tree, YearMonth month, List<YearMonth> months,
+                Map<Long, Member> members, List<InsightService.MissingOrder> missingOrders,
+                List<Trivia.Fact> trivia, boolean example,
+                com.householdsplitter.core.insight.Patterns.Web web,
+                com.householdsplitter.core.insight.Patterns.Calendar calendar,
+                List<com.householdsplitter.core.insight.Patterns.PriceSeries> prices) {
+        this.web = web;
+        this.calendar = calendar;
+        this.prices = prices;
         this.example = example;
         this.tree = tree;
         this.month = month;

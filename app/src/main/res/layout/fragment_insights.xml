@@ -412,6 +412,137 @@
                     android:importantForAccessibility="no"
                     android:textAppearance="@style/Text.Caption" />
             </LinearLayout>
+
+            <!--
+              Patterns across every finished order rather than this month: who buys with
+              whom, which days the money goes out, and how a regular item's price moves.
+              Each picture is followed by the same facts in words.
+            -->
+            <LinearLayout
+                android:id="@+id/patternsSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xxl"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/patterns_title"
+                    android:textAppearance="@style/Text.SectionLabel" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/patterns_subtitle"
+                    android:textAppearance="@style/Text.Caption" />
+
+            <LinearLayout
+                android:id="@+id/webTile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:background="@drawable/bg_insight_tile"
+                android:orientation="vertical"
+                android:padding="@dimen/space_xl">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/patterns_web_title"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleLarge"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.householdsplitter.ui.insights.SharingWebView
+                    android:id="@+id/webView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l" />
+
+                <TextView
+                    android:id="@+id/webSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:textAppearance="@style/Text.BodyMuted" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/calendarTile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:background="@drawable/bg_insight_tile"
+                android:orientation="vertical"
+                android:padding="@dimen/space_xl">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/patterns_calendar_title"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleLarge"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <com.householdsplitter.ui.insights.ShoppingCalendarView
+                    android:id="@+id/calendarView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l" />
+
+                <TextView
+                    android:id="@+id/calendarSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:textAppearance="@style/Text.BodyMuted" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/priceTile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_l"
+                android:background="@drawable/bg_insight_tile"
+                android:orientation="vertical"
+                android:padding="@dimen/space_xl">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/patterns_price_title"
+                    android:textAppearance="@style/TextAppearance.Splitter.TitleLarge"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_m"
+                    android:scrollbars="none">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/priceChips"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:singleSelection="true" />
+                </HorizontalScrollView>
+
+                <com.householdsplitter.ui.insights.PriceTrackerView
+                    android:id="@+id/priceView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l" />
+
+                <TextView
+                    android:id="@+id/priceSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_l"
+                    android:textAppearance="@style/Text.BodyMuted" />
+            </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

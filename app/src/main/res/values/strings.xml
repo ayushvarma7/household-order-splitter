@@ -241,6 +241,31 @@
     <string name="parsing_subtitle">Reading names and prices on this device. Nothing leaves your phone.</string>
     <string name="details_totals_label">What the bill says</string>
     <string name="summary_workings">How this was worked out</string>
+    <!-- Explore: patterns across every finished order. -->
+    <string name="patterns_title">Patterns</string>
+    <string name="patterns_subtitle">Across every finished order, not just this month.</string>
+    <string name="patterns_web_title">Who buys with whom</string>
+    <string name="patterns_web_top">%1$s and %2$s buy the most together: %3$s across %4$s the rest of the order was not in on.</string>
+    <plurals name="patterns_web_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="patterns_web_more">Next: %1$s and %2$s, %3$s.</string>
+    <string name="patterns_web_none">Nobody has bought anything with just some of the others yet. Lines appear when two people share an item the rest of the order is not on.</string>
+    <string name="patterns_web_small">The web needs at least three people on an order. With two, everything shared is shared by everyone.</string>
+    <string name="patterns_web_description">A web of who buys with whom. %1$s</string>
+    <string name="patterns_calendar_title">When the money goes out</string>
+    <string name="patterns_calendar_summary">%1$d shopping days in the last %2$d weeks. %3$ss carry the most, %4$s in all. The longest break between shops was %5$d days.</string>
+    <string name="patterns_calendar_one">One shopping day in the last %1$d weeks, on a %2$s.</string>
+    <string name="patterns_calendar_description">A calendar of spending, one square per day. %1$s</string>
+    <string name="patterns_price_title">What things cost</string>
+    <string name="patterns_price_summary">Bought %1$d times, from %2$s to %3$s. %4$s</string>
+    <string name="patterns_price_up">Up %1$s since the first time.</string>
+    <string name="patterns_price_down">Down %1$s since the first time.</string>
+    <string name="patterns_price_same">The same price as the first time.</string>
+    <string name="patterns_price_cheapest">Cheapest at %1$s.</string>
+    <string name="patterns_price_none">Buy something twice and its price shows up here, with each shop in its own colour.</string>
+    <string name="patterns_price_description">%1$s, price each time it was bought. %2$s</string>
     <!-- Notes on a split: one for everyone, and one per person. -->
     <string name="summary_notes">Notes</string>
     <string name="action_add_order_note">Add a note for everyone</string>

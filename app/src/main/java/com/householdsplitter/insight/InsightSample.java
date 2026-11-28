@@ -62,7 +62,11 @@ public final class InsightSample {
 
         List<CalcMember> people = Arrays.asList(
                 new CalcMember(YOU, "You", 0), new CalcMember(PARTNER, "Partner", 1));
+        // A different shop for most orders, so the example price tracker has stores to compare.
+        String[] stores = {"Walmart", "Costco", "Target", "Aldi", "Walmart"};
+        int orderIndex = 0;
         for (Object[] order : orders) {
+            String store = stores[orderIndex++ % stores.length];
             int monthsAgo = (Integer) order[0];
             // Never later than today, so an example opened early in the month still has a
             // sensible set of dates rather than ones in the future.
@@ -84,7 +88,9 @@ public final class InsightSample {
             }
             CalcOrder calc = new CalcOrder(people, items, Adjustments.none(), 0L,
                     AllocationMode.PROPORTIONAL);
-            loaded.purchases.addAll(Purchase.fromOrder(millis, calc));
+            for (Purchase purchase : Purchase.fromOrder(millis, calc)) {
+                loaded.purchases.add(purchase.atStore(store));
+            }
             long missing = (Long) order[2];
             if (missing > 0L) {
                 loaded.purchases.addAll(Purchase.missing(millis, missing, calc));

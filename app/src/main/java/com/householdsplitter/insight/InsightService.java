@@ -77,7 +77,10 @@ public class InsightService {
             }
             CalcOrder order = CalcMapper.toCalcOrder(bundle, AllocationMode.PROPORTIONAL);
             long date = bundle.order.orderDate;
-            loaded.purchases.addAll(Purchase.fromOrder(date, order));
+            String store = bundle.order.store == null ? "" : bundle.order.store.displayName();
+            for (Purchase purchase : Purchase.fromOrder(date, order)) {
+                loaded.purchases.add(purchase.atStore(store));
+            }
             long missing = OrderTotals.missingCents(bundle);
             if (missing > 0L) {
                 loaded.purchases.addAll(Purchase.missing(date, missing, order));
